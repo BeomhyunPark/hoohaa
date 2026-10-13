@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>hoohaa · 내 러닝 티어는?</title>
-<meta name="description" content="후하후하, 내 PB는 무슨 티어?">
+<title>hoohaa · 러닝 티어 &amp; VDOT 기록 계산기 | 내 러닝 티어는?</title>
+<meta name="description" content="5K·10K·하프·풀코스 기록으로 내 러닝 티어를 확인하세요. VDOT 계산기로 마라톤 예상 기록과 E·M·T·I·R 훈련 페이스까지 한 번에. 같은 성별·나이대 상위 %로 아이언부터 챌린저까지, 무료·로그인 없이 브라우저에서 계산해요.">
 <link rel="canonical" href="https://hoohaa.run/">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0F1620">
@@ -221,6 +221,20 @@ details.method summary{color:var(--t3);font-size:13px}
 .top h1.logo{margin:0;line-height:0}.top h1.logo svg{height:30px;width:auto;display:block}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+/* static SEO / info section */
+.seo{margin:36px 0 8px;padding-top:20px;border-top:1px solid var(--border);color:var(--t2);font-size:14px;line-height:1.65}
+.seo h2{font-size:16px;color:var(--t1);margin:22px 0 8px}.seo>h2:first-child{margin-top:0}
+.seo strong{color:var(--accent2);font-weight:600}
+.seo details{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin:8px 0;padding:0 14px}
+.seo summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:48px;gap:12px}
+.seo summary::-webkit-details-marker{display:none}
+.seo summary::after{content:"+";color:var(--t3);font-size:20px;flex:none}.seo details[open] summary::after{content:"−"}
+.seo summary h2,.seo summary h3{margin:0;font-size:15px;font-weight:600;color:var(--t1)}
+.seo details p{margin:0 0 14px}
+.seo-tbl{width:100%;border-collapse:collapse;font-size:13px;margin:0 0 10px;font-variant-numeric:tabular-nums}
+.seo-tbl th,.seo-tbl td{padding:7px 4px;border-bottom:1px solid var(--border);text-align:right}
+.seo-tbl th:first-child{text-align:left;color:var(--t1);font-weight:600}.seo-tbl thead th{color:var(--t3);font-weight:500}
+
 </style>
 <style>
 /* Tier Card — reusable CSS. Fonts are local (works from file://). */
@@ -351,6 +365,34 @@ details.method summary{color:var(--t3);font-size:13px}
     <p class="hint">나이 = 올해 − 출생연도로 계산해요</p>
   </div>
   <p id="err" class="err" role="alert"></p>
+<!--SEO-->
+<section class="seo" aria-labelledby="hHow">
+  <h2 id="hHow">어떻게 계산하나요</h2>
+  <p>5K·10K·하프·풀코스 기록을 넣으면 <strong>VDOT</strong>(잭 다니엘스 러닝 지수)을 계산하고, 같은 성별·나이대 러너 중 상위 몇 %인지로 <strong>러닝 티어</strong>를 정해요. 같은 VDOT으로 다른 거리의 <strong>마라톤 예상 기록</strong>과 E·M·T·I·R <strong>훈련 페이스</strong>도 함께 보여드려요.</p>
+  <details class="seo-box"><summary><h2 id="hTbl">티어 기준표 (예: 10K · 30대 남성)</h2></summary>
+  <table class="seo-tbl"><thead><tr><th scope="col">티어</th><th scope="col">10K 기록</th><th scope="col">누적 상위</th></tr></thead><tbody>
+<tr><th scope="row">챌린저</th><td>33:31 이내</td><td>상위 0.1%</td></tr>
+<tr><th scope="row">그랜드마스터</th><td>35:25 이내</td><td>상위 0.5%</td></tr>
+<tr><th scope="row">마스터</th><td>37:41 이내</td><td>상위 2%</td></tr>
+<tr><th scope="row">다이아몬드</th><td>41:32 이내</td><td>상위 8%</td></tr>
+<tr><th scope="row">에메랄드</th><td>45:03 이내</td><td>상위 18%</td></tr>
+<tr><th scope="row">플래티넘</th><td>48:52 이내</td><td>상위 33%</td></tr>
+<tr><th scope="row">골드</th><td>52:58 이내</td><td>상위 52%</td></tr>
+<tr><th scope="row">실버</th><td>58:54 이내</td><td>상위 72%</td></tr>
+<tr><th scope="row">브론즈</th><td>1:05:28 이내</td><td>상위 88%</td></tr>
+<tr><th scope="row">아이언</th><td>모든 완주 기록</td><td>누구나</td></tr>
+  </tbody></table>
+  <p class="hint">각 티어의 가장 낮은 단계(3단계) 진입 기준이에요. 성별·나이대·종목에 따라 기준 기록이 달라지며, 결과 화면에서 내 조건의 전체 24단계 표를 볼 수 있어요.</p></details>
+  <h2 id="hFaq">자주 묻는 질문</h2>
+<details class="faq"><summary><h3>VDOT이 뭔가요?</h3></summary><p>잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록으로 유산소 능력을 숫자 하나로 나타내고, 이 숫자로 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 같은 거리를 더 빨리 달릴 수 있어요.</p></details>
+<details class="faq"><summary><h3>티어는 어떤 기준으로 정해지나요?</h3></summary><p>같은 성별·나이대 러너들의 기록 분포에서 내 기록이 상위 몇 %인지 계산해, 아이언부터 챌린저까지 10개 티어(아이언~다이아몬드는 3·2·1 단계)로 나눠요. 나이대별 보정이 들어가서 40대·50대 러너도 같은 나이대 기준으로 비교돼요.</p></details>
+<details class="faq"><summary><h3>마라톤 예상 기록은 얼마나 정확한가요?</h3></summary><p>VDOT 공식으로 계산한 이론값이라 참고용이에요. 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 많고, 장거리 훈련량·코스·날씨에 따라 달라져요. 가까운 거리의 최근 기록을 넣을수록 더 정확해요.</p></details>
+<details class="faq"><summary><h3>훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?</h3></summary><p>E(이지)는 대화가 가능한 편안한 조깅, M(마라톤)은 풀코스 목표 페이스, T(역치)는 20~30분 버틸 수 있는 ‘편하게 힘든’ 페이스, I(인터벌)는 3~5분 반복하는 빠른 달리기, R(반복)은 짧고 가장 빠른 질주예요. 대부분의 훈련은 E 페이스로 하는 게 좋아요.</p></details>
+<details class="faq"><summary><h3>입력한 기록이 저장되나요?</h3></summary><p>아니요. 모든 계산은 내 브라우저 안에서만 이뤄지고, 기록이나 사진은 서버로 전송되거나 저장되지 않아요.</p></details>
+<details class="faq"><summary><h3>느린 기록도 넣어도 되나요?</h3></summary><p>물론이에요. 완주 기록이라면 누구나 티어가 나오고, 다음 티어까지 얼마나 남았는지도 알려드려요. 모든 러너는 출발선에 선 순간부터 러너예요.</p></details>
+</section>
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"hoohaa","alternateName":"hoohaa 러닝 티어","url":"https://hoohaa.run/","inLanguage":"ko","applicationCategory":"SportsApplication","operatingSystem":"Web","isAccessibleForFree":true,"description":"PB 기록으로 러닝 티어, VDOT, 마라톤 예상 기록, 훈련 페이스를 계산하는 무료 웹앱","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"VDOT이 뭔가요?","acceptedAnswer":{"@type":"Answer","text":"잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록으로 유산소 능력을 숫자 하나로 나타내고, 이 숫자로 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 같은 거리를 더 빨리 달릴 수 있어요."}},{"@type":"Question","name":"티어는 어떤 기준으로 정해지나요?","acceptedAnswer":{"@type":"Answer","text":"같은 성별·나이대 러너들의 기록 분포에서 내 기록이 상위 몇 %인지 계산해, 아이언부터 챌린저까지 10개 티어(아이언~다이아몬드는 3·2·1 단계)로 나눠요. 나이대별 보정이 들어가서 40대·50대 러너도 같은 나이대 기준으로 비교돼요."}},{"@type":"Question","name":"마라톤 예상 기록은 얼마나 정확한가요?","acceptedAnswer":{"@type":"Answer","text":"VDOT 공식으로 계산한 이론값이라 참고용이에요. 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 많고, 장거리 훈련량·코스·날씨에 따라 달라져요. 가까운 거리의 최근 기록을 넣을수록 더 정확해요."}},{"@type":"Question","name":"훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"E(이지)는 대화가 가능한 편안한 조깅, M(마라톤)은 풀코스 목표 페이스, T(역치)는 20~30분 버틸 수 있는 ‘편하게 힘든’ 페이스, I(인터벌)는 3~5분 반복하는 빠른 달리기, R(반복)은 짧고 가장 빠른 질주예요. 대부분의 훈련은 E 페이스로 하는 게 좋아요."}},{"@type":"Question","name":"입력한 기록이 저장되나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 모든 계산은 내 브라우저 안에서만 이뤄지고, 기록이나 사진은 서버로 전송되거나 저장되지 않아요."}},{"@type":"Question","name":"느린 기록도 넣어도 되나요?","acceptedAnswer":{"@type":"Answer","text":"물론이에요. 완주 기록이라면 누구나 티어가 나오고, 다음 티어까지 얼마나 남았는지도 알려드려요. 모든 러너는 출발선에 선 순간부터 러너예요."}}]}]</script>
+<!--/SEO-->
 </section>
 
 <!-- RESULT -->
