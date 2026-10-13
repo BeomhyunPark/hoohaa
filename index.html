@@ -26,7 +26,7 @@
 html,body{margin:0;background:var(--bg);color:var(--t1)}
 body{font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
 .num,.big,input,.time,.pace,.gap,.pct{font-variant-numeric:tabular-nums}
-main{max-width:430px;margin:0 auto;padding:0 var(--pad) calc(200px + env(safe-area-inset-bottom))}
+main{max-width:430px;margin:0 auto;padding:0 var(--pad) calc(32px + env(safe-area-inset-bottom))}
 .top{padding:24px 0 8px}
 h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em}
 .sub{margin:0;color:var(--t2);font-size:14px}
@@ -49,8 +49,6 @@ input[aria-invalid=true]{border-color:var(--danger)}
 .chips button{min-height:48px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--t1);font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;padding:0 4px}
 .chips button[aria-checked=true]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .err{color:var(--danger);font-size:15px;min-height:1px;margin:8px 0}
-.bar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(to top,var(--bg) 70%,rgba(14,17,22,0));padding:16px var(--pad) calc(16px + env(safe-area-inset-bottom))}
-.bar>div{max-width:398px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 .btn{min-height:52px;border-radius:14px;font-size:17px;font-weight:700;font-family:inherit;border:0;cursor:pointer;width:100%}
 .btn.primary{background:var(--accent);color:var(--on-accent)}
 .btn.primary:hover:not(:disabled){background:var(--accent-h)}
@@ -237,8 +235,10 @@ details.method summary{color:var(--t3);font-size:13px}
 .seo-links{display:flex;flex-wrap:wrap;gap:8px}.seo-links a{border:1px solid var(--border);border-radius:999px;padding:8px 13px;color:var(--t1);text-decoration:none;font-size:13.5px;min-height:36px}
 /* unified page width with landing pages (760px incl. padding) */
 main{max-width:760px}
-.bar>div{max-width:724px}
 @media (min-width:600px){.grid{grid-template-columns:repeat(4,1fr)}#tplPreview{width:min(60%,300px)}.tpl-ed.editing #tplPreview{height:min(48vh,420px)}}
+
+/* in-flow primary actions (no sticky bars) */
+.actions{display:flex;flex-direction:column;gap:8px;margin:16px 0 8px}
 
 </style>
 <style>
@@ -370,6 +370,7 @@ main{max-width:760px}
     <p class="hint">나이 = 올해 − 출생연도로 계산해요</p>
   </div>
   <p id="err" class="err" role="alert"></p>
+  <div id="barInput" class="actions"><button id="go" class="btn primary" disabled>내 티어 보기</button></div>
 <!--SEO-->
 <section class="seo" aria-labelledby="hHow">
   <h2 id="hHow">어떻게 계산하나요</h2>
@@ -396,7 +397,7 @@ main{max-width:760px}
 <details class="faq"><summary><h3>입력한 기록이 저장되나요?</h3></summary><p>아니요. 모든 계산은 내 브라우저 안에서만 이뤄지고, 기록이나 사진은 서버로 전송되거나 저장되지 않아요.</p></details>
 <details class="faq"><summary><h3>느린 기록도 넣어도 되나요?</h3></summary><p>물론이에요. 완주 기록이라면 누구나 티어가 나오고, 다음 티어까지 얼마나 남았는지도 알려드려요. 모든 러너는 출발선에 선 순간부터 러너예요.</p></details>
   <h2 id="hMore">기록 기준표 더 보기</h2>
-  <nav class="track" aria-label="기록 가이드"><div class="lane"><span class="ln"><b aria-hidden="true">1</b>5K</span><div class="ls"><a href="5k/">티어표</a><a href="5k/20min/">20분</a><a href="5k/25min/">25분</a><a href="5k/30min/">30분</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">2</b>10K</span><div class="ls"><a href="10k/">티어표</a><a href="10k/40min/">40분</a><a href="10k/45min/">45분</a><a href="10k/50min/">50분</a><a href="10k/55min/">55분</a><a href="10k/60min/">1시간</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">3</b>하프</span><div class="ls"><a href="half/">티어표·계산기</a><a href="half/1h30/">1:30</a><a href="half/1h45/">1:45</a><a href="half/2h/">2:00</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">4</b>풀</span><div class="ls"><a href="full/">티어표·예상 기록</a><a href="full/sub3/">서브3</a><a href="full/sub330/">서브3:30</a><a href="full/sub4/">서브4</a><a href="full/sub430/">4:30</a><a href="full/sub5/">5:00</a><a href="predictor/">기록 예측기</a><a href="splits/">구간 기록표</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">5</b>공통</span><div class="ls"><a href="men/">남자 기준</a><a href="women/">여자 기준</a><a href="pace/">훈련 페이스</a><a href="pace-calculator/">페이스 계산기</a><a href="vdot/">VDOT</a><a href="vo2max/">VO2max</a><a href="tier-guide/">티어 기준</a><a href="age/20s-30s/">20·30대</a><a href="age/40s/">40대</a><a href="age/50s/">50대</a><a href="age/60s/">60대+</a><a href="guide/">전체 가이드</a></div></div></nav><style>.track{margin:12px 0 4px;background:#0B1119;border:1px solid #26313F;border-radius:14px;overflow:hidden}
+  <nav class="lanenav" aria-label="기록 가이드"><div class="lane"><span class="ln"><b aria-hidden="true">1</b>5K</span><div class="ls"><a href="5k/">티어표</a><a href="5k/20min/">20분</a><a href="5k/25min/">25분</a><a href="5k/30min/">30분</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">2</b>10K</span><div class="ls"><a href="10k/">티어표</a><a href="10k/40min/">40분</a><a href="10k/45min/">45분</a><a href="10k/50min/">50분</a><a href="10k/55min/">55분</a><a href="10k/60min/">1시간</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">3</b>하프</span><div class="ls"><a href="half/">티어표·계산기</a><a href="half/1h30/">1:30</a><a href="half/1h45/">1:45</a><a href="half/2h/">2:00</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">4</b>풀</span><div class="ls"><a href="full/">티어표·예상 기록</a><a href="full/sub3/">서브3</a><a href="full/sub330/">서브3:30</a><a href="full/sub4/">서브4</a><a href="full/sub430/">4:30</a><a href="full/sub5/">5:00</a><a href="predictor/">기록 예측기</a><a href="splits/">구간 기록표</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">5</b>공통</span><div class="ls"><a href="men/">남자 기준</a><a href="women/">여자 기준</a><a href="pace/">훈련 페이스</a><a href="pace-calculator/">페이스 계산기</a><a href="vdot/">VDOT</a><a href="vo2max/">VO2max</a><a href="tier-guide/">티어 기준</a><a href="age/20s-30s/">20·30대</a><a href="age/40s/">40대</a><a href="age/50s/">50대</a><a href="age/60s/">60대+</a><a href="guide/">전체 가이드</a></div></div></nav><style>.lanenav{margin:12px 0 4px;background:#0B1119;border:1px solid #26313F;border-radius:14px;overflow:hidden}
 .lane{display:flex;align-items:stretch;border-top:2px dashed rgba(255,255,255,.13);min-height:52px}.lane:first-child{border-top:0}
 .lane .ln{flex:none;width:78px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;border-right:2px solid rgba(255,255,255,.18);color:#F2F4F7;font-weight:800;font-size:14px;letter-spacing:.2px}
 .lane .ln b{font:800 20px/1 system-ui,sans-serif;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.45);width:14px;text-align:center}
@@ -468,6 +469,7 @@ main{max-width:760px}
     </div>
     </div>
     <div class="tpl-list" id="tplList" role="radiogroup" aria-labelledby="hTpl"></div>
+    <div id="barResult" class="actions" hidden><button id="save" class="btn primary">이미지로 저장</button><button id="again" class="btn secondary">다른 기록 넣기</button></div>
   </section>
   <details class="deco" id="deco">
     <summary><span>꾸미기 <em>(선택)</em></span><span class="dsub">사진 배경 · 대회명</span></summary>
@@ -483,10 +485,6 @@ main{max-width:760px}
 </section>
 </main>
 
-<nav class="bar" id="bar">
-  <div id="barInput"><button id="go" class="btn primary" disabled>내 티어 보기</button></div>
-  <div id="barResult" hidden><button id="save" class="btn primary">이미지로 저장</button><button id="again" class="btn secondary">다른 기록 넣기</button></div>
-</nav>
 <script>
 (function(){
 // generated by build_data.py — do not edit
@@ -1084,7 +1082,9 @@ const hex2hsv = hex => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 2
   let h = 0; if (d) h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return { h: h * 60, s: mx ? d / mx : 0, v: mx }; };
 const hsv2hex = ({ h, s, v }) => { const f = k => { const x = (k + h / 60) % 6; return v - v * s * Math.max(0, Math.min(x, 4 - x, 1)); };
   return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join(''); };
-let hsv = hex2hsv('#ffffff');
+let hsv = { h: 0, s: 0, v: 1 }, hsvCol = '#ffffff';
+// derive HSV from a hex chosen elsewhere (chip/HEX/reset) without losing hue when s or v is 0
+const adoptHex = hex => { const n = hex2hsv(hex); if (n.v === 0) n.s = hsv.s; if (n.s === 0 || n.v === 0) n.h = hsv.h; hsv = n; hsvCol = hex.toLowerCase(); };
 function paintPicker() {
   const c = adj.col; $('cpChip').style.background = c; if (document.activeElement !== $('cpHex')) $('cpHex').value = c.toUpperCase();
   $('cpSV').style.setProperty('--hue', `hsl(${hsv.h} 100% 50%)`);
@@ -1093,7 +1093,7 @@ function paintPicker() {
   $('cpSV').setAttribute('aria-valuetext', `채도 ${Math.round(hsv.s * 100)}%, 밝기 ${Math.round(hsv.v * 100)}%`);
   for (const q of document.querySelectorAll('.qc')) q.setAttribute('aria-pressed', String(q.dataset.c === c.toLowerCase()));
 }
-function setCol(hex, fromHsv) { adj.col = hex.toLowerCase(); if (!fromHsv) hsv = hex2hsv(adj.col); paintPicker(); adjChanged(); }
+function setCol(hex, fromHsv) { adj.col = hex.toLowerCase(); if (fromHsv) hsvCol = adj.col; else adoptHex(adj.col); paintPicker(); adjChanged(); }
 function dragArea(el, fn) {
   const go = e => { const r = el.getBoundingClientRect(); fn(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))); };
   el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); go(e); e.preventDefault(); });
@@ -1117,7 +1117,7 @@ function paintPreview(cv) {
     for (const y of guides.y) { g.beginPath(); g.moveTo(0, y); g.lineTo(1080, y); g.stroke(); } g.restore(); }
 }
 function syncAdjBar() {
-  if (hsv2hex(hsv) !== adj.col) hsv = hex2hsv(adj.col); paintPicker();
+  if (adj.col.toLowerCase() !== hsvCol) adoptHex(adj.col); paintPicker();
   const on = state.tpl === 'overlay'; $('adjBar').hidden = !on; $('edTabs').hidden = !on; $('tplPreview').classList.toggle('editable', on); $('tplEd').classList.toggle('editing', on);
   $('addPhoto').hidden = !(on && !photoImg);
   $('photoAdd2').hidden = !!photoImg; $('photoChange').hidden = !photoImg; $('photoRemove').hidden = !photoImg; $('pzoom').disabled = !photoImg;
@@ -1136,7 +1136,7 @@ function adjChanged() {
   clearTimeout(thumbT); thumbT = setTimeout(async () => { const b = $('tplList').querySelector('[data-t="overlay"] canvas'); if (b) b.getContext('2d').drawImage(await renderStory(state.story, storyOpt('overlay')), 0, 0, 108, 192); }, 300);
 }
 $('edTabs').addEventListener('click', e => { const t = e.target.closest('[role=tab]'); if (!t || t.disabled) return; edTab = t.dataset.tab; syncAdjBar(); fitPanel(); });
-function fitPanel() { const pn = document.querySelector(`.ed-panel[data-p="${edTab}"]`); if (!pn) return; const r = pn.getBoundingClientRect(), bt = $('bar').getBoundingClientRect().top + 24, ht = $('edHead').getBoundingClientRect();
+function fitPanel() { const pn = document.querySelector(`.ed-panel[data-p="${edTab}"]`); if (!pn) return; const r = pn.getBoundingClientRect(), bt = innerHeight + 24, ht = $('edHead').getBoundingClientRect();
   if (r.bottom > bt) window.scrollBy({ top: Math.min(r.bottom - bt, r.top - ht.bottom - 4 + (ht.top > 1 ? ht.top : 0)) , behavior: 'instant' }); }
 $('pzoom').addEventListener('input', e => { adj.pz = +e.target.value / 100; adjChanged(); });
 $('tsize').addEventListener('input', e => { adj.ts = +e.target.value / 100; adjChanged(); });
@@ -1146,7 +1146,7 @@ $('fontPick').addEventListener('click', e => { const b = e.target.closest('[data
 for (const b of document.querySelectorAll('[data-al]')) b.addEventListener('click', () => { adj.al = b.dataset.al; adjChanged(); });
 $('toCenter').addEventListener('click', () => { adj.tx = 0; adj.ty = 0; adjChanged(); });
 $('itemTgl').addEventListener('click', e => { const b = e.target.closest('.tg'); if (!b || b.disabled) return; adj.show = { ...adj.show, [b.dataset.k]: !adj.show[b.dataset.k] }; adjChanged(); });
-$('adjReset').addEventListener('click', () => { adj = fresh(); hsv = hex2hsv(adj.col); adjChanged(); paintPicker(); });
+$('adjReset').addEventListener('click', () => { adj = fresh(); adoptHex(adj.col); adjChanged(); paintPicker(); });
 const pickPhoto = () => $('photo').click();
 $('addPhoto').addEventListener('click', pickPhoto); $('photoAdd2').addEventListener('click', pickPhoto); $('photoChange').addEventListener('click', pickPhoto);
 $('photoRemove').addEventListener('click', () => $('photoClear').click());
