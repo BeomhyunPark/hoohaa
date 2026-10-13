@@ -144,6 +144,36 @@ details.method summary{color:var(--t3);font-size:13px}
 .cp-hue i{top:50%;background:transparent}
 .cp-sv:focus-visible,.cp-hue:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
+/* overlay editor */
+.tpl-ed.editing .ed-head{position:sticky;top:0;z-index:5;background:var(--surface);margin:0 -16px;padding:8px 16px 6px;border-radius:0 0 14px 14px;box-shadow:0 8px 16px -12px rgba(0,0,0,.6)}
+.tpl-ed.editing .tpl-prev{margin-bottom:8px}
+.tpl-prev{position:relative}
+.tpl-ed.editing #tplPreview{width:auto;height:min(40vh,340px)}
+.add-photo{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 18px;min-height:44px;border-radius:14px;border:2px dashed rgba(255,255,255,.75);background:rgba(14,17,22,.55);color:#fff;font:700 16px/1.2 inherit;font-family:inherit;cursor:pointer;backdrop-filter:blur(4px)}
+.add-photo .ap-plus{font-size:26px;line-height:1}
+.add-photo small{font-size:11px;font-weight:500;opacity:.8}
+.ed{margin:4px 0 14px}
+.ed-tabs{display:flex;gap:2px;background:var(--raised);border-radius:12px;padding:3px;overflow-x:auto}
+.ed-tabs [role=tab]{flex:1 0 auto;min-height:44px;padding:0 10px;border:0;border-radius:9px;background:none;color:var(--t2);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.ed-tabs [role=tab][aria-selected=true]{background:var(--surface);color:var(--t1)}
+.ed-tabs [role=tab]:disabled{opacity:.4;cursor:not-allowed}
+.ed-reset{flex:none;min-height:44px;padding:0 10px;border:0;background:none;color:var(--t3);font:500 13px inherit;font-family:inherit;cursor:pointer;text-decoration:underline}
+.ed-panel{padding:10px 2px 0;min-height:150px}
+.ed-panel .adj-row{margin-top:2px}
+.ed-panel output{min-width:44px;text-align:right;color:var(--t2);font-size:13px;font-variant-numeric:tabular-nums}
+.ed-btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.chip-btn{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.seg.three{grid-template-columns:1fr 1fr 1fr}
+.tgl{display:flex;flex-wrap:wrap;gap:6px}
+.tg{min-height:44px;padding:0 12px;border-radius:22px;border:1px solid var(--border2);background:none;color:var(--t2);font:600 13px inherit;font-family:inherit;cursor:pointer}
+.tg[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tg:disabled{opacity:.4;cursor:not-allowed}
+.ed-panel .cp-sv{height:96px;margin-top:6px}
+.ed-panel .cp-hue{margin:10px 12px 0}
+.ed-panel .cpick{margin-top:0}
+.primary-chip{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ed{margin:2px 0 14px}
+
 </style>
 <style>
 /* Tier Card — reusable CSS. Fonts are local (works from file://). */
@@ -275,15 +305,34 @@ details.method summary{color:var(--t3);font-size:13px}
   <div id="resBody"></div>
   <section class="card tpl" aria-labelledby="hTpl">
     <h2 id="hTpl">공유 이미지</h2>
-    <div class="tpl-prev"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="선택한 공유 이미지 미리보기"></canvas></div>
-    <div class="adj" id="adjBar" hidden>
-      <div class="seg" role="radiogroup" aria-label="편집 대상">
-        <button type="button" role="radio" data-m="photo" aria-checked="false" id="mPhoto">사진 옮기기</button>
-        <button type="button" role="radio" data-m="text" aria-checked="true" id="mText">글자 옮기기</button>
+    <div class="tpl-ed" id="tplEd">
+    <div class="ed-head" id="edHead">
+    <div class="tpl-prev" id="tplPrev"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="선택한 공유 이미지 미리보기"></canvas>
+      <button type="button" class="add-photo" id="addPhoto" hidden><span class="ap-plus" aria-hidden="true">＋</span> 사진 넣기<small>선택 · 안 넣어도 저장돼요</small></button></div>
+      <div class="ed-tabs" id="edTabs" hidden role="tablist" aria-label="편집">
+        <button type="button" role="tab" data-tab="photo" id="tabPhoto" aria-selected="false">사진</button>
+        <button type="button" role="tab" data-tab="text" aria-selected="true">글자</button>
+        <button type="button" role="tab" data-tab="color" aria-selected="false">색</button>
+        <button type="button" role="tab" data-tab="align" aria-selected="false">정렬</button>
+        <button type="button" role="tab" data-tab="items" aria-selected="false">항목</button>
+        <button type="button" id="adjReset" class="ed-reset" aria-label="편집 초기화">초기화</button>
       </div>
-      <div class="adj-row"><label for="adjSize" class="lbl sm" id="adjSizeLbl">글자 크기</label><input type="range" id="adjSize" min="60" max="130" value="100"><button type="button" id="adjReset" class="ghost">초기화</button></div>
+    </div>
+    <div class="ed" id="adjBar" hidden>
+
+      <div class="ed-panel" data-p="photo" role="tabpanel" hidden>
+        <div class="adj-row"><label for="pzoom" class="lbl sm">확대</label><input type="range" id="pzoom" min="100" max="300" value="100"></div>
+        <div class="ed-btns"><button type="button" class="chip-btn primary-chip" id="photoAdd2" hidden>＋ 사진 넣기</button><button type="button" class="chip-btn" id="photoChange">사진 바꾸기</button><button type="button" class="chip-btn" id="photoRemove">사진 빼기</button></div>
+        <p class="hint">사진 탭에서는 미리보기를 끌면 사진이 움직여요</p>
+      </div>
+      <div class="ed-panel" data-p="text" role="tabpanel">
+        <div class="adj-row"><label for="tsize" class="lbl sm">크기</label><input type="range" id="tsize" min="60" max="130" value="100"><output id="tsizeV">100%</output></div>
+        <div class="adj-row"><label for="tlh" class="lbl sm">줄 간격</label><input type="range" id="tlh" min="60" max="160" value="100"><output id="tlhV">100%</output></div>
+        <div class="adj-row"><label for="ths" class="lbl sm">장평</label><input type="range" id="ths" min="70" max="130" value="100"><output id="thsV">100%</output></div>
+      </div>
+      <div class="ed-panel" data-p="color" role="tabpanel" hidden>
       <div class="cpick" role="group" aria-labelledby="colLbl">
-        <div class="cp-top"><span class="lbl sm" id="colLbl">글자 색</span>
+        <div class="cp-top"><span class="lbl sm vh" id="colLbl">글자 색</span>
           <button type="button" class="qc" data-c="#ffffff" aria-label="흰색" style="--c:#ffffff"></button>
           <button type="button" class="qc" data-c="#111111" aria-label="검정" style="--c:#111111"></button>
           <span class="cp-chip" id="cpChip" aria-hidden="true"></span>
@@ -291,7 +340,19 @@ details.method summary{color:var(--t3);font-size:13px}
         <div class="cp-sv" id="cpSV" role="slider" tabindex="0" aria-label="채도·밝기" aria-valuetext=""><i id="cpSVk"></i></div>
         <div class="cp-hue" id="cpHue" role="slider" tabindex="0" aria-label="색상" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0"><i id="cpHuek"></i></div>
       </div>
-      <p class="hint" id="adjHint">미리보기를 끌어서 옮길 수 있어요 (선택)</p>
+      </div>
+      <div class="ed-panel" data-p="align" role="tabpanel" hidden>
+        <div class="seg three" role="radiogroup" aria-label="글자 정렬">
+          <button type="button" role="radio" data-al="left" aria-checked="false">왼쪽</button>
+          <button type="button" role="radio" data-al="center" aria-checked="true">가운데</button>
+          <button type="button" role="radio" data-al="right" aria-checked="false">오른쪽</button></div>
+        <div class="ed-btns"><button type="button" class="chip-btn" id="toCenter">가운데로</button></div>
+        <p class="hint">글자를 끌면 가운데·가장자리에 맞춰 붙어요</p>
+      </div>
+      <div class="ed-panel" data-p="items" role="tabpanel" hidden>
+        <div class="tgl" id="itemTgl"></div>
+      </div>
+    </div>
     </div>
     <div class="tpl-list" id="tplList" role="radiogroup" aria-labelledby="hTpl"></div>
   </section>
@@ -568,51 +629,66 @@ function drawCard(c, d, x, y, w, h) {
   c.restore();
 }
 
+// Overlay text group = list of rows laid out top->bottom, then placed/scaled/aligned as one block.
+const SHOW0 = { race: true, date: true, tier: true, tierKo: true, rec: true, pace: true, top: true, vdot: false, logo: true };
+const M = 40; // min margin from canvas edge
+function overlayRows(c, d, opt, a) {
+  const sh = a.show, R = [], lab = t => ({ t, size: 28, w: 600, fam: ARC, st: 'expanded', ls: 7, alpha: .85 });
+  const add = (gap, row) => R.push({ gap: R.length ? gap : 0, ...row });
+  if (sh.race && opt.race) {
+    font(c, 62, 700, SYS_KO);
+    if (c.measureText(opt.race).width <= 900) add(0, { t: opt.race, size: 62, w: 700, fam: SYS_KO });
+    else { const sp = [...opt.race].map((ch, i) => ch === ' ' ? i : -1).filter(i => i > 0), mid = opt.race.length / 2;
+      const k = sp.length ? sp.reduce((x, y) => Math.abs(y - mid) < Math.abs(x - mid) ? y : x) : Math.floor(mid);
+      add(0, { t: opt.race.slice(0, k).trim(), size: 56, w: 700, fam: SYS_KO, max: 900 }); add(12, { t: opt.race.slice(k).trim(), size: 56, w: 700, fam: SYS_KO, max: 900 }); }
+  }
+  if (sh.date) add(22, { t: ymd(opt.date), size: opt.race && sh.race ? 36 : 40, w: 500, fam: ARC, alpha: .9 });
+  if (sh.tier) {
+    add(150, lab('TIER'));
+    let big = d.long ? 84 : 96; const tt = d.word + (d.roman ? '  ' + d.roman : ''); font(c, big, 800, ARC, 'expanded'); while (c.measureText(tt).width > 760 && big > 60) { big -= 2; font(c, big, 800, ARC, 'expanded'); }
+    add(40, { tier: true, size: big }); add(34, { line: true, size: 5 });
+  }
+  if (sh.tierKo) add(sh.tier ? 28 : 120, { t: d.tierKo, size: 34, w: 600, fam: PRE, alpha: .9 });
+  if (sh.rec) { add(110, lab('RECORD')); add(36, { t: d.recLine.split(' · ')[0], size: 116, w: 700, fam: ARC, max: 900 }); }
+  if (sh.pace) { add(84, lab('PACE')); add(36, { t: d.pace, size: 116, w: 700, fam: ARC, max: 900 }); }
+  if (sh.vdot) { add(84, lab('VDOT')); add(36, { t: d.vdot, size: 116, w: 700, fam: ARC }); }
+  if (sh.top) add(90, { t: d.topLabel, size: 48, w: 700, fam: PRE });
+  if (sh.logo) add(150, { t: 'RUNNING TIER', size: 28, w: 700, fam: ARC, st: 'expanded', ls: 6 });
+  // measure
+  for (const r of R) {
+    if (r.line) { r.wd = 80; continue; }
+    if (r.tier) { font(c, r.size, 800, ARC, 'expanded'); r.ww = c.measureText(d.word).width; font(c, r.size, 300, ARC, 'expanded'); r.rw = d.roman ? c.measureText(d.roman).width + 26 : 0; r.wd = r.ww + r.rw; continue; }
+    let f = r.size; font(c, f, r.w, r.fam, r.st); if (r.max) while (c.measureText(r.t).width > r.max && f > 40) { f -= 2; font(c, f, r.w, r.fam, r.st); }
+    r.size = f; c.letterSpacing = (r.ls || 0) + 'px'; r.wd = c.measureText(r.t).width - (r.ls || 0); c.letterSpacing = '0px';
+  }
+  return R;
+}
+function overlayBox(c, d, opt, a) { // group layout in local units + clamped placement
+  const R = overlayRows(c, d, opt, a); let y = 0;
+  for (const r of R) { y += r.gap * a.lh; r.y = y; y += r.size; }
+  const GW = Math.max(1, ...R.map(r => r.wd)), GH = Math.max(1, y), sx = a.ts * a.hs, sy = a.ts, bw = GW * sx, bh = GH * sy;
+  let gx = W / 2 + a.tx, gy = H / 2 + a.ty;
+  gx = bw > W - 2 * M ? W / 2 : Math.min(W - M - bw / 2, Math.max(M + bw / 2, gx));
+  gy = bh > H - 2 * M ? H / 2 : Math.min(H - M - bh / 2, Math.max(M + bh / 2, gy));
+  return { R, GW, GH, sx, sy, gx, gy, box: { x: gx - bw / 2, y: gy - bh / 2, w: bw, h: bh } };
+}
 function drawPhotoMode(c, cv, d, opt) {
   const a = clampAdj(opt.adj, opt.photo);
   if (opt.photo) coverPhoto(c, opt.photo, a); else tierBg(c, d);
-  // light legibility aids only: soft vignette + gentle centre scrim (scrim follows the text group)
-  const vg = c.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .78); const darkText = lum(a.col) < .35, sh = darkText ? '255,255,255' : '0,0,0';
-  vg.addColorStop(0, `rgba(${sh},0)`); vg.addColorStop(1, `rgba(${sh},${darkText ? .22 : .32})`);
-    c.save(); c.translate(W / 2 + a.tx, GROUP.cy + a.ty); c.scale(a.ts, a.ts); c.translate(-W / 2, -GROUP.cy);
-  const cs = c.createRadialGradient(W / 2, 1000, 0, W / 2, 1000, 620); cs.addColorStop(0, `rgba(${sh},${darkText ? .22 : .16})`); cs.addColorStop(1, `rgba(${sh},0)`);
-    const accent = accentOf(d);
-  c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillStyle = a.col;
-  c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
-  const label = (t, y) => { c.globalAlpha = .85; font(c, 28, 600, ARC, 'expanded'); c.letterSpacing = '7px'; c.fillText(t, W / 2 + 3.5, y); c.letterSpacing = '0px'; c.globalAlpha = 1; };
-  const fit = (txt, size, weight, fam, max, min, stretch) => { let f = size; font(c, f, weight, fam, stretch); while (c.measureText(txt).width > max && f > min) { f -= 2; font(c, f, weight, fam, stretch); } return f; };
-  // header: race name (optional) + date
-  let dy = 330;
-  if (opt.race) {
-    font(c, 62, 700, SYS_KO);
-    if (c.measureText(opt.race).width <= 900) { c.fillText(opt.race, W / 2, 330); dy = 392; }
-    else { // wrap to two lines at the space nearest the middle
-      const sp = [...opt.race].map((ch, i) => ch === ' ' ? i : -1).filter(i => i > 0); const mid = opt.race.length / 2;
-      const k = sp.length ? sp.reduce((a, b) => Math.abs(b - mid) < Math.abs(a - mid) ? b : a) : Math.floor(mid);
-      const l1 = opt.race.slice(0, k).trim(), l2 = opt.race.slice(k).trim();
-      fit(l1.length > l2.length ? l1 : l2, 56, 700, SYS_KO, 900, 40);
-      c.fillText(fitText(c, l1, 900), W / 2, 310); c.fillText(fitText(c, l2, 900), W / 2, 378); dy = 436;
-    }
+  const L = overlayBox(c, d, opt, a), accent = accentOf(d);
+  a.tx = L.gx - W / 2; a.ty = L.gy - H / 2; cv.__adj = a; cv.__box = L.box;
+  c.save(); c.translate(L.gx, L.gy); c.scale(L.sx, L.sy); c.translate(-L.GW / 2, -L.GH / 2);
+  c.textBaseline = 'alphabetic'; c.fillStyle = a.col; c.shadowColor = 'transparent';
+  const xAt = w => a.al === 'left' ? 0 : a.al === 'right' ? L.GW - w : (L.GW - w) / 2;
+  for (const r of L.R) {
+    const base = r.y + r.size * .8;
+    if (r.line) { c.fillStyle = accent; c.fillRect(xAt(80), r.y, 80, 5); c.fillStyle = a.col; continue; }
+    c.textAlign = 'left';
+    if (r.tier) { const x0 = xAt(r.wd); font(c, r.size, 800, ARC, 'expanded'); c.fillText(d.word, x0, base); if (d.roman) { font(c, r.size, 300, ARC, 'expanded'); c.fillText(d.roman, x0 + r.ww + 26, base); } continue; }
+    font(c, r.size, r.w, r.fam, r.st); c.letterSpacing = (r.ls || 0) + 'px'; c.globalAlpha = r.alpha || 1;
+    c.fillText(r.t, xAt(r.wd), base); c.globalAlpha = 1; c.letterSpacing = '0px';
   }
-  c.globalAlpha = .9; font(c, opt.race ? 36 : 40, 500, ARC); c.fillText(ymd(opt.date), W / 2, dy); c.globalAlpha = 1;
-  // tier block (moderate)
-  label('TIER', 600);
-  const tierTxt = d.word + (d.roman ? '  ' + d.roman : '');
-  let big = d.long ? 84 : 96; font(c, big, 800, ARC, 'expanded'); while (c.measureText(tierTxt).width > 760 && big > 60) { big -= 2; font(c, big, 800, ARC, 'expanded'); }
-  const ww = c.measureText(d.word).width; font(c, big, 300, ARC, 'expanded'); const rw = d.roman ? c.measureText(d.roman).width + 26 : 0;
-  const x0 = W / 2 - (ww + rw) / 2; c.textAlign = 'left';
-  font(c, big, 800, ARC, 'expanded'); c.fillText(d.word, x0, 700);
-  if (d.roman) { font(c, big, 300, ARC, 'expanded'); c.fillText(d.roman, x0 + ww + 26, 700); }
-  c.textAlign = 'center';
-  c.fillStyle = accent; c.fillRect(W / 2 - 40, 738, 80, 5); c.fillStyle = a.col;
-  font(c, 34, 600, PRE); c.globalAlpha = .9; c.fillText(d.tierKo, W / 2, 800); c.globalAlpha = 1;
-  // main numbers
-  label('RECORD', 940); fit(d.recLine.split(' · ')[0], 116, 700, ARC, 900, 80); c.fillText(d.recLine.split(' · ')[0], W / 2, 1060);
-  label('PACE', 1180); fit(d.pace, 116, 700, ARC, 900, 80); c.fillText(d.pace, W / 2, 1300);
-  font(c, 48, 700, PRE); c.fillText(d.topLabel, W / 2, 1420);
-  font(c, 28, 700, ARC, 'expanded'); c.letterSpacing = '6px'; c.fillText('RUNNING TIER', W / 2 + 3, 1620); c.letterSpacing = '0px';
-  c.restore();
-  c.shadowColor = 'transparent'; c.textAlign = 'left';
+  c.restore(); c.textAlign = 'left';
   return cv;
 }
 const FONTS = ['800 40px "TC Archivo"', '300 40px "TC Archivo"', '600 40px "TC Archivo"', '700 40px "TC Pretendard"', '500 40px "TC Pretendard"', '600 40px "TC Pretendard"'];
@@ -630,18 +706,16 @@ async function renderStory(d, opt = {}) {
   return drawCardTpl(c, cv, d, opt);
 }
 // adj: { pz: zoom>=1, px, py: photo offset (canvas px), ts: text scale, tx, ty: text offset }
-const ADJ0 = { pz: 1, px: 0, py: 0, ts: 1, tx: 0, ty: 0, col: '#ffffff' };
+const ADJ0 = { pz: 1, px: 0, py: 0, ts: 1, tx: 0, ty: 0, col: '#ffffff', al: 'center', lh: 1, hs: 1, show: { race: true, date: true, tier: true, tierKo: true, rec: true, pace: true, top: true, vdot: false, logo: true } };
 function lum(hex) { const n = parseInt(String(hex).slice(1), 16); if (isNaN(n)) return 1; const f = v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }; return .2126 * f(n >> 16) + .7152 * f(n >> 8 & 255) + .0722 * f(n & 255); }
-const GROUP = { top: 250, bottom: 1650, cy: 950, w: 920 }; // overlay text block bounds at scale 1
 function clampAdj(a, im) {
   a = { ...ADJ0, ...a };
   if (!/^#[0-9a-f]{6}$/i.test(a.col)) a.col = '#ffffff';
   a.pz = Math.min(4, Math.max(1, a.pz)); a.ts = Math.min(1.3, Math.max(.6, a.ts));
   if (im) { const sc = Math.max(W / im.width, H / im.height) * a.pz, mx = Math.max(0, (im.width * sc - W) / 2), my = Math.max(0, (im.height * sc - H) / 2);
     a.px = Math.min(mx, Math.max(-mx, a.px)); a.py = Math.min(my, Math.max(-my, a.py)); } else { a.px = 0; a.py = 0; }
-  const hw = GROUP.w * a.ts / 2, mxx = Math.max(0, W / 2 - 40 - hw); a.tx = Math.min(mxx, Math.max(-mxx, a.tx));
-  const top = GROUP.cy - (GROUP.cy - GROUP.top) * a.ts, bot = GROUP.cy + (GROUP.bottom - GROUP.cy) * a.ts; // keep inside 120..H-120
-  a.ty = Math.min(H - 120 - bot, Math.max(120 - top, a.ty));
+  a.lh = Math.min(1.6, Math.max(.6, a.lh)); a.hs = Math.min(1.3, Math.max(.7, a.hs)); if (!['left', 'center', 'right'].includes(a.al)) a.al = 'center';
+  a.show = { ...ADJ0.show, ...(a.show || {}) };
   return a;
 }
 function coverPhoto(c, im, a = ADJ0) { const sc = Math.max(W / im.width, H / im.height) * a.pz, iw = im.width * sc, ih = im.height * sc; c.drawImage(im, (W - iw) / 2 + a.px, (H - ih) / 2 + a.py, iw, ih); }
@@ -755,6 +829,7 @@ async function saveStory(cv, name = 'running-tier.png') {
   setTimeout(() => URL.revokeObjectURL(a.href), 30000); return 'downloaded';
 }
 
+const fresh = () => JSON.parse(JSON.stringify(ADJ0));
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const p2 = n => String(n).padStart(2, '0');
@@ -850,13 +925,13 @@ let photoImg = null;
 $('photo').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
   const url = URL.createObjectURL(f), im = new Image();
-  im.onload = () => { photoImg = im; adj = { ...adj, pz: 1, px: 0, py: 0 }; adjMode = 'photo'; if (!state.tplPicked) state.tpl = 'overlay'; refreshTpl(); $('preview').src = url; $('preview').hidden = false; $('photoClear').hidden = false; };
+  im.onload = () => { photoImg = im; adj = { ...adj, pz: 1, px: 0, py: 0 }; edTab = 'photo'; if (!state.tplPicked) state.tpl = 'overlay'; refreshTpl(); $('preview').src = url; $('preview').hidden = false; $('photoClear').hidden = false; };
   im.src = url;
 });
 $('photoClear').addEventListener('click', () => { photoImg = null; $('photo').value = ''; $('preview').hidden = true; $('photoClear').hidden = true; if (!state.tplPicked) state.tpl = 'card'; refreshTpl(); });
 // ---------- template picker ----------
-let adj = { ...ADJ0 }, adjMode = 'text';
-window.__adj = () => ({ ...adj });
+let adj = fresh(), edTab = 'text', guides = null, lastBox = null;
+window.__adj = () => JSON.parse(JSON.stringify(adj)); window.__box = () => lastBox; window.__guides = () => guides;
 const storyOpt = tpl => ({ template: tpl, photo: photoImg, race: $('race').value.trim(), adj });
 $('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" data-t="${k}" class="tpl-btn" aria-checked="false"><canvas width="108" height="192"></canvas><span class="tn">${n}</span>${k === 'overlay' ? '<span class="th" data-hint>사진 추가 가능</span>' : ''}</button>`).join('');
 $('tplList').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.tpl = b.dataset.t; state.tplPicked = true; refreshTpl(true); });
@@ -867,7 +942,7 @@ async function refreshTpl(selOnly) {
   for (const b of $('tplList').querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.t === state.tpl));
   const h = $('tplList').querySelector('[data-hint]'); if (h) h.hidden = !!photoImg;
   const big = await renderStory(state.story, storyOpt(state.tpl)); if (seq !== tplSeq) return;
-  $('tplPreview').getContext('2d').drawImage(big, 0, 0);
+  paintPreview(big);
   syncAdjBar();
   if (selOnly === true) return;
   for (const b of $('tplList').querySelectorAll('button')) {
@@ -904,45 +979,87 @@ $('cpHue').addEventListener('keydown', e => { const d = { ArrowLeft: -10, ArrowR
 $('cpHex').addEventListener('input', e => { let v = e.target.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{6}$/i.test(v)) setCol(v); });
 $('cpHex').addEventListener('blur', paintPicker);
 for (const q of document.querySelectorAll('.qc')) q.addEventListener('click', () => setCol(q.dataset.c));
+const ITEMS = [['race', '대회명'], ['date', '날짜'], ['tier', '티어'], ['tierKo', '한글 티어명'], ['rec', '기록'], ['pace', '페이스'], ['top', '상위 %'], ['vdot', 'VDOT'], ['logo', 'RUNNING TIER 로고']];
+$('itemTgl').innerHTML = ITEMS.map(([k, n]) => `<button type="button" class="tg" data-k="${k}" aria-pressed="false">${n}</button>`).join('');
+function paintPreview(cv) {
+  const g = $('tplPreview').getContext('2d'); g.drawImage(cv, 0, 0);
+  if (cv.__adj && state.tpl === 'overlay') { const ad = cv.__adj; adj.tx = ad.tx; adj.ty = ad.ty; lastBox = cv.__box; } // keep clamped values
+  if (guides && state.tpl === 'overlay') { g.save(); g.strokeStyle = '#FF3DA5'; g.lineWidth = 4; g.setLineDash([18, 12]);
+    for (const x of guides.x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 1920); g.stroke(); }
+    for (const y of guides.y) { g.beginPath(); g.moveTo(0, y); g.lineTo(1080, y); g.stroke(); } g.restore(); }
+}
 function syncAdjBar() {
   if (hsv2hex(hsv) !== adj.col) hsv = hex2hsv(adj.col); paintPicker();
-  const on = state.tpl === 'overlay'; $('adjBar').hidden = !on; $('tplPreview').classList.toggle('editable', on);
-  if (!photoImg && adjMode === 'photo') adjMode = 'text';
-  $('mPhoto').disabled = !photoImg; $('mPhoto').title = photoImg ? '' : '꾸미기에서 사진을 고르면 쓸 수 있어요';
-  $('mPhoto').setAttribute('aria-checked', String(adjMode === 'photo')); $('mText').setAttribute('aria-checked', String(adjMode === 'text'));
-  const sz = $('adjSize');
-  if (adjMode === 'photo') { sz.min = 100; sz.max = 300; sz.value = Math.round(adj.pz * 100); $('adjSizeLbl').textContent = '사진 확대'; }
-  else { sz.min = 60; sz.max = 130; sz.value = Math.round(adj.ts * 100); $('adjSizeLbl').textContent = '글자 크기'; }
+  const on = state.tpl === 'overlay'; $('adjBar').hidden = !on; $('edTabs').hidden = !on; $('tplPreview').classList.toggle('editable', on); $('tplEd').classList.toggle('editing', on);
+  $('addPhoto').hidden = !(on && !photoImg);
+  $('photoAdd2').hidden = !!photoImg; $('photoChange').hidden = !photoImg; $('photoRemove').hidden = !photoImg; $('pzoom').disabled = !photoImg;
+  for (const t of document.querySelectorAll('.ed-tabs [role=tab]')) t.setAttribute('aria-selected', String(t.dataset.tab === edTab));
+  for (const p of document.querySelectorAll('.ed-panel')) p.hidden = p.dataset.p !== edTab;
+  $('pzoom').value = Math.round(adj.pz * 100);
+  for (const [id, v] of [['tsize', adj.ts], ['tlh', adj.lh], ['ths', adj.hs]]) { $(id).value = Math.round(v * 100); $(id + 'V').textContent = Math.round(v * 100) + '%'; }
+  for (const b of document.querySelectorAll('[data-al]')) b.setAttribute('aria-checked', String(b.dataset.al === adj.al));
+  for (const b of document.querySelectorAll('#itemTgl .tg')) { b.setAttribute('aria-pressed', String(!!adj.show[b.dataset.k])); b.disabled = b.dataset.k === 'race' && !$('race').value.trim(); b.title = b.disabled ? '꾸미기에서 대회명을 넣으면 보여요' : ''; }
 }
 let rafQ = 0, thumbT = 0;
 function adjChanged() {
   adj = clampAdj(adj, photoImg);
-  if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderStory(state.story, storyOpt('overlay')); $('tplPreview').getContext('2d').drawImage(cv, 0, 0); syncAdjBar(); });
+  if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderStory(state.story, storyOpt('overlay')); paintPreview(cv); syncAdjBar(); });
   clearTimeout(thumbT); thumbT = setTimeout(async () => { const b = $('tplList').querySelector('[data-t="overlay"] canvas'); if (b) b.getContext('2d').drawImage(await renderStory(state.story, storyOpt('overlay')), 0, 0, 108, 192); }, 300);
 }
-$('adjBar').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b || b.disabled) return; adjMode = b.dataset.m; syncAdjBar(); });
-$('adjSize').addEventListener('input', e => { const v = +e.target.value / 100; if (adjMode === 'photo') adj.pz = v; else adj.ts = v; adjChanged(); });
-$('adjReset').addEventListener('click', () => { adj = { ...ADJ0 }; hsv = hex2hsv(adj.col); adjChanged(); paintPicker(); });
+$('edTabs').addEventListener('click', e => { const t = e.target.closest('[role=tab]'); if (!t || t.disabled) return; edTab = t.dataset.tab; syncAdjBar(); fitPanel(); });
+function fitPanel() { const pn = document.querySelector(`.ed-panel[data-p="${edTab}"]`); if (!pn) return; const r = pn.getBoundingClientRect(), bt = $('bar').getBoundingClientRect().top + 24, ht = $('edHead').getBoundingClientRect();
+  if (r.bottom > bt) window.scrollBy({ top: Math.min(r.bottom - bt, r.top - ht.bottom - 4 + (ht.top > 1 ? ht.top : 0)) , behavior: 'instant' }); }
+$('pzoom').addEventListener('input', e => { adj.pz = +e.target.value / 100; adjChanged(); });
+$('tsize').addEventListener('input', e => { adj.ts = +e.target.value / 100; adjChanged(); });
+$('tlh').addEventListener('input', e => { adj.lh = +e.target.value / 100; adjChanged(); });
+$('ths').addEventListener('input', e => { adj.hs = +e.target.value / 100; adjChanged(); });
+for (const b of document.querySelectorAll('[data-al]')) b.addEventListener('click', () => { adj.al = b.dataset.al; adjChanged(); });
+$('toCenter').addEventListener('click', () => { adj.tx = 0; adj.ty = 0; adjChanged(); });
+$('itemTgl').addEventListener('click', e => { const b = e.target.closest('.tg'); if (!b || b.disabled) return; adj.show = { ...adj.show, [b.dataset.k]: !adj.show[b.dataset.k] }; adjChanged(); });
+$('adjReset').addEventListener('click', () => { adj = fresh(); hsv = hex2hsv(adj.col); adjChanged(); paintPicker(); });
+const pickPhoto = () => $('photo').click();
+$('addPhoto').addEventListener('click', pickPhoto); $('photoAdd2').addEventListener('click', pickPhoto); $('photoChange').addEventListener('click', pickPhoto);
+$('photoRemove').addEventListener('click', () => $('photoClear').click());
+// snapping: group centre -> canvas centre; edges -> safe margins
+const SNAP = 26, SAFE_X = 60, SAFE_Y = 250;
+function snapText(tx, ty) {
+  const b = lastBox; if (!b) return { tx, ty, g: null };
+  const w = b.w, h = b.h, gx = 540 + tx, gy = 960 + ty, gX = [], gY = [];
+  const cx = [[540, 540, 540], [SAFE_X + w / 2, SAFE_X, SAFE_X], [1080 - SAFE_X - w / 2, 1080 - SAFE_X, 1080 - SAFE_X], [40 + w / 2, 40, 40], [1040 - w / 2, 1040, 1040]];
+  let nx = gx; for (const [t, line] of cx) if (Math.abs(gx - t) < SNAP) { nx = t; gX.push(line); break; }
+  const cy = [[960, 960], [SAFE_Y + h / 2, SAFE_Y], [1920 - SAFE_Y - h / 2, 1920 - SAFE_Y]];
+  let ny = gy; for (const [t, line] of cy) if (Math.abs(gy - t) < SNAP) { ny = t; gY.push(line); break; }
+  return { tx: nx - 540, ty: ny - 960, g: gX.length || gY.length ? { x: gX, y: gY } : { x: [], y: [] } };
+}
 {
   const pv = $('tplPreview'), pts = new Map(); let start = null;
   const k = () => 1080 / pv.getBoundingClientRect().width;
-  const snap = () => ({ adj: { ...adj }, pts: [...pts.values()].map(p => ({ ...p })) });
+  const snap = () => ({ adj: JSON.parse(JSON.stringify(adj)), pts: [...pts.values()].map(p => ({ ...p })) });
   const dist = a => Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
-  pv.addEventListener('pointerdown', e => { if (state.tpl !== 'overlay') return; pv.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); start = snap(); e.preventDefault(); });
+  const photoMode = () => edTab === 'photo' && photoImg;
+  pv.addEventListener('pointerdown', e => {
+    if (state.tpl !== 'overlay') return;
+    pv.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); start = snap(); e.preventDefault(); });
   pv.addEventListener('pointermove', e => {
     if (!pts.has(e.pointerId) || !start) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     const now = [...pts.values()], s0 = start.pts;
     if (now.length !== s0.length) { start = snap(); return; }
     const cx = a => a.reduce((s, p) => s + p.x, 0) / a.length, cy = a => a.reduce((s, p) => s + p.y, 0) / a.length;
     const dx = (cx(now) - cx(s0)) * k(), dy = (cy(now) - cy(s0)) * k(), f = now.length > 1 ? dist(now) / dist(s0) : 1;
-    if (adjMode === 'photo' && photoImg) { adj.px = start.adj.px + dx; adj.py = start.adj.py + dy; adj.pz = start.adj.pz * f; }
-    else { adj.tx = start.adj.tx + dx; adj.ty = start.adj.ty + dy; adj.ts = start.adj.ts * f; }
+    if (photoMode()) { adj.px = start.adj.px + dx; adj.py = start.adj.py + dy; adj.pz = start.adj.pz * f; guides = null; }
+    else { const s = snapText(start.adj.tx + dx, start.adj.ty + dy); adj.tx = s.tx; adj.ty = s.ty; adj.ts = start.adj.ts * f; guides = s.g; }
     adjChanged();
   });
-  const up = e => { pts.delete(e.pointerId); start = pts.size ? snap() : null; };
+  const up = e => { pts.delete(e.pointerId); start = pts.size ? snap() : null; if (!pts.size && guides) { guides = null; adjChanged(); } };
   pv.addEventListener('pointerup', up); pv.addEventListener('pointercancel', up);
-  pv.addEventListener('wheel', e => { if (state.tpl !== 'overlay') return; e.preventDefault(); const f = Math.exp(-e.deltaY / 500); if (adjMode === 'photo' && photoImg) adj.pz *= f; else adj.ts *= f; adjChanged(); }, { passive: false });
+  pv.addEventListener('wheel', e => { if (state.tpl !== 'overlay') return; e.preventDefault(); const f = Math.exp(-e.deltaY / 500); if (photoMode()) adj.pz *= f; else adj.ts *= f; adjChanged(); }, { passive: false });
+  // tap on empty overlay preview (no photo) opens picker
+  $('tplPrev').addEventListener('click', e => { if (state.tpl === 'overlay' && !photoImg && e.target === pv && !moved) pickPhoto(); });
+  let moved = false, downAt = null;
+  pv.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; moved = false; });
+  pv.addEventListener('pointermove', e => { if (downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) moved = true; });
 }
+$('race').addEventListener('input', () => setTimeout(syncAdjBar, 0));
 $('save').addEventListener('click', async () => {
   const b = $('save'); if (b.disabled || !state.story) return; b.disabled = true; const lbl = b.textContent; b.textContent = '저장 중…';
   try {
