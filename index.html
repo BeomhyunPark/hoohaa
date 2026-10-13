@@ -174,6 +174,25 @@ details.method summary{color:var(--t3);font-size:13px}
 .primary-chip{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .ed{margin:2px 0 14px}
 
+/* tier ladder */
+.ladder h2{justify-content:space-between}
+.lad-sub{font-size:12px;color:var(--t3);font-weight:500}
+.lad-head,.lr{display:grid;grid-template-columns:1fr auto 52px;gap:8px;align-items:center}
+.lad-head{font-size:11px;color:var(--t3);padding:0 10px 6px;border-bottom:1px solid var(--border)}
+.lad-head span:nth-child(n+2){text-align:right}
+.lad{list-style:none;margin:0;padding:6px 0 0;max-height:336px;overflow-y:auto;position:relative;scroll-behavior:auto;-webkit-overflow-scrolling:touch}
+.lr{min-height:34px;padding:4px 10px;border-radius:10px;font-size:14px}
+.lr+.lr{margin-top:2px}
+.ln{display:flex;align-items:center;gap:8px;font-weight:600;min-width:0;white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--tc2),var(--tc));flex:none}
+.lt{text-align:right;font-variant-numeric:tabular-nums;color:var(--t1);display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+.lt small{font-size:11px;color:var(--t1);font-weight:600;opacity:.9}
+.lp{text-align:right;color:var(--t2);font-variant-numeric:tabular-nums;font-size:13px}
+.lr.me{background:color-mix(in srgb,var(--ta) 18%,var(--surface));box-shadow:inset 0 0 0 2px var(--ta);min-height:48px;padding:6px 10px}
+.lr.me .ln{font-weight:800}
+.lr.me .lp{color:var(--t1);font-weight:700}
+.tag{font-style:normal;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--ta);color:#0E1116}
+
 </style>
 <style>
 /* Tier Card — reusable CSS. Fonts are local (works from file://). */
@@ -561,6 +580,7 @@ function calculate({ birthYear, birthdate, sex, event, distanceKm, time, today =
     populationTopPercent: +popTop.toFixed(1),
     ageTimeMultiplier: +mult.toFixed(4),
     nextTier: next,
+    tierLadder: TIER_NAMES.map((n, i) => ({ tier: n, index: i, minSec: i ? Math.floor(T[i - 1] + 1e-9) : null, minTime: i ? fmtTime(Math.floor(T[i - 1] + 1e-9)) : null, topPct: i ? P[i - 1] : 100 })),
     predicted: pred, predictedPace: predPace, trainingPaces: paces, notes,
   };
 }
@@ -1125,6 +1145,11 @@ function renderResult(r) {
     </section>
     <p class="who-line" id="topPct">${who} <b>${esc(r.topPercentLabel)}</b></p>
     ${prog}
+    <section class="card ladder" aria-labelledby="hLad"><h2 id="hLad">전체 티어 <span class="lad-sub">${esc(evName)} · ${esc(who)} 기준</span></h2>
+      <div class="lad-head" aria-hidden="true"><span>티어</span><span>기록</span><span>상위</span></div>
+      <ol class="lad" id="ladder">${[...r.tierLadder].reverse().map(x => { const k = KEY[x.tier.split(' ')[0]], me = x.index === r.tierIndex, m = STORY_MAT[k];
+        return `<li class="lr${me ? ' me' : ''}" style="--tc:${m.s[1]};--tc2:${m.s[0]};--ta:${accentOf({ key: k })}"${me ? ' id="ladMe" aria-current="true"' : ''}><span class="ln"><i class="dot"></i>${esc(x.tier)}${me ? '<em class="tag">내 티어</em>' : ''}</span><span class="lt">${x.minTime ? short(x.minTime) + ' 이내' : '기록 무관'}${me ? `<small>내 기록 ${short(r.input.time)}</small>` : ''}</span><span class="lp">${x.topPct === 100 ? '전체' : (+x.topPct).toFixed(1) + '%'}</span></li>`; }).join('')}</ol>
+    </section>
     <section class="card vdot"><h2>VDOT <button type="button" class="info" aria-expanded="false" aria-controls="vdInfo" aria-label="VDOT 설명">ⓘ</button></h2>
       <div class="val num">${r.vdot.toFixed(1)}</div>
       <p class="more" id="vdInfo" hidden>VDOT는 기록으로 계산한 달리기 능력 점수예요. 이 값이 곧 VO2max 추정치예요 (실측값이 아닌 추정).</p></section>
@@ -1136,6 +1161,7 @@ function renderResult(r) {
   state.story = { key: ts.key, tierKo: r.tier, word: ts.key.toUpperCase(), roman: ts.roman, long: LONG.has(ts.key),
     title: `${evName} 성적표`, recLine: `${evName} ${short(r.input.time)} · ${r.pace}`, who: pubWho, topLabel: r.topPercentLabel, headline: r.topPercentLabel, time: short(r.input.time), pace: r.pace, vdot: r.vdot.toFixed(1),
     nextLine: nx ? `${nx.tier}까지 ${evName} ${nx.gapText} 단축` : '최고 티어 챌린저 달성!' };
+  requestAnimationFrame(() => { const l = $('ladder'), me = $('ladMe'); if (l && me) l.scrollTop = me.offsetTop - l.clientHeight / 2 + me.offsetHeight / 2; });
   refreshTpl();
   for (const b of $('resBody').querySelectorAll('.info, .prow')) b.addEventListener('click', () => {
     const el = $(b.getAttribute('aria-controls')), open = b.getAttribute('aria-expanded') !== 'true';
