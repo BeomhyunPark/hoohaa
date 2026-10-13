@@ -19,9 +19,14 @@ p{margin:0 0 12px}strong{color:var(--a2);font-weight:600}a{color:var(--a)}
 .cta.fix{position:fixed;left:18px;right:18px;bottom:max(16px,env(safe-area-inset-bottom));max-width:724px;margin:0 auto;box-shadow:0 8px 30px rgba(0,0,0,.5)}
 .tw{overflow-x:auto;border:1px solid var(--b);border-radius:12px;background:var(--s);margin:10px 0 6px}
 table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}th,td{padding:8px 10px;border-bottom:1px solid var(--b);text-align:right}tr:last-child>*{border-bottom:0}
-thead th{color:var(--t3);font-weight:500;font-size:12.5px}tbody th{text-align:left;color:var(--t1);font-weight:600}td.p{color:var(--t3);font-size:12px}
+thead th{color:var(--t3);font-weight:500;font-size:12.5px}tbody th{text-align:left;color:var(--t1);font-weight:600}td.p,small.p{color:var(--t3);font-size:12px}
 .note{font-size:13px;color:var(--t3)}details{border:1px solid var(--b);border-radius:12px;background:var(--s);padding:0 14px;margin:8px 0}summary{cursor:pointer;min-height:48px;display:flex;align-items:center;list-style:none}summary::-webkit-details-marker{display:none}summary h3{margin:0;font-size:15px}details p{margin:0 0 14px}
 nav.links{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}nav.links a{border:1px solid var(--b);border-radius:999px;padding:7px 13px;text-decoration:none;color:var(--t1);font-size:13.5px}nav.links a[aria-current]{background:var(--a);color:#0F1620;border-color:var(--a)}
+
+.tabs{display:none;gap:6px;padding:10px 10px 4px;overflow-x:auto}.tabs button{flex:none;border:1px solid var(--b);background:none;color:var(--t2);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;min-height:36px}.tabs button[aria-selected=true]{background:var(--a);color:#0F1620;border-color:var(--a);font-weight:700}
+@media (max-width:600px){.at .tabs{display:flex}.at .a0,.at .a1,.at .a2,.at .a3,.at .a4{display:none}.at.s0 .a0,.at.s1 .a1,.at.s2 .a2,.at.s3 .a3,.at.s4 .a4{display:table-cell}.at table{white-space:normal}}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:14px 0}.kpi div{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:12px}.kpi b{display:block;color:var(--t1);font-size:20px;font-variant-numeric:tabular-nums}.kpi span{font-size:12.5px;color:var(--t3)}
+.tool{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:14px;margin:14px 0}.tool label{display:block;font-size:13px;color:var(--t3);margin:8px 0 4px}.tool input,.tool select{width:100%;min-height:46px;border-radius:10px;border:1px solid var(--b);background:var(--bg);color:var(--t1);font:inherit;font-size:16px;padding:0 12px}.tool .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tool output{display:block;margin-top:12px;color:var(--t1)}
 footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:13px;color:var(--t3)}</style>
 <script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebPage","name":"러닝 훈련 페이스 계산 · E/M/T/I/R 페이스 뜻 | hoohaa","url":"https://hoohaa.run/pace/","inLanguage":"ko","isPartOf":{"@type":"WebSite","name":"hoohaa","url":"https://hoohaa.run/"}},{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"hoohaa","item":"https://hoohaa.run/"},{"@type":"ListItem","position":2,"name":"러닝 훈련 페이스 계산 · E/M/T/I/R 쉬운 설명","item":"https://hoohaa.run/pace/"}]},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"훈련 페이스는 매번 꼭 지켜야 하나요?","acceptedAnswer":{"@type":"Answer","text":"가이드일 뿐이에요. 더위·언덕·피로도에 따라 느려지는 게 자연스러워요. 특히 E 페이스는 숫자보다 ‘대화가 되는지’를 기준으로 삼아도 좋아요."}},{"@type":"Question","name":"VDOT은 어떻게 올리나요?","acceptedAnswer":{"@type":"Answer","text":"E 페이스로 꾸준히 거리를 쌓고, 일주일에 1~2번 T·I 훈련을 더하는 게 기본이에요. 새 기록이 나오면 다시 계산해 페이스를 업데이트하세요."}}]}]</script>
 </head><body><div class="w">
@@ -47,7 +52,8 @@ footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:
 <details><summary><h3>VDOT은 어떻게 올리나요?</h3></summary><p>E 페이스로 꾸준히 거리를 쌓고, 일주일에 1~2번 T·I 훈련을 더하는 게 기본이에요. 새 기록이 나오면 다시 계산해 페이스를 업데이트하세요.</p></details>
 <a class="cta" href="../">내 티어 계산하기</a>
 <h2>다른 기준표 보기</h2>
-<nav class="links" aria-label="기준표"><a href="../5k/">5K 티어표</a><a href="../10k/">10K 티어표</a><a href="../half/">하프마라톤</a><a href="../full/">풀코스</a><a href="../women/">여자 기준 티어표</a><a href="../pace/" aria-current="page">훈련 페이스</a></nav>
+<nav class="links" aria-label="기준표"><a href="../guide/">전체 가이드</a><a href="../5k/">5K 티어표</a><a href="../10k/">10K 티어표</a><a href="../half/">하프마라톤</a><a href="../full/">풀코스</a><a href="../women/">여자 기준 티어표</a><a href="../pace/" aria-current="page">훈련 페이스</a></nav>
 </main>
-<footer>모든 기준 기록은 hoohaa 기준(v4.3 기록 분포 모델)으로 계산한 값이며, 공식 통계가 아닌 참고용이에요. 계산은 브라우저에서만 이뤄지고 기록은 저장되지 않아요. · <a href="../">hoohaa.run</a></footer>
-</div><a class="cta fix" href="../">내 티어 계산하기</a></body></html>
+<footer>모든 기준 기록은 hoohaa 기준(v4.3 기록 분포 모델)으로 계산한 값이며, 공식 통계가 아닌 참고용이에요. 계산은 브라우저에서만 이뤄지고 기록은 저장되지 않아요. · <a href="../">hoohaa.run</a> · <a href="../guide/">러닝 가이드 전체</a></footer>
+</div><a class="cta fix" href="../">내 티어 계산하기</a>
+<script>document.querySelectorAll('[data-at]').forEach(w=>w.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;for(let k=0;k<5;k++)w.classList.remove('s'+k);w.classList.add('s'+b.dataset.i);w.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b))}))</script></body></html>
