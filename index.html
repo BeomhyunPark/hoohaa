@@ -314,6 +314,7 @@ main{max-width:760px}
 .mini [data-mb=behind][aria-pressed="true"]{background:#3DC8F5;color:#0F1620;box-shadow:0 0 0 2px #fff inset}.mini .loading{opacity:.6}
 .fcur{margin:2px 0 6px;font-size:13px;color:#B3BAC5}.fcur b{color:#3DC8F5}
 .fq.on,.fopt.on{border-color:#3DC8F5!important;background:rgba(61,200,245,.16)!important;box-shadow:0 0 0 1.5px #3DC8F5 inset;color:#F2F4F7}.ck{font-style:normal;color:#3DC8F5;font-family:system-ui,sans-serif;font-weight:800;margin-right:5px}
+.ctsw{margin-bottom:8px}.ctsw [aria-checked="true"]{background:#3DC8F5;color:#0F1620;font-weight:700}
 
 </style>
 <style>
@@ -888,15 +889,18 @@ function drawTextBlock(c, B, o, col) {
     font(c, l.size, l.w || o.w, l.fam || o.fam, l.st || o.st || 'normal'); c.letterSpacing = (l.ls ?? o.ls ?? 0) + 'px'; c.fillStyle = l.col || col; c.globalAlpha = (l.alpha ?? 1) * (o.ga ?? 1);
     c.fillText(l.t, x, l.base - B.h / 2); c.letterSpacing = '0px'; c.globalAlpha = o.ga ?? 1; }
 }
-function boxBehind(c, w, h, style, col, pad, rad) { if (!style || style === 'none') return; rr(c, -w / 2 - pad, -h / 2 - pad * .7, w + pad * 2, h + pad * 1.4, rad); c.fillStyle = style === 'semi' ? 'rgba(0,0,0,.45)' : col; c.fill(); }
+// text background box: own colour (L.bcol) + opacity (L.bo); without bcol it behaves as before (semi = black 45%, full = text colour)
+function boxBehind(c, w, h, style, col, pad, rad, L = {}) { if (!style || style === 'none') return; rr(c, -w / 2 - pad, -h / 2 - pad * .7, w + pad * 2, h + pad * 1.4, rad);
+  c.save(); if (L.bcol) { c.fillStyle = L.bcol; c.globalAlpha *= L.bo ?? (style === 'semi' ? .45 : 1); } else { c.fillStyle = style === 'semi' ? '#000000' : col; c.globalAlpha *= L.bo ?? (style === 'semi' ? .45 : 1); } c.fill(); c.restore(); }
 // ---- each layer type: measure() -> {w,h} local, draw(c) centred at 0,0 ----
 function layerGeom(c, L, d, doc, photos) {
   if (L.col === '@tier') L = { ...L, col: accentOf(d) }; // tier colour follows the current result
+  if (L.bcol === '@tier') L = { ...L, bcol: accentOf(d) };
   if (L.type === 'text') {
     const ko = HAN.test(L.t || ''), fam = famOf(L.font, ko || !L.font), size = L.size || 72;
     const B = textBlock(c, String(L.t || ' ').split('\n').map(t => ({ t: t || ' ' })), { size, fam, w: wOf(L.font, L.w || 700), ls: L.ls || 0, lh: L.lh ?? 1.15 });
     const pad = L.box && L.box !== 'none' ? size * .35 : 0;
-    return { w: B.w + pad * 2, h: B.h + pad * 1.4, draw: () => { const col = L.col || '#ffffff'; boxBehind(c, B.w, B.h, L.box, col, pad, size * .28); drawTextBlock(c, B, { al: L.al || 'center', w: wOf(L.font, L.w || 700), fam, ls: L.ls || 0 }, L.box === 'full' ? contrast(col) : col); } };
+    return { w: B.w + pad * 2, h: B.h + pad * 1.4, draw: () => { const col = L.col || '#ffffff'; boxBehind(c, B.w, B.h, L.box, col, pad, size * .28, L); drawTextBlock(c, B, { al: L.al || 'center', w: wOf(L.font, L.w || 700), fam, ls: L.ls || 0 }, L.box === 'full' && !L.bcol ? contrast(col) : col); } };
   }
   if (L.type === 'stat') {
     const v = statValue(d, doc, L.stat), lab = STATS[L.stat][1], base = STAT_SIZE[L.stat], ko = HAN.test(v);
@@ -904,7 +908,8 @@ function layerGeom(c, L, d, doc, photos) {
     if (L.v === 4) { // label-only element (e.g. '5K 기록', '페이스'): derived from the result, styled/moved on its own
       const lb = L.lab != null && L.lab !== '' ? L.lab : statLabel(d, L.stat), lfam = L.font ? fam : PRE_, lw = L.font ? w : 600;
       const B = textBlock(c, [{ t: lb, size: base * (L.labK ?? .2) }], { size: base * (L.labK ?? .2), fam: lfam, w: lw, ls: L.ls || 0, lh: L.lh ?? 1 });
-      return { w: B.w, h: B.h, draw: () => drawTextBlock(c, B, { al: L.al || 'left', w: lw, fam: lfam, ls: L.ls || 0 }, col) }; }
+      const sz = base * (L.labK ?? .2), pd = L.box && L.box !== 'none' ? sz * .4 : 0;
+      return { w: B.w + pd * 2, h: B.h + pd * 1.4, draw: () => { boxBehind(c, B.w, B.h, L.box, col, pd, sz * .3, L); drawTextBlock(c, B, { al: L.al || 'left', w: lw, fam: lfam, ls: L.ls || 0 }, L.box === 'full' && !L.bcol ? contrast(col) : col); } }; }
     const vt = [1, 2, 3].includes(L.v) ? L.v : 0;
     // typeface "look" is independent of the design (layout): switching 라벨+값/값만/알약/런앱 never changes the font
     const run = !L.font && !ko && (L.look ?? (vt === 3 ? 'run' : 'std')) === 'run';
@@ -914,16 +919,17 @@ function layerGeom(c, L, d, doc, photos) {
       const vfam = fam, vw = ko && !L.font ? 700 : VW;
       const B = textBlock(c, [{ t: v, size: base, fam: vfam, w: vw, st: VST }, ...(lb ? [{ t: lb, size: base * (L.labK ?? .2), fam: PRE_, w: 600, alpha: .92, ls: 0, gap: base * .03 }] : [])], { size: base, fam: vfam, w: vw, ls: L.ls ?? (ko ? 0 : -2), lh: L.lh ?? .95 });
       const sk = ko ? 0 : SK, extra = Math.abs(sk) * B.h;
-      return { w: B.w + extra, h: B.h, draw: () => { c.transform(1, 0, sk, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'left', w: vw, fam: vfam, ls: L.ls ?? (ko ? 0 : -2) }, col); } };
+      const pd = L.box && L.box !== 'none' ? base * .22 : 0;
+      return { w: B.w + extra + pd * 2, h: B.h + pd * 1.4, draw: () => { boxBehind(c, B.w + extra, B.h, L.box, col, pd, base * .2, L); c.transform(1, 0, sk, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'left', w: vw, fam: vfam, ls: L.ls ?? (ko ? 0 : -2) }, L.box === 'full' && !L.bcol ? contrast(col) : col); } };
     }
     const lines = vt === 0 ? [{ t: L.stat === 'event' ? v : lab, size: Math.max(22, base * .26), fam: ARC_, w: 600, st: 'expanded', ls: 6, alpha: .8 }, { t: v, size: base, gap: base * .05, w: VW, st: VST }] : [{ t: v, size: base, w: VW, st: VST }];
     if (vt === 0 && L.stat === 'event') lines.shift();
     const B = textBlock(c, lines, { size: base, fam, w, ls: L.ls || 0, lh: L.lh ?? 1.1, st: !L.font && !ko && L.stat !== 'next' ? 'semi-expanded' : 'normal' });
     const pad = vt === 2 ? base * .32 : L.box && L.box !== 'none' ? base * .3 : 0;
     return { w: B.w + pad * 2 + Math.abs(SK) * B.h, h: B.h + pad * 1.4, draw: () => {
-      if (vt === 2) { rr(c, -B.w / 2 - pad, -B.h / 2 - pad * .7, B.w + pad * 2, B.h + pad * 1.4, (B.h + pad * 1.4) / 2); const g = c.createLinearGradient(-B.w / 2, 0, B.w / 2, 0); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s)); c.fillStyle = L.col ? col : g; c.fill(); drawTextBlock(c, B, { al: 'center', w, fam, ls: L.ls || 0, st: 'normal' }, L.col ? contrast(col) : m.ink); return; }
-      boxBehind(c, B.w, B.h, L.box, L.col || acc, pad, base * .25);
-      if (SK) c.transform(1, 0, SK, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'center', w, fam, ls: L.ls || 0 }, L.box === 'full' ? contrast(L.col || acc) : col); } };
+      if (vt === 2) { rr(c, -B.w / 2 - pad, -B.h / 2 - pad * .7, B.w + pad * 2, B.h + pad * 1.4, (B.h + pad * 1.4) / 2); const g = c.createLinearGradient(-B.w / 2, 0, B.w / 2, 0); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s)); c.save(); c.fillStyle = L.bcol || (L.col ? col : g); c.globalAlpha *= L.bo ?? 1; c.fill(); c.restore(); drawTextBlock(c, B, { al: 'center', w, fam, ls: L.ls || 0, st: 'normal' }, L.bcol ? (L.col ? col : contrast(L.bcol)) : L.col ? contrast(col) : m.ink); return; }
+      boxBehind(c, B.w, B.h, L.box, L.col || acc, pad, base * .25, L);
+      if (SK) c.transform(1, 0, SK, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'center', w, fam, ls: L.ls || 0 }, L.box === 'full' && !L.bcol ? contrast(L.col || acc) : col); } };
   }
   if (L.type === 'card') {
     if (L.v === 1) { const lab = d.word + (d.roman ? ' ' + d.roman : ''); font(c, 44, 800, ARC_, 'expanded'); const tw = c.measureText(lab).width, w = tw + 120, h = 96, m = STORY_MAT[d.key];
@@ -1316,7 +1322,9 @@ const hsv2hex = ({ h, s, v }) => { const f = k => { const x = (k + h / 60) % 6; 
   return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join(''); };
 let hsv = { h: 0, s: 0, v: 1 }, hsvCol = '';
 const adoptHex = hex => { const n = hex2hsv(hex); if (n.v === 0) n.s = hsv.s; if (n.s === 0 || n.v === 0) n.h = hsv.h; hsv = n; hsvCol = hex.toLowerCase(); };
-const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { doc.bg = c === '@tier' ? { type: 'tier' } : { type: 'solid', c1: c }; } } : { get: () => (getL(sel) || {}).col || '#ffffff', set: c => { const L = getL(sel); if (L) L.col = c; } };
+const hasBg = L => L.v === 2 || (L.box && L.box !== 'none');
+const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { doc.bg = c === '@tier' ? { type: 'tier' } : { type: 'solid', c1: c }; } } : (colMode === 'bg' && getL(sel) && ['text', 'stat'].includes(getL(sel).type)) ? { get: () => { const L = getL(sel); return L.bcol || (L.box === 'semi' ? '#000000' : L.col || '#ffffff'); }, set: c => { const L = getL(sel); if (!L) return; const first = !L.bcol; L.bcol = c; if (L.v !== 2 && (!L.box || L.box === 'none')) { L.box = 'full'; if (L.col == null) L.col = '#ffffff'; } if (first || !document.querySelector('#pBo')) setTimeout(paintPanel, 0); } }
+  : { get: () => (getL(sel) || {}).col || '#ffffff', set: c => { const L = getL(sel); if (L) L.col = c; } };
 function setCol(hex, fromHsv) { if (hex === '@tier') { colTarget().set('@tier'); adoptHex(accentOf(state.story).toLowerCase()); paintPicker(); changed(); return; } hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex); paintPicker(); changed(); }
 function paintPicker() { if (!$('cpick').isConnected || $('cpick').closest('[hidden]')) return; let c = colTarget().get(); if (c === '@tier') c = accentOf(state.story); if (c.toLowerCase() !== hsvCol) adoptHex(c);
   $('cpChip').style.background = c; if (document.activeElement !== $('cpHex')) $('cpHex').value = c.toUpperCase();
@@ -1350,7 +1358,7 @@ const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', stick
 const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커' : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
 const seg = (id, opts, cur) => `<div class="seg n${opts.length}" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
 const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row"><label for="${id}" class="lbl sm">${lab}</label><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><output id="${id}V">${val}${unit}</output></div>`;
-let moreCol = false, moreTxt = false;
+let moreCol = false, moreTxt = false, colMode = 'fg';
 function paintPanel() {
   { const L0 = sel && getL(sel), b = L0 && L0.ax && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; } }
   const P = $('panel'); $('cpick').hidden = true; document.body.appendChild($('cpick')); const L = sel && getL(sel);
@@ -1366,7 +1374,10 @@ function paintPanel() {
     if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 바꿀 수 없어요 · 위치·크기·스타일만 바꿀 수 있어요${isTop(L) ? ' · 상위 %는 항상 크게 보여요' : ''}</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `${L.v === 4 ? '' : `<span class="lbl sm">디자인</span>${seg('pV', [[0, '라벨+값'], [1, '값만'], [2, '알약'], [3, '런앱']], L.v || 0)}`}`;
     if (L.type === 'card') h += `<span class="lbl sm">디자인</span>${seg('pV', [[0, '카드'], [1, '배지']], L.v || 0)}`;
     if (L.type === 'text' || L.type === 'stat') h += `<span class="lbl sm">글꼴</span>${fontRow(L)}`;
-    if (L.type !== 'card' && L.type !== 'photo') h += `<span class="lbl sm">색</span>${chipsHTML()}`;
+    const tb = L.type === 'text' || L.type === 'stat'; if (!tb) colMode = 'fg';
+    if (L.type !== 'card' && L.type !== 'photo') h += `<span class="lbl sm">색</span>` + (tb ? `<div class="seg n2 ctsw" id="pCT" role="radiogroup" aria-label="색 대상">${[['fg', '글자 색'], ['bg', '배경 색']].map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${colMode === v}">${n}</button>`).join('')}</div>` : '')
+      + (tb && colMode === 'bg' ? `<div class="ed-btns"><button type="button" class="chip-btn" id="pBgNone" aria-pressed="${!hasBg(L)}">배경 없음</button></div>` : '') + chipsHTML()
+      + (tb && colMode === 'bg' && hasBg(L) ? range('pBo', '배경 불투명도', 0, 100, Math.round((L.bo ?? (L.v !== 2 && L.box === 'semi' ? .45 : 1)) * 100), '%') : '');
     if (L.type === 'text' || (L.type === 'stat' && L.v !== 2)) h += `<span class="lbl sm">배경 박스</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '꽉 찬']], L.box || 'none')}`;
     if (L.type === 'text') h += `<span class="lbl sm">정렬</span>${seg('pAl', [['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']], L.al || 'center')}`;
     if (L.type === 'text' || L.type === 'stat') h += `<button type="button" class="chip-btn" id="pMoreT" aria-expanded="${moreTxt}">자간·행간 ${moreTxt ? '접기' : '더보기'}</button>` + (moreTxt ? range('pLs', '자간', -10, 60, L.ls || 0, 'px') + range('pLh', '행간', 0, 250, Math.round((L.lh ?? 1.15) * 100), '%') : '');
@@ -1399,9 +1410,9 @@ function bindPanel(L) {
   on('tText', 'input', e => { L.t = e.target.value; changed(); $('pName').textContent = lname(L); });
   on('raceIn', 'input', e => { doc.race = e.target.value; changed(); });
   const segOn = (id, f) => { const s = $(id); if (s) s.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { f(b.dataset.v); changed(true); paintPanel(); } }); };
-  segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => doc.bg.filter = v);
+  segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pCT', v => { colMode = v; }); on('pBgNone', 'click', () => { if (L.v === 2) { delete L.bcol; delete L.bo; } else { L.box = 'none'; } changed(true); paintPanel(); }); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => doc.bg.filter = v);
   const rg = (id, f, u = '') => on(id, 'input', e => { f(+e.target.value); $(id + 'V').textContent = e.target.value + u; changed(); });
-  rg('pS', v => L.s = v / 100, '%'); rg('pR', v => L.r = v * Math.PI / 180, '°'); rg('pO', v => L.o = v / 100, '%'); rg('pLs', v => L.ls = v, 'px'); rg('pLh', v => L.lh = v / 100, '%');
+  rg('pS', v => L.s = v / 100, '%'); rg('pR', v => L.r = v * Math.PI / 180, '°'); rg('pO', v => L.o = v / 100, '%'); rg('pBo', v => L.bo = v / 100, '%'); rg('pLs', v => L.ls = v, 'px'); rg('pLh', v => L.lh = v / 100, '%');
   rg('pCz', v => L.cz = v / 100, '%'); rg('pCx', v => L.cx = v / 100); rg('pCy', v => L.cy = v / 100); rg('bgZ', v => doc.bg.pz = v / 100, '%');
   on('pMoreT', 'click', () => { moreTxt = !moreTxt; paintPanel(); });
   on('pFill', 'click', () => { photoTarget = 'fill'; pickPhoto(); }); on('pRefill', 'click', () => { photoTarget = 'fill'; pickPhoto(); });
@@ -1530,6 +1541,7 @@ function renderResult(r) {
 restore();
 // landing-page deep link: ?ev=5k|10k|half|full preselects the event
 { const q = { '5k': '5K', '10k': '10K', half: 'half', full: 'full' }[(new URLSearchParams(location.search).get('ev') || '').toLowerCase()]; if (q) { state.ev = q; applyEv(); validate(); } }
+
 
 })();
 </script>
