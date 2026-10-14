@@ -303,6 +303,14 @@ main{max-width:760px}
 .ph-btn{display:none}
 .bg-btn{position:absolute;left:8px;top:8px;min-height:44px;padding:0 14px;border-radius:22px;border:0;background:rgba(15,22,32,.72);color:#fff;font:600 13px inherit;font-family:inherit;cursor:pointer;z-index:1;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 .tg.loading{opacity:.6}
+.behind-tg{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;margin:4px 0 12px;padding:10px 14px;border-radius:14px;border:1.5px solid #3DC8F5;background:rgba(61,200,245,.10);color:#F2F4F7;font:inherit;text-align:left;cursor:pointer}
+.behind-tg .bi{font-size:22px}.behind-tg>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px}.behind-tg b{font-size:15px}.behind-tg small{font-size:12px;color:#B3BAC5}
+.behind-tg .sw{flex:none;width:44px;height:26px;border-radius:13px;background:#3a4656;position:relative}.behind-tg .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.behind-tg[aria-pressed="true"]{background:#3DC8F5;color:#0F1620}.behind-tg[aria-pressed="true"] small{color:#0F1620}.behind-tg[aria-pressed="true"] .sw{background:#0F1620}.behind-tg[aria-pressed="true"] .sw::after{left:21px;background:#3DC8F5}
+.behind-tg.loading{opacity:.6}
+.mini{position:absolute;z-index:2;display:flex;gap:2px;padding:3px;border-radius:12px;background:rgba(15,22,32,.88);box-shadow:0 2px 10px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.14)}.mini[hidden]{display:none}
+.mini button{min-width:44px;height:44px;padding:0 4px;border:0;border-radius:9px;background:transparent;color:#F2F4F7;font:700 16px/1 inherit;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}.mini button[hidden]{display:none}.mini small{font-size:9px;font-weight:600;color:#B3BAC5}
+.mini button:active{background:rgba(255,255,255,.12)}.mini [aria-pressed="true"]{background:#3DC8F5;color:#0F1620}.mini [aria-pressed="true"] small{color:#0F1620}
 
 </style>
 <style>
@@ -487,7 +495,7 @@ main{max-width:760px}
     <div class="st-row" id="tplEd">
       <div class="st-left" id="sizeCol" hidden><input type="range" id="tSize" min="20" max="300" value="96" aria-label="글자 크기" orient="vertical"></div>
       <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas><button type="button" class="bg-btn" id="bgBtn">📷 배경 사진</button>
-        <div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
+        <div class="mini" id="miniBar" hidden role="toolbar" aria-label="선택한 요소"><button type="button" data-mb="up" aria-label="앞으로" title="앞으로">↑<small>앞으로</small></button><button type="button" data-mb="down" aria-label="뒤로" title="뒤로">↓<small>뒤로</small></button><button type="button" data-mb="behind" aria-label="인물 뒤로" aria-pressed="false" hidden>👤<small>인물 뒤로</small></button><button type="button" data-mb="dup" aria-label="복제" title="복제">⧉<small>복제</small></button><button type="button" data-mb="del" aria-label="삭제" title="삭제">🗑<small>삭제</small></button></div><div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="behind" id="ctxBehind" role="menuitem" hidden>인물 뒤로</button><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
       <div class="st-tools" id="tools" role="toolbar" aria-label="추가 도구" aria-orientation="vertical">
         <button type="button" data-tool="text" aria-label="텍스트 추가"><b>Aa</b><small>텍스트</small></button>
         <button type="button" data-tool="photo" aria-label="사진 추가"><b>📷</b><small>사진</small></button>
@@ -1131,10 +1139,14 @@ function ensureMask(pid) { if (photos['mask:' + pid]) return Promise.resolve(tru
     r.close && r.close(); g.putImageData(id, 0, 0); if (on < a.length * .01) throw new Error('no subject'); photos['mask:' + pid] = c; return true; })().catch(e => { console.warn('segmentation', e); return false; }).finally(() => segBusy.delete(pid));
   segBusy.set(pid, pr); return pr; }
 window.__mask = () => Object.keys(photos).filter(k => k.startsWith('mask:')).length;
+function personPid() { if (doc.bg.type === 'photo' && photos[doc.bg.pid]) return { bg: true, pid: doc.bg.pid };
+  const ph = doc.layers.filter(l => l.type === 'photo' && l.pid && photos[l.pid] && !l.hidden).sort((a, b) => (b.w || 1) * (b.h || 1) * b.s * b.s - (a.w || 1) * (a.h || 1) * a.s * a.s)[0]; return ph ? { bg: false, pid: ph.pid, L: ph } : null; }
+const canBehind = L => !!L && L.type !== 'photo' && !!personPid();
 async function toggleBehind(L) {
   if (L.behind) { L.behind = false; changed(true); paintPanel(); return; }
-  if (doc.bg.type !== 'photo' || !photos[doc.bg.pid]) { status('먼저 배경에 인물 사진을 넣어 주세요', 3000); return; }
-  const b = $('pBehind'); if (b) { b.classList.add('loading'); b.textContent = '인물 찾는 중…'; } status('인물을 찾는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
+  const src = personPid(); if (!src) { status('먼저 인물 사진을 넣어 주세요', 3000); return; }
+  if (!src.bg) { doc.bg = { type: 'photo', pid: src.pid, pz: 1, px: 0, py: 0, filter: src.L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== src.L); status('사진을 배경으로 깔고 인물을 찾을게요', 3000); changed(true); }
+  const b = $('pBehind'); if (b) { b.classList.add('loading'); b.querySelector('b').textContent = '인물 찾는 중…'; } status('인물을 찾는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
   const ok = await ensureMask(doc.bg.pid);
   if (ok) { L.behind = true; status('인물 뒤로 보냈어요'); } else status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000);
   changed(true); paintPanel(); }
@@ -1179,8 +1191,21 @@ function paintOvl() {
   const b = sel && boxes.find(x => x.id === sel);
   if (b) { const p = corners(b); g.strokeStyle = '#3DC8F5'; g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]);
     const [hx, hy] = p[2]; g.fillStyle = '#3DC8F5'; g.beginPath(); g.arc(hx, hy, HANDLE, 0, 7); g.fill(); g.fillStyle = '#0F1620'; g.font = '700 52px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('⤡', hx, hy + 2); }
+  placeMini(b);
   if (dragging) { g.fillStyle = trashHot ? 'rgba(255,90,95,.95)' : 'rgba(15,22,32,.75)'; g.beginPath(); g.arc(540, 1790, trashHot ? 96 : 80, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 6; g.beginPath(); g.rect(510, 1765, 60, 70); g.moveTo(495, 1765); g.lineTo(585, 1765); g.moveTo(525, 1750); g.lineTo(555, 1750); g.stroke(); }
 }
+// floating contextual mini toolbar, positioned inside the canvas next to the selection (DOM over the overlay → never exported)
+function placeMini(b) { const m = $('miniBar'); if (!m) return; const L = b && getL(b.id);
+  if (!L || dragging || pickMode) { m.hidden = true; return; }
+  m.querySelector('[data-mb=behind]').hidden = !canBehind(L); const bh = m.querySelector('[data-mb=behind]'); bh.setAttribute('aria-pressed', !!L.behind); bh.title = L.behind ? '인물 앞으로' : '인물 뒤로';
+  m.querySelectorAll('[data-mb=dup],[data-mb=del]').forEach(e => e.hidden = isTop(L)); m.hidden = false;
+  const r = $('ovl').getBoundingClientRect(), kx = r.width / 1080, ky = r.height / 1920, c = corners(b), xs = c.map(q => q[0] * kx), ys = c.map(q => q[1] * ky);
+  const bw = m.offsetWidth, bhh = m.offsetHeight, top = Math.min(...ys), bot = Math.max(...ys), cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  let y = top - bhh - 10; if (y < 4) y = bot + 10; if (y + bhh > r.height - 4) y = Math.max(4, Math.min(r.height - bhh - 4, top + 4));
+  m.style.left = Math.max(4, Math.min(r.width - bw - 4, cx - bw / 2)) + 'px'; m.style.top = y + 'px'; }
+$('miniBar').addEventListener('pointerdown', e => e.stopPropagation());
+$('miniBar').addEventListener('click', e => { const b = e.target.closest('[data-mb]'); if (!b) return; const a = b.dataset.mb, L = getL(sel); if (!L) return;
+  if (a === 'behind') toggleBehind(L); else { act(a); } });
 const toLocal = (b, x, y) => { const c = Math.cos(-(b.r || 0)), s = Math.sin(-(b.r || 0)), dx = x - b.x, dy = y - b.y; return [(dx * c - dy * s) / b.s, (dx * s + dy * c) / b.s]; };
 function hitAt(x, y) { for (let i = boxes.length - 1; i >= 0; i--) { const b = boxes[i]; if (b.hidden) continue; const [lx, ly] = toLocal(b, x, y), pad = Math.max(0, 30 / b.s - 0); if (Math.abs(lx) <= b.w / 2 + pad && Math.abs(ly) <= b.h / 2 + pad) return b; } return null; }
 window.__hitAt = (x, y) => (hitAt(x, y) || {}).id;
@@ -1228,9 +1253,9 @@ const onHandle = (x, y) => { const b = sel && boxes.find(q => q.id === sel); if 
   for (const el of [st, $('cpSV'), $('cpHue')]) { const block = e => e.preventDefault(); el.addEventListener('touchstart', block, { passive: false }); el.addEventListener('touchmove', block, { passive: false }); }
 }
 const snapR = r => { const t = Math.PI / 2, n = Math.round(r / t); return Math.abs(r - n * t) < .06 ? n * t : r; };
-function showMenu(p) { const m = $('ctxMenu'), r = $('ovl').getBoundingClientRect(), k = r.width / 1080; m.hidden = false; m.style.left = Math.min(r.width - 200, Math.max(0, p[0] * k - 100)) + 'px'; m.style.top = Math.max(0, p[1] * k - 60) + 'px'; }
+function showMenu(p) { const bh = $('ctxBehind'), L0 = getL(sel); if (bh) { bh.hidden = !canBehind(L0); bh.textContent = L0 && L0.behind ? '인물 앞으로' : '인물 뒤로'; } const m = $('ctxMenu'), r = $('ovl').getBoundingClientRect(), k = r.width / 1080; m.hidden = false; m.style.left = Math.min(r.width - 200, Math.max(0, p[0] * k - 100)) + 'px'; m.style.top = Math.max(0, p[1] * k - 60) + 'px'; }
 function hideMenu() { $('ctxMenu').hidden = true; }
-$('ctxMenu').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) { act(b.dataset.act); hideMenu(); } });
+$('ctxMenu').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (!b) return; hideMenu(); if (b.dataset.act === 'behind') { const L0 = getL(sel); if (L0) toggleBehind(L0); } else act(b.dataset.act); });
 function delLayer(id) { const L = getL(id); if (!L) return; if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
 function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) return; const L = doc.layers[i];
   if (a === 'del') return delLayer(sel);
@@ -1306,6 +1331,7 @@ function paintPanel() {
   let h = '';
   if (L) {
     h += `<div class="sh-head"><h3 id="pName">${esc(lname(L))}</h3><button type="button" class="chip-btn primary-chip" id="pDone">완료</button></div>`;
+    if (canBehind(L)) h += `<button type="button" class="behind-tg" id="pBehind" aria-pressed="${!!L.behind}"><span class="bi" aria-hidden="true">👤</span><span><b>${L.behind ? '인물 뒤로 · 켜짐' : '인물 뒤로 보내기'}</b><small>${L.behind ? '탭하면 다시 앞으로 와요' : '사진 속 인물 뒤에 이 요소를 숨겨요'}</small></span><span class="sw" aria-hidden="true"></span></button>`;
     if (libOpen && (L.type === 'text' || L.type === 'stat')) {
       h += `<input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats">${[['all', '전체'], ['fav', '★ 즐겨찾기'], ['recent', '최근'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div><div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용·웹 임베딩이 허용된 OFL·Apache 라이선스예요</p><button type="button" class="chip-btn" id="fClose">글꼴 목록 닫기</button>`;
       P.innerHTML = h; bindPanel(L); return; }
@@ -1319,7 +1345,6 @@ function paintPanel() {
     if (L.type === 'text' || L.type === 'stat') h += `<button type="button" class="chip-btn" id="pMoreT" aria-expanded="${moreTxt}">자간·행간 ${moreTxt ? '접기' : '더보기'}</button>` + (moreTxt ? range('pLs', '자간', -10, 60, L.ls || 0, 'px') + range('pLh', '행간', 0, 250, Math.round((L.lh ?? 1.15) * 100), '%') : '');
     if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}<span class="lbl sm">필터</span>${seg('pFilter', FILTERS, L.filter || 'none')}` + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경으로 쓰기</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
     if (L.type === 'sticker' || L.type === 'shape') {}
-    if (doc.bg.type === 'photo' && photos[doc.bg.pid]) h += `<div class="ed-btns"><button type="button" class="tg" id="pBehind" aria-pressed="${!!L.behind}">${L.behind ? '✓ 인물 뒤로 (켜짐)' : '인물 뒤로'}</button></div><p class="hint">배경 사진 속 인물 뒤로 이 요소를 보내요</p>`;
     h += range('pS', '크기', 8, 400, Math.round(L.s * 100), '%') + range('pR', '회전', -180, 180, Math.round((L.r || 0) * 180 / Math.PI), '°') + (isTop(L) ? '' : range('pO', '불투명도', 5, 100, Math.round((L.o ?? 1) * 100), '%'));
     h += `<div class="ed-btns acts">${isTop(L) ? '' : '<button type="button" class="chip-btn" data-act="dup">복제</button>'}<button type="button" class="chip-btn" data-act="up">앞으로</button><button type="button" class="chip-btn" data-act="down">뒤로</button>${isTop(L) ? '' : '<button type="button" class="chip-btn danger" data-act="del">삭제</button>'}</div>`;
   } else if (mode === 'stat') {
