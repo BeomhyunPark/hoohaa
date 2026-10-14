@@ -244,8 +244,8 @@ main{max-width:760px}
 .stp{min-width:44px;min-height:44px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-size:18px;cursor:pointer;flex:none}
 .stp:disabled{opacity:.35;cursor:not-allowed}
 .st-row{display:flex;gap:6px;align-items:flex-start;justify-content:center}
-.st-stage{position:relative;flex:0 1 auto;width:min(calc(100% - 58px),calc((100vh - 230px)*9/16),440px);aspect-ratio:9/16;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.st-stage canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:12px}
+.st-stage{position:relative;flex:0 0 auto;width:min(calc(100% - 58px),calc((100vh - 200px)*9/16),480px);height:auto;aspect-ratio:9/16;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.st-stage canvas,.st-stage #tplPreview{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;aspect-ratio:auto!important;border-radius:12px}
 #tplPreview{background:var(--raised);box-shadow:0 10px 30px -10px rgba(0,0,0,.6);height:100%;max-width:none}
 #ovl{cursor:grab}
 .st-tools{display:flex;flex-direction:column;gap:4px;flex:none;width:52px}
@@ -301,6 +301,8 @@ main{max-width:760px}
 .tpl-del{position:absolute;top:-4px;right:-4px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(15,22,32,.85);color:#fff;cursor:pointer;font-size:14px}
 .actions .ghost-btn{background:none;border:0;color:var(--t2);text-decoration:underline;min-height:44px;font-size:15px}
 .ph-btn{display:none}
+.bg-btn{position:absolute;left:8px;top:8px;min-height:44px;padding:0 14px;border-radius:22px;border:0;background:rgba(15,22,32,.72);color:#fff;font:600 13px inherit;font-family:inherit;cursor:pointer;z-index:1;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.tg.loading{opacity:.6}
 
 </style>
 <style>
@@ -436,7 +438,7 @@ main{max-width:760px}
 <!--SEO-->
 <section class="seo" aria-labelledby="hHow">
   <h2 id="hHow">어떻게 계산하나요</h2>
-  <p>5K·10K·하프·풀코스 기록을 넣으면 <strong>VDOT</strong>(잭 다니엘스 러닝 지수)을 계산하고, 같은 성별·나이대 러너 중 상위 몇 %인지로 <strong>러닝 티어</strong>를 정해요. 같은 VDOT으로 다른 거리의 <strong>마라톤 예상 기록</strong>과 E·M·T·I·R <strong>훈련 페이스</strong>도 함께 보여드려요.</p>
+  <p>5K·10K·하프·풀코스 기록을 넣으면 <strong>VDOT</strong>(잭 다니엘스 러닝 지수)을 계산하고, 같은 성별 러너 기록 분포에서 상위 몇 %인지로 <strong>러닝 티어</strong>를 정해요. 같은 VDOT으로 다른 거리의 <strong>마라톤 예상 기록</strong>과 E·M·T·I·R <strong>훈련 페이스</strong>도 함께 보여드려요.</p>
   <details class="seo-box"><summary><h2 id="hTbl">티어 기준표 (예: 10K · 30대 남성)</h2></summary>
   <table class="seo-tbl"><thead><tr><th scope="col">티어</th><th scope="col">10K 기록</th><th scope="col">누적 상위</th></tr></thead><tbody>
 <tr><th scope="row">챌린저</th><td>33:31 이내</td><td>상위 0.1%</td></tr>
@@ -453,7 +455,7 @@ main{max-width:760px}
   <p class="hint">각 티어의 가장 낮은 단계(3단계) 진입 기준이에요. 성별·나이대·종목에 따라 기준 기록이 달라지며, 결과 화면에서 내 조건의 전체 24단계 표를 볼 수 있어요.</p></details>
   <h2 id="hFaq">자주 묻는 질문</h2>
 <details class="faq"><summary><h3>VDOT이 뭔가요?</h3></summary><p>잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록으로 유산소 능력을 숫자 하나로 나타내고, 이 숫자로 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 같은 거리를 더 빨리 달릴 수 있어요.</p></details>
-<details class="faq"><summary><h3>티어는 어떤 기준으로 정해지나요?</h3></summary><p>같은 성별·나이대 러너들의 기록 분포에서 내 기록이 상위 몇 %인지 계산해, 아이언부터 챌린저까지 10개 티어(아이언~다이아몬드는 3·2·1 단계)로 나눠요. 나이대별 보정이 들어가서 40대·50대 러너도 같은 나이대 기준으로 비교돼요.</p></details>
+<details class="faq"><summary><h3>티어는 어떤 기준으로 정해지나요?</h3></summary><p>같은 성별 러너들의 기록 분포(30대 기준)에서 내 기록이 상위 몇 %인지 계산해, 아이언부터 챌린저까지 10개 티어(아이언~다이아몬드는 3·2·1 단계)로 나눠요. 40대부터는 나이에 따른 기록 변화만큼 기준 기록을 조금 완화해요(30대 = 1배).</p></details>
 <details class="faq"><summary><h3>마라톤 예상 기록은 얼마나 정확한가요?</h3></summary><p>VDOT 공식으로 계산한 이론값이라 참고용이에요. 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 많고, 장거리 훈련량·코스·날씨에 따라 달라져요. 가까운 거리의 최근 기록을 넣을수록 더 정확해요.</p></details>
 <details class="faq"><summary><h3>훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?</h3></summary><p>E(이지)는 대화가 가능한 편안한 조깅, M(마라톤)은 풀코스 목표 페이스, T(역치)는 20~30분 버틸 수 있는 ‘편하게 힘든’ 페이스, I(인터벌)는 3~5분 반복하는 빠른 달리기, R(반복)은 짧고 가장 빠른 질주예요. 대부분의 훈련은 E 페이스로 하는 게 좋아요.</p></details>
 <details class="faq"><summary><h3>입력한 기록이 저장되나요?</h3></summary><p>아니요. 모든 계산은 내 브라우저 안에서만 이뤄지고, 기록이나 사진은 서버로 전송되거나 저장되지 않아요.</p></details>
@@ -472,7 +474,7 @@ main{max-width:760px}
 @media (min-width:601px){.lane .ls{flex-wrap:wrap;overflow:visible}}
 @media (max-width:600px){.lane .ln{width:64px;padding-left:10px;font-size:13px}}</style>
 </section>
-<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"hoohaa","alternateName":"hoohaa 러닝 티어","url":"https://hoohaa.run/","inLanguage":"ko","applicationCategory":"SportsApplication","operatingSystem":"Web","isAccessibleForFree":true,"description":"PB 기록으로 러닝 티어, VDOT, 마라톤 예상 기록, 훈련 페이스를 계산하는 무료 웹앱","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"VDOT이 뭔가요?","acceptedAnswer":{"@type":"Answer","text":"잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록으로 유산소 능력을 숫자 하나로 나타내고, 이 숫자로 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 같은 거리를 더 빨리 달릴 수 있어요."}},{"@type":"Question","name":"티어는 어떤 기준으로 정해지나요?","acceptedAnswer":{"@type":"Answer","text":"같은 성별·나이대 러너들의 기록 분포에서 내 기록이 상위 몇 %인지 계산해, 아이언부터 챌린저까지 10개 티어(아이언~다이아몬드는 3·2·1 단계)로 나눠요. 나이대별 보정이 들어가서 40대·50대 러너도 같은 나이대 기준으로 비교돼요."}},{"@type":"Question","name":"마라톤 예상 기록은 얼마나 정확한가요?","acceptedAnswer":{"@type":"Answer","text":"VDOT 공식으로 계산한 이론값이라 참고용이에요. 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 많고, 장거리 훈련량·코스·날씨에 따라 달라져요. 가까운 거리의 최근 기록을 넣을수록 더 정확해요."}},{"@type":"Question","name":"훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"E(이지)는 대화가 가능한 편안한 조깅, M(마라톤)은 풀코스 목표 페이스, T(역치)는 20~30분 버틸 수 있는 ‘편하게 힘든’ 페이스, I(인터벌)는 3~5분 반복하는 빠른 달리기, R(반복)은 짧고 가장 빠른 질주예요. 대부분의 훈련은 E 페이스로 하는 게 좋아요."}},{"@type":"Question","name":"입력한 기록이 저장되나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 모든 계산은 내 브라우저 안에서만 이뤄지고, 기록이나 사진은 서버로 전송되거나 저장되지 않아요."}},{"@type":"Question","name":"느린 기록도 넣어도 되나요?","acceptedAnswer":{"@type":"Answer","text":"물론이에요. 완주 기록이라면 누구나 티어가 나오고, 다음 티어까지 얼마나 남았는지도 알려드려요. 모든 러너는 출발선에 선 순간부터 러너예요."}}]}]</script>
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"hoohaa","alternateName":"hoohaa 러닝 티어","url":"https://hoohaa.run/","inLanguage":"ko","applicationCategory":"SportsApplication","operatingSystem":"Web","isAccessibleForFree":true,"description":"PB 기록으로 러닝 티어, VDOT, 마라톤 예상 기록, 훈련 페이스를 계산하는 무료 웹앱","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"VDOT이 뭔가요?","acceptedAnswer":{"@type":"Answer","text":"잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록으로 유산소 능력을 숫자 하나로 나타내고, 이 숫자로 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 같은 거리를 더 빨리 달릴 수 있어요."}},{"@type":"Question","name":"티어는 어떤 기준으로 정해지나요?","acceptedAnswer":{"@type":"Answer","text":"같은 성별 러너들의 기록 분포(30대 기준)에서 내 기록이 상위 몇 %인지 계산해, 아이언부터 챌린저까지 10개 티어(아이언~다이아몬드는 3·2·1 단계)로 나눠요. 40대부터는 나이에 따른 기록 변화만큼 기준 기록을 조금 완화해요(30대 = 1배)."}},{"@type":"Question","name":"마라톤 예상 기록은 얼마나 정확한가요?","acceptedAnswer":{"@type":"Answer","text":"VDOT 공식으로 계산한 이론값이라 참고용이에요. 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 많고, 장거리 훈련량·코스·날씨에 따라 달라져요. 가까운 거리의 최근 기록을 넣을수록 더 정확해요."}},{"@type":"Question","name":"훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"E(이지)는 대화가 가능한 편안한 조깅, M(마라톤)은 풀코스 목표 페이스, T(역치)는 20~30분 버틸 수 있는 ‘편하게 힘든’ 페이스, I(인터벌)는 3~5분 반복하는 빠른 달리기, R(반복)은 짧고 가장 빠른 질주예요. 대부분의 훈련은 E 페이스로 하는 게 좋아요."}},{"@type":"Question","name":"입력한 기록이 저장되나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 모든 계산은 내 브라우저 안에서만 이뤄지고, 기록이나 사진은 서버로 전송되거나 저장되지 않아요."}},{"@type":"Question","name":"느린 기록도 넣어도 되나요?","acceptedAnswer":{"@type":"Answer","text":"물론이에요. 완주 기록이라면 누구나 티어가 나오고, 다음 티어까지 얼마나 남았는지도 알려드려요. 모든 러너는 출발선에 선 순간부터 러너예요."}}]}]</script>
 <!--/SEO-->
 </section>
 
@@ -484,7 +486,7 @@ main{max-width:760px}
     <div class="st-top"><button type="button" class="chip-btn" id="tplReset">템플릿으로 되돌리기</button><span class="sp"></span><button type="button" class="stp" id="undo" aria-label="실행취소">↶</button><button type="button" class="stp" id="redo" aria-label="다시실행">↷</button></div>
     <div class="st-row" id="tplEd">
       <div class="st-left" id="sizeCol" hidden><input type="range" id="tSize" min="20" max="300" value="96" aria-label="글자 크기" orient="vertical"></div>
-      <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas>
+      <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas><button type="button" class="bg-btn" id="bgBtn">📷 배경 사진</button>
         <div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
       <div class="st-tools" id="tools" role="toolbar" aria-label="추가 도구" aria-orientation="vertical">
         <button type="button" data-tool="text" aria-label="텍스트 추가"><b>Aa</b><small>텍스트</small></button>
@@ -832,9 +834,10 @@ async function saveStory(cv, name = 'running-tier.png') {
 // ---- stat ("기록 블록") values come only from the calculation result: never editable ----
 const STATS = { rec: ['기록', 'RECORD'], pace: ['페이스', 'PACE'], tier: ['티어', 'TIER'], top: ['상위 %', 'RANK'], vdot: ['VDOT', 'VDOT'], next: ['다음 티어까지', 'NEXT'], date: ['날짜', 'DATE'], race: ['대회명', 'RACE'], event: ['종목', 'EVENT'] };
 const statValue = (d, doc, k) => ({ rec: d.time, pace: d.pace, tier: d.word + (d.roman ? ' ' + d.roman : ''), top: d.topLabel, vdot: d.vdot, next: d.nextLine, date: ymd(), race: (doc.race || '').trim() || '대회명을 입력하세요', event: d.recLine.split(' ')[0] })[k];
-const STAT_SIZE = { rec: 120, pace: 96, tier: 92, top: 104, vdot: 72, next: 40, date: 40, race: 56, event: 64 };
+const STAT_SIZE0 = { rec: 120, pace: 96, tier: 92, top: 104, vdot: 72, next: 40, date: 40, race: 56, event: 64 };
+const STAT_SIZE = STAT_SIZE0;
 const TOP_MIN_PX = 64; // 상위 % is always shown big
-const STICKERS = [['wordmark', 'hoohaa 워드마크'], ['emblem', '티어 엠블럼'], ['runner', '러너'], ['shoe', '러닝화'], ['dist', '거리 배지'], ['sun', '맑음'], ['date', '날짜 도장'], ['flag', '피니시'], ['heart', '하트'], ['bolt', '번개'], ['star', '별'], ['rect', '사각형'], ['circle', '원'], ['line', '선']];
+const STICKERS = [['wordmark', 'hoohaa 워드마크'], ['emblem', '티어 엠블럼'], ['runner', '러너'], ['shoe', '러닝화'], ['dist', '거리 배지'], ['sun', '맑음'], ['date', '날짜 도장'], ['flag', '피니시'], ['sparkle', '반짝'], ['heart', '하트'], ['bolt', '번개'], ['star', '별'], ['rect', '사각형'], ['circle', '원'], ['line', '선']];
 const FILTERS = [['none', '원본'], ['bw', '흑백'], ['warm', '따뜻하게'], ['cool', '차갑게'], ['fade', '빈티지'], ['vivid', '선명하게']];
 const MASKS = [['rect', '사각'], ['round', '둥근'], ['circle', '원형'], ['polaroid', '폴라로이드']];
 const LK = { x: 540, y: 960, s: 1, r: 0, o: 1 };
@@ -885,7 +888,14 @@ function layerGeom(c, L, d, doc, photos) {
   if (L.type === 'stat') {
     const v = statValue(d, doc, L.stat), lab = STATS[L.stat][1], base = STAT_SIZE[L.stat], ko = HAN.test(v);
     const fam = L.font ? famOf(L.font) : ko ? PRE_ : ARC_, w = wOf(L.font, L.w || 700), col = L.col || '#ffffff', acc = accentOf(d), m = STORY_MAT[d.key];
-    const vt = L.v === 1 ? 1 : L.v === 2 ? 2 : 0;
+    const vt = [1, 2, 3].includes(L.v) ? L.v : 0;
+    if (vt === 3) { // run-app style: huge value, tiny label underneath
+      const lb = L.lab != null ? L.lab : L.stat === 'rec' ? d.recLine.split(' ')[0] + ' 기록' : STATS[L.stat][0];
+      const vfam = L.font ? fam : ko ? PRE_ : ARC_, vw = L.font ? w : (ko ? 700 : 900);
+      const B = textBlock(c, [{ t: v, size: base, fam: vfam, w: vw, st: !L.font && !ko ? 'condensed' : 'normal' }, ...(lb ? [{ t: lb, size: base * (L.labK ?? .2), fam: PRE_, w: 600, alpha: .92, ls: 0, gap: base * .03 }] : [])], { size: base, fam: vfam, w: vw, ls: L.ls ?? (ko ? 0 : -2), lh: L.lh ?? .95 });
+      const sk = L.sk ?? (ko ? 0 : -.1), extra = Math.abs(sk) * B.h;
+      return { w: B.w + extra, h: B.h, draw: () => { c.transform(1, 0, sk, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'left', w: vw, fam: vfam, ls: L.ls ?? (ko ? 0 : -2) }, col); } };
+    }
     const lines = vt === 0 ? [{ t: L.stat === 'event' ? v : lab, size: Math.max(22, base * .26), fam: ARC_, w: 600, st: 'expanded', ls: 6, alpha: .8 }, { t: v, size: base, gap: base * .05 }] : [{ t: v, size: base }];
     if (vt === 0 && L.stat === 'event') lines.shift();
     const B = textBlock(c, lines, { size: base, fam, w, ls: L.ls || 0, lh: L.lh ?? 1.1, st: !L.font && !ko && L.stat !== 'next' ? 'semi-expanded' : 'normal' });
@@ -934,6 +944,7 @@ function sticker(c, L, d) {
   if (k === 'sun') return S(240, 240, () => { c.beginPath(); c.arc(0, 0, 58, 0, 7); c.fill(); c.lineWidth = 16; for (let i = 0; i < 8; i++) { const a = Math.PI / 4 * i; c.beginPath(); c.moveTo(Math.cos(a) * 84, Math.sin(a) * 84); c.lineTo(Math.cos(a) * 112, Math.sin(a) * 112); c.stroke(); } });
   if (k === 'date') { const t = ymd(); return S(360, 110, () => { rr(c, -176, -51, 352, 102, 18); c.lineWidth = 6; c.stroke(); c.textAlign = 'center'; font(c, 50, 700, ARC_, 'semi-expanded'); c.fillText(t, 0, 18); }); }
   if (k === 'flag') return S(360, 120, () => { for (let r = 0; r < 4; r++) for (let i = 0; i < 12; i++) if ((r + i) % 2 === 0) c.fillRect(-180 + i * 30, -60 + r * 30, 30, 30); });
+  if (k === 'sparkle') return S(220, 220, () => { c.beginPath(); for (let i = 0; i < 8; i++) { const a = Math.PI / 4 * i - Math.PI / 2, r = i % 2 ? 26 : 108; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.closePath(); if (L.fill === false) { c.lineWidth = 10; c.stroke(); } else c.fill(); });
   if (k === 'heart') return S(220, 200, () => { c.beginPath(); c.moveTo(0, 80); c.bezierCurveTo(-140, -10, -80, -110, 0, -45); c.bezierCurveTo(80, -110, 140, -10, 0, 80); c.fill(); });
   if (k === 'bolt') return S(160, 260, () => { c.beginPath(); c.moveTo(30, -130); c.lineTo(-70, 20); c.lineTo(-5, 20); c.lineTo(-30, 130); c.lineTo(70, -25); c.lineTo(5, -25); c.closePath(); c.fill(); });
   if (k === 'star') return S(240, 240, () => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = Math.PI / 5 * i - Math.PI / 2, r = i % 2 ? 50 : 118; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.closePath(); c.fill(); });
@@ -948,9 +959,17 @@ function bgDraw(c, doc, d, photos) {
   else if (b.type === 'grad') { const g = c.createLinearGradient(0, 0, W_ * .35, H_); g.addColorStop(0, b.c1); g.addColorStop(1, b.c2); c.fillStyle = g; c.fillRect(0, 0, W_, H_); }
   else if (b.type === 'dark') { c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); const m = STORY_MAT[d.key], tint = m.glow || 'rgba(255,255,255,.06)', rg = c.createRadialGradient(W_ / 2, 700, 0, W_ / 2, 700, 900); rg.addColorStop(0, tint.replace(/[\d.]+\)$/, '0.22)')); rg.addColorStop(1, 'rgba(18,22,28,0)'); c.fillStyle = rg; c.fillRect(0, 0, W_, H_); }
   else if (b.type === 'photo' && photos[b.pid]) { const im = filtered(photos[b.pid], b.filter, b.pid), sc = Math.max(W_ / im.width, H_ / im.height) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (iw - W_) / 2, my = (ih - H_) / 2;
-    c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); c.drawImage(im, -mx + Math.max(-1, Math.min(1, b.px || 0)) * mx, -my + Math.max(-1, Math.min(1, b.py || 0)) * my, iw, ih); }
+    c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); c.drawImage(im, ...bgRect(b, photos[b.pid])); }
+  else if (b.type === 'tone' || b.type === 'photo') { const m = STORY_MAT[d.key], g = c.createLinearGradient(0, 0, W_ * .3, H_); g.addColorStop(0, '#6f7a86'); g.addColorStop(.5, '#3c4652'); g.addColorStop(1, '#1d232b'); c.fillStyle = g; c.fillRect(0, 0, W_, H_);
+    const rg = c.createRadialGradient(W_ * .75, H_ * .28, 0, W_ * .75, H_ * .28, H_ * .6); rg.addColorStop(0, alpha(m.s[0], .28)); rg.addColorStop(1, alpha(m.s[0], 0)); c.fillStyle = rg; c.fillRect(0, 0, W_, H_);
+    const lg = c.createRadialGradient(W_ * .2, H_ * .85, 0, W_ * .2, H_ * .85, H_ * .5); lg.addColorStop(0, 'rgba(255,255,255,.10)'); lg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = lg; c.fillRect(0, 0, W_, H_); }
   else tierBg(c, d);
 }
+// bg photo geometry (shared by background + subject cut-out so they line up exactly)
+function bgRect(b, im) { const sc = Math.max(W_ / im.width, H_ / im.height) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (iw - W_) / 2, my = (ih - H_) / 2; return [-mx + Math.max(-1, Math.min(1, b.px || 0)) * mx, -my + Math.max(-1, Math.min(1, b.py || 0)) * my, iw, ih]; }
+function subjectLayer(doc, photos) { const b = doc.bg, im = b.type === 'photo' && photos[b.pid], mk2 = im && photos['mask:' + b.pid]; if (!mk2) return null;
+  const t = document.createElement('canvas'); t.width = W_; t.height = H_; const g = t.getContext('2d'), r = bgRect(b, im);
+  g.drawImage(mk2, ...r); g.globalCompositeOperation = 'source-in'; g.drawImage(filtered(im, b.filter, b.pid), ...r); return t; }
 const PRE_FONTS = ['400 40px "OV Bebas"', '400 40px "OV Anton"', '800 40px "OV Playfair"', '700 40px "OV Mono"', '400 40px "OV BlackHan"', '800 40px "TC Archivo"', '300 40px "TC Archivo"', '600 40px "TC Archivo"', '700 40px "TC Pretendard"', '500 40px "TC Pretendard"', '600 40px "TC Pretendard"'];
 // effective transform: 상위 % is clamped so it can never become small or invisible
 function eff(L, g) { if (L.type === 'stat' && L.stat === 'top') { const minS = TOP_MIN_PX / Math.max(1, g.h); return { ...L, s: Math.max(L.s, minS), o: Math.max(L.o ?? 1, .9), hidden: false }; } return L; }
@@ -959,9 +978,13 @@ async function renderDoc(d, doc, photos = {}, cv) {
   await Promise.all([...new Set(doc.layers.map(l => l.font).filter(Boolean))].map(loadFont));
   cv = cv || document.createElement('canvas'); cv.width = W_; cv.height = H_; const c = cv.getContext('2d');
   c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; bgDraw(c, doc, d, photos);
-  const boxes = [];
-  for (const L0 of doc.layers) {
-    c.save(); const g = layerGeom(c, L0, d, doc, photos), L = eff(L0, g); c.restore();
+  const boxes = [], subj = doc.layers.some(l => l.behind && !l.hidden) ? subjectLayer(doc, photos) : null;
+  const order = subj ? [...doc.layers.filter(l => l.behind), null, ...doc.layers.filter(l => !l.behind)] : doc.layers;
+  cv.__subject = !!subj;
+  for (const L0 of order) {
+    if (L0 === null) { c.drawImage(subj, 0, 0); continue; }
+    c.save(); const g = layerGeom(c, L0, d, doc, photos), L = { ...eff(L0, g) }; c.restore();
+    if (L.ax === 'left') L.x += g.w * L.s / 2; else if (L.ax === 'right') L.x -= g.w * L.s / 2;
     boxes.push({ id: L.id, x: L.x, y: L.y, s: L.s, r: L.r, w: g.w, h: g.h, type: L.type, stat: L.stat, hidden: !!L.hidden });
     if (L.hidden) continue;
     c.save(); c.translate(L.x, L.y); c.rotate(L.r || 0); c.scale(L.s, L.s); c.globalAlpha = L.o ?? 1; g.draw(); c.restore();
@@ -969,24 +992,23 @@ async function renderDoc(d, doc, photos = {}, cv) {
   cv.__boxes = boxes; return cv;
 }
 // ---- templates (10+): pre-arranged layer bundles ----
-const TEMPLATES = [['card', '카드형'], ['overlay', '사진 오버레이'], ['minimal', '미니멀'], ['receipt', '성적표 영수증'], ['bib', '레이스 넘버'], ['magazine', '매거진'], ['neon', '네온'], ['polaroid', '폴라로이드'], ['bignum', '빅 넘버'], ['stickers', '스티커팩'], ['mono', '모노'], ['cute', '귀여운']];
+const TEMPLATES = [['nrc', '인증샷'], ['center', '센터'], ['right', '오른쪽'], ['bottom', '하단'], ['rank', '상위 % 크게'], ['cutout', '투명'], ['black', '블랙'], ['sparkle', '반짝']];
+// run-app "인증샷" style: full-bleed photo, one huge number, 2–3 small stats, tiny wordmark. No boxes, no panels, no shadows.
 function templateDoc(t, d) {
-  const S = (stat, x, y, p = {}) => mk('stat', { stat, x, y, ...p }), T = (t, x, y, p = {}) => mk('text', { t, x, y, ...p }), K = (k, x, y, p = {}) => mk('sticker', { k, x, y, ...p }), acc = accentOf(d);
-  const doc = { tpl: t, bg: { type: 'tier' }, race: '', layers: [] }, A = (...l) => doc.layers.push(...l);
-  if (t === 'card') { doc.bg = { type: 'dark' }; A(T('MY RUNNING REPORT', 540, 290, { size: 30, font: 'archivo', w: 700, ls: 6, col: '#3DC8F5' }), mk('card', { x: 540, y: 760 }), S('top', 540, 1180, { v: 1, s: 1 }), S('rec', 250, 1420, { s: .55 }), S('pace', 540, 1420, { s: .62 }), S('vdot', 830, 1420, { s: .8 }), S('next', 540, 1590, { v: 1, col: '#3DC8F5' }), K('wordmark', 540, 1760, { s: .5, o: .7 })); }
-  else if (t === 'overlay') { A(S('date', 540, 470, { v: 1, s: 1 }), mk('card', { v: 1, x: 540, y: 620 }), S('rec', 540, 900), S('pace', 540, 1140, { s: .9 }), S('top', 540, 1340, { v: 1 }), K('wordmark', 540, 1640, { s: .55 })); }
-  else if (t === 'minimal') { doc.bg = { type: 'solid', c1: '#0F1620' }; A(S('date', 300, 300, { v: 1, s: .75, col: '#B3BAC5' }), S('event', 240, 700, { col: acc }), S('rec', 540, 930, { v: 1, s: 2.2, font: 'archivo' }), S('pace', 300, 1150, { v: 1, s: .6, col: '#B3BAC5' }), mk('card', { v: 1, x: 330, y: 1290, s: .75 }), S('top', 400, 1450, { v: 1, s: .7 }), K('wordmark', 540, 1700, { s: .4, o: .6 })); }
-  else if (t === 'receipt') { A(mk('shape', { k: 'paper', w: 800, h: 1320, x: 540, y: 960, col: '#f7f5f0' }), T('RUNNING TIER', 540, 430, { size: 46, font: 'mono', col: '#16181c' }), T('REPORT CARD', 540, 490, { size: 26, font: 'mono', col: '#6b7280' }), S('date', 540, 560, { v: 1, s: .7, font: 'mono', col: '#6b7280' }),
-    mk('shape', { k: 'dash', w: 680, h: 2, x: 540, y: 620, col: '#c9c6bd' }), S('event', 540, 720, { font: 'mono', col: '#16181c', s: .6 }), S('rec', 540, 880, { font: 'mono', col: '#16181c', s: .75 }), S('pace', 380, 1070, { font: 'mono', col: '#16181c', s: .5 }), S('vdot', 700, 1070, { font: 'mono', col: '#16181c', s: .6 }),
-    mk('shape', { k: 'dash', w: 680, h: 2, x: 540, y: 1170, col: '#c9c6bd' }), mk('card', { v: 1, x: 540, y: 1260, s: .8 }), S('top', 540, 1390, { v: 1, s: .7, col: '#16181c' }), S('next', 540, 1490, { v: 1, s: .8, col: '#16181c' }), K('flag', 540, 1562, { s: .55, col: '#16181c' })); }
-  else if (t === 'bib') { doc.bg = { type: 'grad', c1: '#0F1620', c2: '#14324a' }; A(mk('shape', { k: 'rect', w: 860, h: 820, rad: 36, x: 540, y: 900, col: '#ffffff' }), T('RUNNING TIER', 540, 590, { size: 44, font: 'bebas', col: '#0F1620', ls: 6 }), S('rec', 540, 860, { v: 1, s: 2, font: 'bebas', col: '#0F1620' }), S('event', 540, 1100, { font: 'bebas', col: '#e2384a', s: 1 }), K('dist', 870, 420, { s: .7, col: '#3DC8F5', r: .2 }), S('top', 540, 1450, { v: 1 }), mk('card', { v: 1, x: 540, y: 1600 }), K('wordmark', 540, 1790, { s: .4 })); }
-  else if (t === 'magazine') { doc.bg = { type: 'solid', c1: '#efe9df' }; A(T('RUNNER', 540, 330, { size: 210, font: 'playfair', col: '#16181c' }), T('THE ISSUE OF MY PB', 540, 450, { size: 30, font: 'archivo', ls: 8, col: '#7a6a55' }), mk('card', { x: 540, y: 820, s: .85, r: -.04 }), S('top', 540, 1200, { v: 1, font: 'dmserif', col: '#16181c' }), S('rec', 330, 1440, { font: 'dmserif', col: '#16181c', s: .7 }), S('pace', 760, 1440, { font: 'dmserif', col: '#16181c', s: .7 }), S('date', 540, 1720, { v: 1, s: .7, col: '#7a6a55' })); }
-  else if (t === 'neon') { doc.bg = { type: 'solid', c1: '#07060f' }; A(T('NIGHT RUN', 540, 380, { size: 120, font: 'orbitron', col: '#ff3da5' }), S('rec', 540, 760, { v: 1, s: 1.5, font: 'orbitron', col: '#3DC8F5' }), S('pace', 540, 960, { font: 'orbitron', col: '#c6f432', s: .8 }), mk('card', { v: 1, x: 540, y: 1150 }), S('top', 540, 1330, { v: 1, col: '#ffffff' }), K('bolt', 880, 420, { s: .6, col: '#ffd166', r: .2 }), K('wordmark', 540, 1700, { s: .45, col: '#9b8cff' })); }
-  else if (t === 'polaroid') { doc.bg = { type: 'grad', c1: '#ffe2d0', c2: '#cfe6ff' }; A(mk('photo', { pid: null, mask: 'polaroid', x: 540, y: 760, r: -.05, bw: 760, bh: 760 }), T('오늘도 완주!', 540, 1120, { size: 76, font: 'gaegu', w: 700, col: '#16181c', r: -.05 }), S('top', 540, 1330, { v: 2 }), S('rec', 330, 1560, { col: '#16181c', s: .55 }), S('pace', 750, 1560, { col: '#16181c', s: .6 }), K('heart', 870, 420, { s: .5, col: '#ff5a5f', r: .3 }), K('wordmark', 540, 1780, { s: .4, col: '#16181c' })); }
-  else if (t === 'bignum') { A(S('rec', 540, 760, { v: 1, s: 2.4, font: 'anton', r: -.08 }), S('event', 540, 1060, { font: 'anton', col: acc }), S('top', 540, 1260, { v: 1, s: 1.1 }), mk('card', { v: 1, x: 540, y: 1430 }), K('wordmark', 540, 1700, { s: .45 })); }
-  else if (t === 'stickers') { doc.bg = { type: 'grad', c1: '#3DC8F5', c2: '#9b8cff' }; A(K('emblem', 540, 520, { s: 1.2 }), S('top', 540, 860, { v: 2, s: 1 }), S('rec', 540, 1080, { v: 2, s: .7 }), K('runner', 220, 1330, { s: .9, r: -.15 }), K('shoe', 830, 1330, { s: .9, r: .1 }), K('dist', 250, 330, { s: .6, r: -.2 }), K('star', 860, 300, { s: .5, col: '#ffd166' }), K('date', 540, 1560, { s: .9 }), K('wordmark', 540, 1760, { s: .45 })); }
-  else if (t === 'mono') { doc.bg = { type: 'solid', c1: '#111111' }; A(T('// running.log', 300, 330, { size: 40, font: 'mono', col: '#8a8a8a' }), S('event', 300, 470, { font: 'mono', s: .6, col: '#c6f432' }), S('rec', 540, 700, { v: 1, s: 1.3, font: 'mono' }), S('pace', 540, 900, { font: 'mono', s: .7 }), S('vdot', 540, 1080, { font: 'mono', s: .8 }), S('top', 540, 1290, { v: 1, font: 'mono' }), S('next', 540, 1440, { v: 1, font: 'mono', s: .8, col: '#8a8a8a' }), K('wordmark', 540, 1700, { s: .4, col: '#8a8a8a' })); }
-  else if (t === 'cute') { doc.bg = { type: 'grad', c1: '#ffd6e8', c2: '#fff4c2' }; A(T('달리기 완료 ♥', 540, 360, { size: 96, font: 'jua', col: '#ff5a8a' }), mk('card', { x: 540, y: 760, s: .8, r: .03 }), S('top', 540, 1130, { v: 2 }), S('rec', 540, 1370, { font: 'jua', col: '#5a3a4a', s: .8 }), K('heart', 220, 1600, { s: .5, col: '#ff5a8a', r: -.3 }), K('star', 860, 1600, { s: .45, col: '#ffb020', r: .2 }), K('wordmark', 540, 1780, { s: .4, col: '#5a3a4a' })); }
+  const acc = accentOf(d), V = (stat, x, y, s, p = {}) => mk('stat', { stat, v: 3, x, y, s, ax: 'left', al: 'left', ...p }), K = (k, x, y, p = {}) => mk('sticker', { k, x, y, ...p });
+  const doc = { tpl: t, bg: { type: 'tone' }, race: '', layers: [] }, A = (...l) => doc.layers.push(...l);
+  const WM = (x, y, p = {}) => K('wordmark', x, y, { s: .34, o: .9, ...p });
+  const small = (stat, x, y, p = {}) => V(stat, x, y, .6, { labK: .45, ...p }), BIG = 2.9;
+  // stats: pace + 상위 % side by side, tier on its own line (tier colour)
+  const row = (x, y, ax = 'left', p = {}) => { const dx = ax === 'right' ? -1 : 1, al = ax; return [small('pace', ax === 'center' ? x - 150 : x, y, { ax: ax === 'center' ? 'center' : ax, al, ...p }), small('top', ax === 'center' ? x + 150 : x + dx * 300, y, { ax: ax === 'center' ? 'center' : ax, al, ...p }), small('tier', x, y + 150, { ax, al, col: p.col || acc, ...p, ...(p.col ? {} : { col: acc }) })]; };
+  if (t === 'nrc') A(V('rec', 90, 470, BIG), ...row(96, 790), WM(890, 1830));
+  else if (t === 'center') A(...row(540, 560, 'center'), V('rec', 540, 960, BIG, { ax: 'center', al: 'center' }), WM(540, 1830));
+  else if (t === 'right') A(V('rec', 990, 520, BIG * .9, { ax: 'right', al: 'right' }), small('pace', 984, 820, { ax: 'right', al: 'right' }), small('top', 984, 970, { ax: 'right', al: 'right' }), small('tier', 984, 1120, { ax: 'right', al: 'right', col: acc }), WM(190, 1830));
+  else if (t === 'bottom') A(...row(96, 1200), V('rec', 90, 1560, BIG), WM(890, 1830));
+  else if (t === 'rank') A(V('top', 96, 480, 1.55, { lab: '' }), small('rec', 96, 700), small('pace', 420, 700), small('tier', 96, 850, { col: acc }), WM(890, 1830));
+  else if (t === 'cutout') A(V('rec', 540, 960, BIG * 1.15, { ax: 'center', al: 'center', o: .55 }), ...row(540, 1300, 'center', { o: .85 }), WM(540, 1830, { o: .7 }));
+  else if (t === 'black') { doc.bg = { type: 'solid', c1: '#e9e5de' }; const k = '#111111'; A(V('rec', 90, 470, BIG, { col: k }), ...row(96, 790, 'left', { col: k }), WM(890, 1830, { col: k })); }
+  else if (t === 'sparkle') A(K('sparkle', 170, 300, { s: .45, fill: false }), K('sparkle', 930, 600, { s: .3 }), K('star', 880, 1450, { s: .3, col: '#ffd166' }), V('rec', 540, 480, BIG * .95, { ax: 'center', al: 'center' }), ...row(540, 800, 'center'), WM(540, 1830));
   return doc;
 }
 
@@ -1087,7 +1109,8 @@ const LS = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage
 const MAX_PHOTOS = 12, PCV = { W: 1080, H: 1920 };
 let doc = null, photos = {}, sel = null, boxes = [], mode = null, libOpen = false, fontCat = 'all', pickMode = false, guides = null, trashHot = false, dragging = false;
 const favs = () => LS('runtier:fontfav') || [], recents = () => LS('runtier:fontrecent') || [];
-window.__doc = () => clone(doc); window.__boxes = () => clone(boxes); window.__sel = () => sel; window.__photos = () => Object.keys(photos).length; window.__statTexts = () => doc.layers.filter(l => l.type === 'stat').map(l => statValue(state.story, doc, l.stat));
+window.__doc = () => clone(doc); window.__boxes = () => clone(boxes); window.__sel = () => sel; window.__inkBounds = async id => { const L = getL(id); const cv = await renderDoc(state.story, { ...doc, bg: { type: 'solid', c1: '#000000' }, layers: [L] }, photos); const d = cv.getContext('2d').getImageData(0, 0, 1080, 1920).data; let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1; for (let y = 0; y < 1920; y += 2) for (let x = 0; x < 1080; x += 2) { const i = (y * 1080 + x) * 4; if (d[i] + d[i + 1] + d[i + 2] > 60) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } return { x0, y0, x1, y1 }; };
+window.__photos = () => Object.keys(photos).filter(k => !k.startsWith('mask:')).length; window.__statTexts = () => doc.layers.filter(l => l.type === 'stat').map(l => statValue(state.story, doc, l.stat));
 // ---- photos stay on the device: IndexedDB only ----
 const idb = (() => { let p; const open = () => p || (p = new Promise((res, rej) => { const r = indexedDB.open('hoohaa', 1); r.onupgradeneeded = () => r.result.createObjectStore('photos'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
   const tx = (m, f) => open().then(db => new Promise((res, rej) => { const t = db.transaction('photos', m), s = t.objectStore('photos'), q = f(s); t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); }));
@@ -1097,8 +1120,27 @@ async function addPhotoFile(f) { // downscale to ≤1600px, keep on device
   const im = await blobToImg(f), k = Math.min(1, 1600 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
   const pid = 'P' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); photos[pid] = c;
   c.toBlob(b => b && idb.put(pid, b), 'image/jpeg', .88); return pid; }
+// ---- '인물 뒤로': on-device subject segmentation (MediaPipe, Apache-2.0), lazy-loaded only when used ----
+const SEG = new URL('seg/', location.href).href; let segP = null; const segBusy = new Map();
+const getSeg = () => segP || (segP = (async () => { const m = await import(SEG + 'vision_bundle.mjs'); const fs = await m.FilesetResolver.forVisionTasks(SEG.replace(/\/$/, ''));
+  return m.ImageSegmenter.createFromOptions(fs, { baseOptions: { modelAssetPath: SEG + 'selfie_segmenter.tflite', delegate: 'CPU' }, runningMode: 'IMAGE', outputConfidenceMasks: true, outputCategoryMask: false }); })().catch(e => { segP = null; throw e; }));
+function ensureMask(pid) { if (photos['mask:' + pid]) return Promise.resolve(true); if (segBusy.has(pid)) return segBusy.get(pid);
+  const pr = (async () => { const im = photos[pid]; const seg = await getSeg(); const src = document.createElement('canvas'); src.width = im.width; src.height = im.height; src.getContext('2d').drawImage(im, 0, 0);
+    const r = seg.segment(src), m = r.confidenceMasks[0], a = m.getAsFloat32Array(), w = m.width, h = m.height; const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'), id = g.createImageData(w, h); let on = 0;
+    for (let i = 0; i < a.length; i++) { const v = Math.max(0, Math.min(1, (a[i] - .35) / .3)); id.data[i * 4 + 3] = v * 255; id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 255; if (v > .5) on++; }
+    r.close && r.close(); g.putImageData(id, 0, 0); if (on < a.length * .01) throw new Error('no subject'); photos['mask:' + pid] = c; return true; })().catch(e => { console.warn('segmentation', e); return false; }).finally(() => segBusy.delete(pid));
+  segBusy.set(pid, pr); return pr; }
+window.__mask = () => Object.keys(photos).filter(k => k.startsWith('mask:')).length;
+async function toggleBehind(L) {
+  if (L.behind) { L.behind = false; changed(true); paintPanel(); return; }
+  if (doc.bg.type !== 'photo' || !photos[doc.bg.pid]) { status('먼저 배경에 인물 사진을 넣어 주세요', 3000); return; }
+  const b = $('pBehind'); if (b) { b.classList.add('loading'); b.textContent = '인물 찾는 중…'; } status('인물을 찾는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
+  const ok = await ensureMask(doc.bg.pid);
+  if (ok) { L.behind = true; status('인물 뒤로 보냈어요'); } else status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000);
+  changed(true); paintPanel(); }
 async function restorePhotos() { const ids = new Set([doc.bg.pid, ...doc.layers.map(l => l.pid)].filter(Boolean)); let n = 0;
-  for (const id of ids) if (!photos[id]) { const b = await idb.get(id); if (b) { photos[id] = await blobToImg(b); n++; } } if (n) changed(true); }
+  for (const id of ids) if (!photos[id]) { const b = await idb.get(id); if (b) { photos[id] = await blobToImg(b); n++; } } if (n) changed(true);
+  if (doc.bg.type === 'photo' && photos[doc.bg.pid] && doc.layers.some(l => l.behind)) { if (await ensureMask(doc.bg.pid)) changed(true); else { doc.layers.forEach(l => l.behind = false); changed(true); } } }
 // ---- history + autosave ----
 let hist = [], hi = -1, comT = 0;
 function commit() { clearTimeout(comT); if (!doc) return; const s = JSON.stringify(doc); if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 100) hist.shift(); hi = hist.length - 1; } LS('runtier:v3doc', doc); paintTop(); }
@@ -1110,10 +1152,10 @@ const getL = id => doc.layers.find(l => l.id === id);
 const isTop = L => L && L.type === 'stat' && L.stat === 'top';
 // ---- rendering ----
 let rafQ = 0, lastCv = null;
-function changed(now) { if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; $('tplPreview').getContext('2d').drawImage(cv, 0, 0); paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
+function changed(now) { const bb = $('bgBtn'); if (bb && doc) bb.hidden = doc.bg.type === 'photo' && !!photos[doc.bg.pid]; if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; $('tplPreview').getContext('2d').drawImage(cv, 0, 0); paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
 async function refreshTpl() { // called from renderResult
   if (!state.story) return;
-  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : templateDoc('card', state.story); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
+  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : templateDoc('nrc', state.story); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
   changed(true); paintPanel(); thumbs();
 }
 async function thumbs() {
@@ -1123,10 +1165,10 @@ async function thumbs() {
   for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? templateDoc(b.dataset.t, state.story) : mine[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t = b.querySelector('canvas').getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, 108, 192); }
 }
 $('tplList').addEventListener('click', e => { const del = e.target.closest('[data-mdel]'); if (del) { const m = LS('runtier:mytpl') || []; m.splice(+del.dataset.mdel, 1); LS('runtier:mytpl', m); thumbs(); return; }
-  const b = e.target.closest('.tpl-btn'); if (!b) return; const race = doc.race;
-  doc = b.dataset.t ? templateDoc(b.dataset.t, state.story) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined }; doc.race = race; sel = null; mode = null;
+  const b = e.target.closest('.tpl-btn'); if (!b) return; const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null;
+  doc = b.dataset.t ? templateDoc(b.dataset.t, state.story) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined }; doc.race = race; if (keepBg) doc.bg = keepBg; sel = null; mode = null;
   for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); });
-$('tplReset').addEventListener('click', () => { const race = doc.race; doc = templateDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'card', state.story); doc.race = race; sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
+$('tplReset').addEventListener('click', () => { const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; doc = templateDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc', state.story); doc.race = race; if (keepBg) doc.bg = keepBg; sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
 $('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
 // ---- overlay: selection, handles, guides, trash (never part of the exported image) ----
 const corners = b => { const c = Math.cos(b.r || 0), s = Math.sin(b.r || 0), hw = b.w * b.s / 2, hh = b.h * b.s / 2; return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(([x, y]) => [b.x + x * c - y * s, b.y + x * s + y * c]); };
@@ -1146,8 +1188,7 @@ const onHandle = (x, y) => { const b = sel && boxes.find(q => q.id === sel); if 
 // ---- gestures: tap select · drag move (snap) · pinch scale+rotate · corner handle · long-press menu · drag to trash ----
 {
   const st = $('stage'), ov = $('ovl'), pts = new Map(); let g0 = null, lp = 0, moved = false;
-  const k = () => 1080 / ov.getBoundingClientRect().width;
-  const cv = e => { const r = ov.getBoundingClientRect(); return [(e.clientX - r.left) * k(), (e.clientY - r.top) * k()]; };
+  const cv = e => { const r = ov.getBoundingClientRect(); return [(e.clientX - r.left) * 1080 / r.width, (e.clientY - r.top) * 1920 / r.height]; };
   const ang = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]);
   const start = () => { const P = [...pts.values()], L = sel && getL(sel); g0 = { P: P.map(p => [...p]), L: L ? clone(L) : null, bg: clone(doc.bg) }; };
   ov.addEventListener('pointerdown', e => {
@@ -1155,7 +1196,7 @@ const onHandle = (x, y) => { const b = sel && boxes.find(q => q.id === sel); if 
     if (pickMode) { pickMode = false; const px = $('tplPreview').getContext('2d').getImageData(Math.round(p[0]), Math.round(p[1]), 1, 1).data; setCol('#' + [px[0], px[1], px[2]].map(v => v.toString(16).padStart(2, '0')).join('')); status('색을 가져왔어요'); pts.delete(e.pointerId); return; }
     if (pts.size === 1) { moved = false; g0 = null;
       if (onHandle(p[0], p[1])) { start(); g0.handle = true; }
-      else { const h = hitAt(p[0], p[1]); if (h) { if (sel !== h.id) { sel = h.id; mode = null; paintPanel(); } } else if (!(doc.bg.type === 'photo' && photos[doc.bg.pid])) { if (sel) { sel = null; paintPanel(); } } start(); g0.hit = !!h; }
+      else { const h = hitAt(p[0], p[1]); if (h) { const HL = getL(h.id); if (HL && HL.ax) { HL.x = h.x; HL.y = h.y; delete HL.ax; } if (sel !== h.id) { sel = h.id; mode = null; paintPanel(); } } else if (!(doc.bg.type === 'photo' && photos[doc.bg.pid])) { if (sel) { sel = null; paintPanel(); } } start(); g0.hit = !!h; }
       clearTimeout(lp); lp = setTimeout(() => { if (!moved && sel && g0 && g0.hit) showMenu(p); }, 550);
       paintOvl(); }
     else start();
@@ -1205,10 +1246,11 @@ $('tools').addEventListener('click', async e => { const b = e.target.closest('[d
   if (t === 'photo') { photoTarget = 'layer'; pickPhoto(); return; }
   sel = null; mode = mode === t ? null : t; paintPanel(); });
 let photoTarget = 'layer';
+$('bgBtn').addEventListener('click', () => { photoTarget = 'bg'; pickPhoto(); });
 const pickPhoto = () => { status('사진은 이 기기 안에서만 쓰여요', 2200); $('photo').click(); };
 $('photo').addEventListener('change', async e => {
   const fs = [...e.target.files]; e.target.value = ''; if (!fs.length) return;
-  if (photoTarget === 'bg') { const pid = await addPhotoFile(fs[0]); doc.bg = { type: 'photo', pid, pz: 1, px: 0, py: 0, filter: 'none' }; changed(true); paintPanel(); return; }
+  if (photoTarget === 'bg') { const pid = await addPhotoFile(fs[0]); doc.bg = { type: 'photo', pid, pz: 1, px: 0, py: 0, filter: 'none' }; if (doc.layers.some(l => l.behind)) { status('인물을 찾는 중이에요…', 8000); if (!(await ensureMask(pid))) { doc.layers.forEach(l => l.behind = false); status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000); } else status(''); } changed(true); paintPanel(); return; }
   if (photoTarget === 'fill') { const L = getL(sel); if (L) { L.pid = await addPhotoFile(fs[0]); L.cz = 1; L.cx = 0; L.cy = 0; changed(true); paintPanel(); } return; }
   let n = doc.layers.filter(l => l.type === 'photo').length;
   for (const f of fs) { if (n >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); break; } const pid = await addPhotoFile(f); n++; const L = mk('photo', { pid, mask: 'round', filter: 'none', x: 540 + (n % 3 - 1) * 60, y: 900 + (n % 3) * 40, s: .9 }); doc.layers.push(L); sel = L.id; }
@@ -1257,6 +1299,7 @@ const seg = (id, opts, cur) => `<div class="seg n${opts.length}" id="${id}" role
 const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row"><label for="${id}" class="lbl sm">${lab}</label><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><output id="${id}V">${val}${unit}</output></div>`;
 let moreCol = false, moreTxt = false;
 function paintPanel() {
+  { const L0 = sel && getL(sel), b = L0 && L0.ax && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; } }
   const P = $('panel'); $('cpick').hidden = true; document.body.appendChild($('cpick')); const L = sel && getL(sel);
   for (const b of $('tools').querySelectorAll('[data-tool]')) b.setAttribute('aria-pressed', String(b.dataset.tool === mode && !L));
   $('sizeCol').hidden = !(L && L.type === 'text'); if (L && L.type === 'text') { $('tSize').value = L.size || 96; }
@@ -1267,7 +1310,7 @@ function paintPanel() {
       h += `<input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats">${[['all', '전체'], ['fav', '★ 즐겨찾기'], ['recent', '최근'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div><div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용·웹 임베딩이 허용된 OFL·Apache 라이선스예요</p><button type="button" class="chip-btn" id="fClose">글꼴 목록 닫기</button>`;
       P.innerHTML = h; bindPanel(L); return; }
     if (L.type === 'text') h += `<label class="lbl sm" for="tText">내용</label><textarea id="tText" rows="2" maxlength="80">${esc(L.t || '')}</textarea>`;
-    if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 바꿀 수 없어요 · 위치·크기·스타일만 바꿀 수 있어요${isTop(L) ? ' · 상위 %는 항상 크게 보여요' : ''}</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `<span class="lbl sm">디자인</span>${seg('pV', [[0, '라벨+값'], [1, '값만'], [2, '알약']], L.v || 0)}`;
+    if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 바꿀 수 없어요 · 위치·크기·스타일만 바꿀 수 있어요${isTop(L) ? ' · 상위 %는 항상 크게 보여요' : ''}</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `<span class="lbl sm">디자인</span>${seg('pV', [[0, '라벨+값'], [1, '값만'], [2, '알약'], [3, '런앱']], L.v || 0)}`;
     if (L.type === 'card') h += `<span class="lbl sm">디자인</span>${seg('pV', [[0, '카드'], [1, '배지']], L.v || 0)}`;
     if (L.type === 'text' || L.type === 'stat') h += `<span class="lbl sm">글꼴</span>${fontRow(L)}`;
     if (L.type !== 'card' && L.type !== 'photo') h += `<span class="lbl sm">색</span>${chipsHTML()}`;
@@ -1276,6 +1319,7 @@ function paintPanel() {
     if (L.type === 'text' || L.type === 'stat') h += `<button type="button" class="chip-btn" id="pMoreT" aria-expanded="${moreTxt}">자간·행간 ${moreTxt ? '접기' : '더보기'}</button>` + (moreTxt ? range('pLs', '자간', -10, 60, L.ls || 0, 'px') + range('pLh', '행간', 0, 250, Math.round((L.lh ?? 1.15) * 100), '%') : '');
     if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}<span class="lbl sm">필터</span>${seg('pFilter', FILTERS, L.filter || 'none')}` + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경으로 쓰기</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
     if (L.type === 'sticker' || L.type === 'shape') {}
+    if (doc.bg.type === 'photo' && photos[doc.bg.pid]) h += `<div class="ed-btns"><button type="button" class="tg" id="pBehind" aria-pressed="${!!L.behind}">${L.behind ? '✓ 인물 뒤로 (켜짐)' : '인물 뒤로'}</button></div><p class="hint">배경 사진 속 인물 뒤로 이 요소를 보내요</p>`;
     h += range('pS', '크기', 8, 400, Math.round(L.s * 100), '%') + range('pR', '회전', -180, 180, Math.round((L.r || 0) * 180 / Math.PI), '°') + (isTop(L) ? '' : range('pO', '불투명도', 5, 100, Math.round((L.o ?? 1) * 100), '%'));
     h += `<div class="ed-btns acts">${isTop(L) ? '' : '<button type="button" class="chip-btn" data-act="dup">복제</button>'}<button type="button" class="chip-btn" data-act="up">앞으로</button><button type="button" class="chip-btn" data-act="down">뒤로</button>${isTop(L) ? '' : '<button type="button" class="chip-btn danger" data-act="del">삭제</button>'}</div>`;
   } else if (mode === 'stat') {
@@ -1307,6 +1351,7 @@ function bindPanel(L) {
   const rg = (id, f, u = '') => on(id, 'input', e => { f(+e.target.value); $(id + 'V').textContent = e.target.value + u; changed(); });
   rg('pS', v => L.s = v / 100, '%'); rg('pR', v => L.r = v * Math.PI / 180, '°'); rg('pO', v => L.o = v / 100, '%'); rg('pLs', v => L.ls = v, 'px'); rg('pLh', v => L.lh = v / 100, '%');
   rg('pCz', v => L.cz = v / 100, '%'); rg('pCx', v => L.cx = v / 100); rg('pCy', v => L.cy = v / 100); rg('bgZ', v => doc.bg.pz = v / 100, '%');
+  on('pBehind', 'click', () => toggleBehind(L));
   on('pMoreT', 'click', () => { moreTxt = !moreTxt; paintPanel(); });
   on('pFill', 'click', () => { photoTarget = 'fill'; pickPhoto(); }); on('pRefill', 'click', () => { photoTarget = 'fill'; pickPhoto(); });
   on('pAsBg', 'click', () => { if (!L.pid) return; doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== L); sel = null; changed(true); paintPanel(); });
