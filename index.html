@@ -274,7 +274,16 @@ main{max-width:760px}
 .seg{display:grid;gap:4px;background:var(--surface);border-radius:12px;padding:4px}
 .seg.n2{grid-template-columns:1fr 1fr}.seg.n3{grid-template-columns:repeat(3,1fr)}.seg.n4{grid-template-columns:repeat(4,1fr)}.seg.n6{grid-template-columns:repeat(3,1fr)}
 .seg button{min-height:44px}.seg button[aria-checked=true]{background:var(--raised);color:var(--t1)}
-.fquick{display:flex;flex-wrap:wrap;gap:6px}
+.fquick{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 1px 4px;-webkit-overflow-scrolling:touch}.fquick::-webkit-scrollbar{display:none}
+.fquick .fq{flex:none;height:44px;max-width:150px;display:inline-flex;align-items:center;gap:4px;font-size:16px;line-height:1}
+.fquick .fq.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.fquick .fq .ck{color:var(--accent)}
+.fsheet{position:fixed;inset:0;z-index:60;background:rgba(5,8,12,.55);display:flex;align-items:flex-end;justify-content:center}.fsheet[hidden]{display:none}
+.fs-card{width:100%;max-width:520px;max-height:78vh;display:flex;flex-direction:column;background:var(--surface);border-radius:18px 18px 0 0;padding:6px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.fs-card .fcats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.fs-card .fcats button{flex:none}
+.fs-card .flist{overflow-y:auto;flex:1;min-height:0}
+.fs-card #fSearch{min-height:44px;width:100%;box-sizing:border-box;border-radius:12px;border:1px solid var(--border2);background:var(--raised);color:var(--t1);padding:0 12px;font-size:16px}
+.kob{font-style:normal;font-size:10px;font-weight:700;color:#0F1620;background:var(--accent2,#B9ECFF);border-radius:4px;padding:1px 4px;margin-right:5px}
+body.fs-open{overflow:hidden}
 .fq,.fopt{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-size:16px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fq[aria-pressed=true],.fopt[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .fq.more{font:600 14px inherit;font-family:inherit;color:var(--t1)}
@@ -305,11 +314,13 @@ main{max-width:760px}
 .segt .thumb{display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:28px;border-radius:6px;background:#0F1620;color:#F4F6F8;line-height:1;overflow:hidden}
 .segt .thumb b{font:800 11px/1 "TC Archivo",sans-serif}.segt .thumb .th-l{font:600 6px/1 "TC Archivo",sans-serif;font-style:normal;letter-spacing:.08em;color:#B8C2CF;margin:1px 0}
 .segt .thumb .th-big{font-size:15px}.segt .thumb .th-pill{background:#3DC8F5;color:#0F1620;border-radius:99px;padding:3px 6px}.segt .thumb .th-run{font-style:italic;font-size:14px;font-weight:900}
-.rgx input[type=range]{flex:1;min-width:0}
-.stp{flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font:600 20px/1 inherit;font-family:inherit;cursor:pointer}
-.rv{flex:none;min-width:56px;min-height:44px;border:0;border-radius:10px;background:var(--surface);color:var(--t1);cursor:text;padding:0 6px;font:600 13px inherit;font-family:inherit}
-.rv-in{flex:none;width:64px;min-height:44px;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--t1);font-size:16px;text-align:center}
-.rgx .lbl{min-width:44px}
+.adj-row.rgx{display:grid;grid-template-columns:40px minmax(0,1fr) 44px;gap:2px;align-items:center}
+.rgx .trk{display:flex;align-items:center;min-width:0}.rgx input[type=range]{flex:1;min-width:0;margin:0}
+.stp{position:relative;flex:none;width:22px;height:28px;padding:0;border:0;background:none;color:var(--t2);font:500 20px/1 inherit;font-family:inherit;cursor:pointer}.stp::after{content:'';position:absolute;inset:-8px -11px}.stp:active{color:var(--accent)}
+.rgx .trk .stp{min-width:0;min-height:0;width:16px;height:28px}
+.rv{flex:none;width:44px;min-width:0;min-height:44px;border:0;border-radius:10px;background:var(--surface);color:var(--t1);cursor:text;padding:0 6px;font:600 13px inherit;font-family:inherit}
+.rv-in{flex:none;width:44px;padding:0;min-height:44px;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--t1);font-size:16px;text-align:center}
+.rgx .lbl{min-width:0;white-space:nowrap;overflow:visible;font-size:11.5px;letter-spacing:-.04em}
 .acc{display:flex;width:100%;align-items:center;justify-content:space-between;min-height:44px;margin-top:4px;padding:0 12px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font:600 14px inherit;font-family:inherit;cursor:pointer}
 .acc-body{padding:2px 0 4px}
 .ed-btns.acts .chip-btn{flex:1}
@@ -1386,18 +1397,31 @@ const QC = ['#ffffff', '#111111', '#3dc8f5', '#ff5a5f', '#ffd166', '#b9ecff', '#
 const ICO_DROP = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 4.5 5 5"/><path d="M17 2.5a2.1 2.1 0 0 1 3 3L17.5 8 16 6.5 17 2.5z"/><path d="M15.5 6.5 5 17l-1 4 4-1L18.5 9.5"/></svg>';
 const chipsHTML = () => `<div class="qcs one"><button type="button" class="qc" data-tierc="1" aria-label="티어 색 (${esc((state.story || {}).tierKo || '')})" aria-pressed="false" style="--c:${state.story ? accentOf(state.story) : '#3dc8f5'}"></button>${QC.map(c => `<button type="button" class="qc" data-c="${c}" aria-label="색 ${c}" aria-pressed="false" style="--c:${c}"></button>`).join('')}<button type="button" class="qc qi" id="eyedrop" aria-label="스포이드: 캔버스에서 색 가져오기">${ICO_DROP}</button><button type="button" class="qc qi wheel" data-more-col="1" aria-expanded="false" aria-label="직접 색 고르기"></button></div><div id="cpHost" hidden></div>`;
 // ---- fonts ----
-const fontBtn = (k, cls = 'fq', on = false) => `<button type="button" class="${cls}${on ? ' on' : ''}" data-fk="${k || ''}" aria-pressed="${on}" style="font-family:${(k ? previewFam(k) : 'inherit').replace(/"/g, "'")};${k ? `font-weight:${nearW(k, 700)}` : ''}">${on ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${k ? esc(FONTS[k].n.replace(/ \(.+\)$/, '')) : '기본'}</button>`;
+const fontBtn = (k, cls = 'fq', on = false) => `<button type="button" class="${cls}${on ? ' on' : ''}" aria-label="글꼴 ${k ? esc(FONTS[k].n) : '기본'}${on ? ' (선택됨)' : ''}" data-fk="${k || ''}" aria-pressed="${on}" style="font-family:${(k ? previewFam(k) : 'inherit').replace(/"/g, "'")};${k ? `font-weight:${nearW(k, 700)}` : ''}">${on ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${k ? esc(FONTS[k].n.replace(/ \(.+\)$/, '')) : '기본'}</button>`;
 const sampleOf = L => L.type === 'text' ? (L.t || '').split('\n')[0].slice(0, 16) || 'Aa' : statValue(state.story, doc, L.stat);
-function fontRow(L) { const cur = L.font && FONTS[L.font] ? L.font : null; let ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(k => FONTS[k]).slice(0, 6);
-  if (cur && !ks.includes(cur)) ks = [cur, ...ks.slice(0, 5)]; else if (cur) ks = [cur, ...ks.filter(k => k !== cur)]; ks.forEach(loadPreviewFont);
-  return `<div class="fquick">${cur ? '' : fontBtn(null, 'fq', true)}${ks.map(k => fontBtn(k, 'fq', k === cur)).join('')}${cur ? fontBtn(null) : ''}<button type="button" class="fq more" data-flib="1">글꼴 더보기 ${Object.keys(FONTS).length}</button></div>`; }
+function fontRow(L) { const cur = L.font && FONTS[L.font] ? L.font : null; let ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(k => FONTS[k]).slice(0, 8);
+  if (cur && !ks.includes(cur)) ks = [cur, ...ks.slice(0, 7)]; else if (cur) ks = [cur, ...ks.filter(k => k !== cur)]; ks.forEach(loadPreviewFont);
+  return `<div class="fquick">${cur ? '' : fontBtn(null, 'fq', true)}${ks.map(k => fontBtn(k, 'fq', k === cur)).join('')}${cur ? fontBtn(null) : ''}<button type="button" class="fq more" data-flib="1" aria-haspopup="dialog">전체 ${Object.keys(FONTS).length} ›</button></div>`; }
 function libHTML(L) { const q = ($('fSearch') || {}).value || '', fv = favs(), rc = recents(), smp = esc(sampleOf(L));
   let ks = Object.keys(FONTS); if (fontCat === 'fav') ks = fv.filter(k => FONTS[k]); else if (fontCat === 'recent') ks = rc.filter(k => FONTS[k]); else if (fontCat !== 'all') ks = ks.filter(k => FONTS[k].cat === fontCat);
-  const ql = q.trim().toLowerCase(); if (ql) ks = ks.filter(k => (FONTS[k].n + ' ' + k + ' ' + ((FONT_CATS.find(c => c[0] === FONTS[k].cat) || [])[1] || '')).toLowerCase().includes(ql)); ks.forEach(loadPreviewFont);
-  return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt${L.font === k ? ' on' : ''}" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${L.font === k ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${smp}</b><small>${esc(FONTS[k].n)} · ${FONTS[k].lic}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
+  ks.sort((a, b) => (FONTS[b].ko ? 1 : 0) - (FONTS[a].ko ? 1 : 0)); const ql = q.trim().toLowerCase(); if (ql) ks = ks.filter(k => (FONTS[k].n + ' ' + k + ' ' + ((FONT_CATS.find(c => c[0] === FONTS[k].cat) || [])[1] || '')).toLowerCase().includes(ql)); ks.forEach(loadPreviewFont);
+  return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt${L.font === k ? ' on' : ''}" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${L.font === k ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${smp}</b><small>${FONTS[k].ko ? '<em class="kob">한글</em>' : ''}${esc(FONTS[k].n)}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
 async function pickFont(k) { const L = getL(sel); if (!L) return; const bs = document.querySelectorAll(`[data-fk="${k || ''}"]`); bs.forEach(b => b.classList.add('loading'));
   const ok = k ? await loadFont(k) : true; bs.forEach(b => b.classList.remove('loading')); if (!ok) { status('글꼴을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
   if (k) LS('runtier:fontrecent', [k, ...recents().filter(x => x !== k)].slice(0, 8)); L.font = k || null; changed(true); paintPanel(); }
+// ---- font bottom sheet: tap applies live, sheet stays open until 완료 ----
+function fontSheetHTML(L) { return `<div class="fs-card" role="dialog" aria-modal="true" aria-labelledby="fsT"><div class="sh-head"><h3 id="fsT">글꼴 ${Object.keys(FONTS).length}</h3><button type="button" class="chip-btn primary-chip" id="fsDone">완료</button></div>
+  <input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats" role="radiogroup" aria-label="글꼴 분류">${[['all', '전체'], ['recent', '최근'], ['fav', '★'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div>
+  <div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용이 허용된 OFL·Apache 라이선스예요</p></div>`; }
+function openFontSheet() { const L = getL(sel); if (!L) return; let sh = $('fSheet'); if (!sh) { sh = document.createElement('div'); sh.id = 'fSheet'; sh.className = 'fsheet'; document.body.appendChild(sh);
+    sh.addEventListener('click', e => { const L2 = getL(sel); if (e.target === sh || e.target.closest('#fsDone')) return closeFontSheet(); const b = e.target.closest('button'); if (!b || !L2) return; const d = b.dataset;
+      if (d.c && b.closest('#fCats')) { fontCat = d.c; for (const x of $('fCats').children) x.setAttribute('aria-checked', String(x === b)); $('fList').innerHTML = libHTML(L2); }
+      else if (d.star) { const f = favs(); LS('runtier:fontfav', f.includes(d.star) ? f.filter(x => x !== d.star) : [d.star, ...f]); $('fList').innerHTML = libHTML(L2); }
+      else if (d.fk !== undefined) pickFont(d.fk || null).then(() => { if (!$('fSheet').hidden) $('fList').innerHTML = libHTML(getL(sel)); }); });
+    sh.addEventListener('input', e => { if (e.target.id === 'fSearch') $('fList').innerHTML = libHTML(getL(sel)); });
+    sh.addEventListener('keydown', e => { if (e.key === 'Escape') closeFontSheet(); }); }
+  sh.innerHTML = fontSheetHTML(L); sh.hidden = false; document.body.classList.add('fs-open'); $('fsDone').focus(); }
+function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); }
 // ---- bottom panel (one level deep, in page flow) ----
 const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', sticker: '스티커', shape: '도형' };
 const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커' : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
@@ -1405,7 +1429,7 @@ const seg = (id, opts, cur) => `<div class="seg n${opts.length}" id="${id}" role
 const STYLE_THUMB = ['<i class="th-l">PACE</i><b>4:54</b>', '<b class="th-big">4:54</b>', '<b class="th-pill">4:54</b>', '<b class="th-run">4:54</b><i class="th-l">PACE</i>'];
 const segT = (id, opts, cur) => `<div class="seg segt n${opts.length}" id="${id}" role="radiogroup" aria-label="표시 스타일">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}"><span class="thumb" aria-hidden="true">${STYLE_THUMB[v]}</span>${n}</button>`).join('')}</div>`;
 // slider row: −/+ fine steps, tap value to type a number
-const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row rgx"><label for="${id}" class="lbl sm">${lab}</label><button type="button" class="stp" data-stp="${id}" data-d="-1" aria-label="${lab} 줄이기">−</button><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><button type="button" class="stp" data-stp="${id}" data-d="1" aria-label="${lab} 늘리기">+</button><button type="button" class="rv" data-rv="${id}" data-u="${unit}" aria-label="${lab} 값 직접 입력"><output id="${id}V">${val}${unit}</output></button></div>`;
+const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row rgx"><label for="${id}" class="lbl sm">${lab}</label><div class="trk"><button type="button" class="stp" data-stp="${id}" data-d="-1" aria-label="${lab} 줄이기">−</button><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><button type="button" class="stp" data-stp="${id}" data-d="1" aria-label="${lab} 늘리기">+</button></div><button type="button" class="rv" data-rv="${id}" data-u="${unit}" aria-label="${lab} 값 직접 입력"><output id="${id}V">${val}${unit}</output></button></div>`;
 let moreCol = false, moreTxt = false;
 function paintPanel() {
   { const L0 = sel && getL(sel), b = L0 && L0.ax && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; } }
@@ -1477,7 +1501,7 @@ function bindPanel(L) {
     if (d.c && t.classList.contains('qc')) setCol(d.c);
     if (d.tierc) setCol('@tier');
     if (d.moreCol) { const host = $('cpHost'); host.hidden = !host.hidden; t.setAttribute('aria-expanded', String(!host.hidden)); if (!host.hidden) { host.appendChild($('cpick')); $('cpick').hidden = false; hsvCol = ''; paintPicker(); } }
-    if (d.flib) { libOpen = true; paintPanel(); }
+    if (d.flib) openFontSheet();
     if (d.fk !== undefined && t.closest('#panel')) pickFont(d.fk || null);
     if (d.star) { const f = favs(); LS('runtier:fontfav', f.includes(d.star) ? f.filter(x => x !== d.star) : [d.star, ...f]); $('fList').innerHTML = libHTML(L); }
     if (d.act) act(d.act);
