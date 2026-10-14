@@ -364,6 +364,9 @@ body.fs-open{overflow:hidden}
 .fs-card .frow{gap:8px;align-items:stretch}.fs-card .fopt{min-height:60px}
 .fs-card .star{width:44px;min-height:0;border-color:transparent;background:var(--raised);font-size:18px;display:flex;align-items:center;justify-content:center}.fs-card .star[aria-pressed=true]{border-color:rgba(255,209,102,.5)}
 .sh-head .mcount{font-size:12px;font-weight:600;color:var(--accent);margin:0 auto 0 8px;white-space:nowrap}
+.wxfill{display:flex;flex-direction:column;gap:8px;margin:10px 0 4px;padding:12px;border:1px solid var(--border2);border-radius:14px}
+.wxrow{display:flex;gap:8px}.wxrow input,.wxrow select{flex:1;min-width:0;min-height:44px;box-sizing:border-box;border-radius:12px;border:1px solid var(--border2);background:var(--raised);color:var(--t1);padding:0 12px;font:inherit;font-size:16px}
+.wxrow select{flex:0 0 96px}.wxres{display:flex;flex-wrap:wrap;gap:6px}.wxfill .hint{margin:0}
 
 </style>
 <style>
@@ -1349,9 +1352,10 @@ function specText(c, L, d, doc) {
   const fam = FONTS[fk].fam, w = wOf(fk, sp.wt), ls = L.ls ?? sp.ls ?? 0; font(c, sz, w, fam); c.letterSpacing = ls + 'px';
   const m = c.measureText('Hg가'), asc = m.fontBoundingBoxAscent || sz * .95, desc = m.fontBoundingBoxDescent || sz * .25, lh = (L.lh ?? sp.lh) ? (L.lh ?? sp.lh) * sz : asc + desc;
   const LG = lines.length === 1 && lines[0].endsWith(LOGO_TXT); if (LG) lines[0] = lines[0].slice(0, -LOGO_TXT.length); const lgH = LG ? sz * 1.5 : 0, lgW = lgH * 470 / 122;
-  const lw = lines.map(t => c.measureText(t).width + (LG ? lgW : 0)); c.letterSpacing = '0px'; const W = Math.max(1, ...lw), H = Math.max(lh * lines.length, lgH), bx = L.box && L.box !== 'none', pad = bx ? sz * .3 : 0, col0 = L.col || '#ffffff', col = L.box === 'full' && !L.bcol ? contrast(col0) : col0, al = sp.al || 'left';
+  const ink = lines.map(t => { const m3 = c.measureText(t); return LG || !t.trim() ? [0, m3.width] : [m3.actualBoundingBoxLeft, m3.actualBoundingBoxLeft + m3.actualBoundingBoxRight]; }); // ink box: margins measured to the glyphs, not the advance
+  const lw = lines.map((t, i) => ink[i][1] + (LG ? lgW : 0)); c.letterSpacing = '0px'; const W = Math.max(1, ...lw), H = Math.max(lh * lines.length, lgH), bx = L.box && L.box !== 'none', pad = bx ? sz * .3 : 0, col0 = L.col || '#ffffff', col = L.box === 'full' && !L.bcol ? contrast(col0) : col0, al = sp.al || 'left';
   return { w: W + pad * 2, h: H + pad * 1.4, draw: () => { if (bx) boxBehind(c, W, H, L.box, col0, pad, sz * .28, L); font(c, sz, w, fam); c.letterSpacing = ls + 'px'; c.textBaseline = 'alphabetic'; c.textAlign = 'left'; c.fillStyle = col;
-    lines.forEach((t, i) => { const x = -W / 2 + (al === 'center' ? (W - lw[i]) / 2 : al === 'right' ? W - lw[i] : 0), y = (() => { const m2 = c.measureText(t.trim() ? t : 'H'), a = m2.actualBoundingBoxAscent ?? asc * .75, d = m2.actualBoundingBoxDescent ?? 0; return -H / 2 + i * lh + lh / 2 + (a - d) / 2; })();
+    lines.forEach((t, i) => { const x = -W / 2 + ink[i][0] + (al === 'center' ? (W - lw[i]) / 2 : al === 'right' ? W - lw[i] : 0), y = (() => { const m2 = c.measureText(t.trim() ? t : 'H'), a = m2.actualBoundingBoxAscent ?? asc * .75, d = m2.actualBoundingBoxDescent ?? 0; return -H / 2 + i * lh + lh / 2 + (a - d) / 2; })();
       if (sp.ul) { c.save(); c.fillStyle = sp.ul[0]; c.fillRect(x, y + sp.ul[2], lw[i] - ls, sp.ul[1]); c.restore(); }
       if (t) fxText(c, t, x, y, sz, col);
       if (LG) { c.save(); c.globalAlpha *= .92; const sh = L.fsh; if (Array.isArray(sh)) { c.shadowOffsetX = sh[0]; c.shadowOffsetY = sh[1]; c.shadowBlur = sh[2]; c.shadowColor = sh[3]; } c.drawImage(logoCanvas(), x + lw[i] - lgW, -lgH / 2, lgW, lgH); c.restore(); } }); c.letterSpacing = '0px'; } }; }
@@ -1444,11 +1448,20 @@ async function renderDoc(d, doc, photos = {}, cv) {
   const boxes = [], subj = doc.layers.some(l => l.behind && !l.hidden) ? subjectLayer(doc, photos) : null;
   const order = subj ? [...doc.layers.filter(l => l.behind), null, ...doc.layers.filter(l => !l.behind)] : doc.layers;
   cv.__subject = !!subj;
+  // shared layout: every stat row is one size — the row shrinks together until its widest value fits its equal-width column
+  const rowS = {}, rowX = {}, RW = {}; { const G = {}; for (const l of doc.layers) if (l.row && !l.mv && l.af !== false && !l.hidden) (G[l.row.g] = G[l.row.g] || []).push(l);
+    for (const [g, ms] of Object.entries(G)) { const n = ms[0].row.n, col = (W_ - 2 * MARGIN - (n - 1) * COL_GAP) / n; let f = 1; for (const l of ms) { c.save(); const gg = layerGeom(c, l, d, doc, photos); c.restore(); RW[l.id] = gg; f = Math.min(f, col / Math.max(1, gg.w)); } rowS[g] = f; }
+    const kf = {}; for (const [g, ms] of Object.entries(G)) { const k = ms[0].row.k + ms[0].row.n; kf[k] = Math.min(kf[k] ?? 1, rowS[g]); } for (const [g, ms] of Object.entries(G)) rowS[g] = kf[ms[0].row.k + ms[0].row.n];
+    // 상위 % never drops below TOP_MIN_PX: the whole row grows with it; if that overflows the equal columns, the row spreads (space-between) instead
+    for (const [g, ms] of Object.entries(G)) { const t = ms.find(isTopL); if (t) rowS[g] = Math.max(rowS[g], TOP_MIN_PX / Math.max(1, RW[t.id].h));
+      const n = ms[0].row.n, f = rowS[g], col = (W_ - 2 * MARGIN - (n - 1) * COL_GAP) / n, srt = [...ms].sort((a, b) => a.row.i - b.row.i);
+      if (n > 2 && srt.length === n && srt.some(l => RW[l.id].w * f > col + .5)) { const tot = srt.reduce((a, l) => a + RW[l.id].w * f, 0), gap = (W_ - 2 * MARGIN - tot) / (n - 1); let x = MARGIN; for (const l of srt) { const w = RW[l.id].w * f; if (l.row.i > 0 && l.row.i < n - 1) rowX[l.id] = x + w / 2; x += w + gap; } } } }
   for (const L0 of order) {
     if (L0 === null) { c.drawImage(subj[0], ...subj[1]); continue; }
     c.save(); const g = layerGeom(c, L0, d, doc, photos), L = { ...eff(L0, g) }; c.restore();
-    if (L.af && !(L.r)) { // template auto-fit: keep drawn bounds (incl. slant) inside ~6% safe margins until the user resizes it
-      const M = L.sp ? 40 : 65, MY = L.sp ? 24 : 40, vw = L.vert ? g.h : g.w, vh = L.vert ? g.w : g.h, aw = L.ax === 'left' ? W_ - M - L.x : L.ax === 'right' ? L.x - M : 2 * Math.min(L.x - M, W_ - M - L.x), ah = L.ay === 'top' ? H_ - MY - L.y : L.ay === 'bottom' ? L.y - MY : 2 * Math.min(L.y - MY, H_ - MY - L.y);
+    if (L.row && !L0.mv && L0.af !== false && rowS[L.row.g] != null) { L.s = rowS[L.row.g]; if (rowX[L.id] != null) L.x = rowX[L.id]; }
+    else if (L.af && !(L.r)) { // template auto-fit: keep drawn bounds (incl. slant) inside ~6% safe margins until the user resizes it
+      const M = L.sp ? MARGIN : 65, MY = L.sp ? 24 : 40, vw = L.vert ? g.h : g.w, vh = L.vert ? g.w : g.h, aw = L.ax === 'left' ? W_ - M - L.x : L.ax === 'right' ? L.x - M : 2 * Math.min(L.x - M, W_ - M - L.x), ah = L.ay === 'top' ? H_ - MY - L.y : L.ay === 'bottom' ? L.y - MY : 2 * Math.min(L.y - MY, H_ - MY - L.y);
       const fs = Math.min(aw / Math.max(1, vw), ah / Math.max(1, vh)); if (fs > 0 && fs < L.s) L.s = isTopL(L) ? Math.max(fs, TOP_MIN_PX / Math.max(1, g.h)) : fs; }
     { const vw = L.vert ? g.h : g.w, vh = L.vert ? g.w : g.h; if (L.ax === 'left') L.x += vw * L.s / 2; else if (L.ax === 'right') L.x -= vw * L.s / 2; if (L.ay === 'top') L.y += vh * L.s / 2; else if (L.ay === 'bottom') L.y -= vh * L.s / 2; }
     boxes.push({ id: L.id, x: L.x, y: L.y, s: L.s, r: L.r, w: g.w, h: g.h, type: L.type, stat: L.stat, v: L.v, hidden: !!L.hidden, nh: !!L.nh, k: L.k, sid: L.sid });
@@ -1479,8 +1492,68 @@ function templateDoc(t, d, fmt = 'story') {
       if (e.y != null) { L.ay = 'top'; L.y = e.y; } else { L.ay = 'bottom'; L.y = H - e.yb; } }
     if (!L) return; L.sid = e.id; if (cutAt >= 0 && i < cutAt && L.type !== 'photo' && L.type !== 'shape') L.behind = true; doc.layers.push(L); });
   if (doc.bgT && !doc.bg.c1) doc.bg = { type: 'tone' };
+  normLayout(doc, els, fmt || 'story', W);
   return doc;
 }
+// ---- shared template layout system: one side margin, equal stat columns, one type scale (canvas + export + every format) ----
+const MARGIN = 72, COL_GAP = 32;
+const FMT_K = { story: 1, feed: .8, square: .66 };
+const typeScale = fmt => { const k = FMT_K[fmt] || 1; return { val: Math.round(64 * k), sub: Math.round(40 * k), lab: Math.round(26 * k), meta: Math.round(26 * k) }; };
+function normLayout(doc, els, fmt, W) {
+  const TS = typeScale(fmt), byId = id => doc.layers.find(l => l.sid === id), side = e => e.y != null ? 't' : 'b', yv = e => e.y != null ? e.y : e.yb, xv = e => e.right != null ? W - e.right : e.x;
+  const cand = els.filter(e => e.k === 'text' && !e.vert && e.w !== 'full' && !e.r && e.sz <= 130), cl = [];
+  for (const e of cand) { const g = cl.find(q => q.s === side(e) && Math.abs(q.y - yv(e)) <= 24); if (g) g.m.push(e); else cl.push({ s: side(e), y: yv(e), m: [e] }); }
+  const rows = cl.filter(q => { const xs = q.m.map(xv).sort((a, b) => a - b); return xs.length >= 2 && xs.every((x, i) => !i || x - xs[i - 1] > 150); });
+  const inRow = new Set(); rows.forEach((q, gi) => { const m = q.m.sort((a, b) => xv(a) - xv(b)), n = m.length, mx = Math.max(...m.map(e => e.sz)) / (FMT_K[fmt] || 1), sz = mx <= 35 ? TS.lab : mx < 56 ? TS.sub : TS.val, y0 = q.s === 't' ? Math.min(...m.map(yv)) : Math.min(...m.map(yv));
+    m.forEach((e, i) => { const L = byId(e.id); if (!L) return; inRow.add(L); const al = n > 1 && i === 0 ? 'left' : i === n - 1 ? 'right' : 'center';
+      L.sp = { ...L.sp, sz, al }; if (L.type === 'text') L.size = sz; L.row = { g: fmt + gi, i, n, k: sz === TS.lab ? 'lab' : sz === TS.sub ? 'sub' : 'val' };
+      if (al === 'left') { L.ax = 'left'; L.x = MARGIN; } else if (al === 'right') { L.ax = 'right'; L.x = W - MARGIN; } else { delete L.ax; L.x = MARGIN + (W - 2 * MARGIN) * (i + .5) / n; }
+      L.y = q.s === 't' ? y0 : fmtH(fmt === 'story' ? undefined : fmt) - y0; }); q.lab = m.every(e => byId(e.id) && byId(e.id).row.k === 'lab'); q.y0 = y0; });
+  // top-anchored value rows sit on their label row (fixed gap), so shrinking a row never opens a hole above the labels
+  for (const q of rows) { if (q.lab || q.s !== 't') continue; const lr = rows.find(r => r.lab && r.s === 't' && r.m.length === q.m.length && r.y0 > q.y0 && r.y0 - q.y0 < 220); if (!lr) continue;
+    for (const e of q.m) { const L = byId(e.id); if (L) { L.ay = 'bottom'; L.y = lr.y0 - Math.round(8 * (FMT_K[fmt] || 1)); } } }
+  for (const L of doc.layers) { if (inRow.has(L) || !L.sp || L.vert) continue; if (L.sp.sz <= 34 * (FMT_K[fmt] || 1) + 2 && L.sp.sz < 36) { L.sp = { ...L.sp, sz: TS.meta }; if (L.type === 'text') L.size = TS.meta; }
+    if (L.sp.sz < 150) { if (L.ax === 'left' && L.x >= 30 && L.x <= 110) L.x = MARGIN; if (L.ax === 'right' && W - L.x >= 30 && W - L.x <= 110) L.x = W - MARGIN; } }
+}
+
+// Open-Meteo weather auto-fill (no key, client-side). Only lat/lon + date/hour leave the device; nothing is stored.
+const wxPad = n => String(n).padStart(2, '0');
+const isoDay = (d = new Date()) => `${d.getFullYear()}-${wxPad(d.getMonth() + 1)}-${wxPad(d.getDate())}`;
+// WMO weather code → [Korean description, sticker icon]
+function wmo(code, day = true) {
+  const c = +code;
+  if (c === 0) return ['맑음', day ? 'sun' : 'night'];
+  if (c === 1) return ['대체로 맑음', day ? 'partly' : 'night'];
+  if (c === 2) return ['구름 조금', 'partly'];
+  if (c === 3) return ['흐림', 'cloud'];
+  if (c === 45 || c === 48) return ['안개', 'cloud'];
+  if (c >= 51 && c <= 57) return ['이슬비', 'rain'];
+  if (c >= 61 && c <= 67) return ['비', 'rain'];
+  if (c >= 71 && c <= 77) return ['눈', 'snow'];
+  if (c >= 80 && c <= 82) return ['소나기', 'rain'];
+  if (c === 85 || c === 86) return ['눈', 'snow'];
+  if (c >= 95) return ['뇌우', 'rain'];
+  return ['흐림', 'cloud'];
+}
+const windWord = ms => ms < 4 ? '약함' : ms < 9 ? '보통' : '강함';
+async function wxJSON(u) { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error('http ' + r.status); return r.json(); }
+const WX_H = 'temperature_2m,weather_code,wind_speed_10m,is_day';
+// date: 'YYYY-MM-DD' (record date), hour 0-23 (local time at the place)
+async function fetchWeather(lat, lon, date, hour) {
+  const q = `latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&hourly=${WX_H}&wind_speed_unit=ms&timezone=auto&start_date=${date}&end_date=${date}`;
+  const past = date < isoDay(); let j = null;
+  if (past) { try { j = await wxJSON(`https://archive-api.open-meteo.com/v1/archive?${q}`); } catch { j = null; } }
+  const ok = x => x && x.hourly && x.hourly.temperature_2m && x.hourly.temperature_2m[hour] != null;
+  if (!ok(j)) j = await wxJSON(`https://api.open-meteo.com/v1/forecast?${q}`); // today (and the last few days the archive doesn't have yet)
+  if (!ok(j)) throw new Error('no data');
+  const h = j.hourly, t = h.temperature_2m[hour], [desc, icon] = wmo(h.weather_code[hour], h.is_day ? !!h.is_day[hour] : hour >= 6 && hour < 19), w = h.wind_speed_10m[hour];
+  return { icon, temp: `${Math.round(t)}°C`, label: `${desc} · 바람 ${windWord(w ?? 0)}` };
+}
+async function searchPlace(name) {
+  const j = await wxJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=5&language=ko&format=json`);
+  return (j.results || []).map(r => ({ name: [r.name, r.admin1, r.country_code === 'KR' ? '' : r.country].filter(Boolean).join(' · '), lat: r.latitude, lon: r.longitude }));
+}
+const wxHere = () => new Promise((res, rej) => { if (!navigator.geolocation) return rej(new Error('unsupported')); navigator.geolocation.getCurrentPosition(p => res({ lat: p.coords.latitude, lon: p.coords.longitude }), rej, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }); });
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -1974,7 +2047,7 @@ function paintPanel() {
     if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}` + (L.pid && photos[L.pid] ? photoEdHTML(L) : '') + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경으로 쓰기</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
     if (L.type === 'sticker' && L.k.startsWith('data_')) { const F = dataFields(L), inp = (k, lab, max, ph = '') => `<label class="lbl sm" for="df_${k}">${lab}</label><input id="df_${k}" data-df="${k}" maxlength="${max}" autocomplete="off" value="${esc(F[k] ?? '')}" placeholder="${esc(ph)}">`;
       h += `<p class="hint">직접 적는 스티커예요 · 값은 자동으로 채워지지 않아요</p>`;
-      if (L.k.startsWith('data_weather')) h += `<span class="lbl sm">날씨</span>${fchips('dfIcon', WEATHER, F.icon)}` + inp('temp', '기온', 5, '12°') + inp('label', '한 줄 메모', 16, '맑음 · 바람 약함');
+      if (L.k.startsWith('data_weather')) h += `<span class="lbl sm">날씨</span>${fchips('dfIcon', WEATHER, F.icon)}` + inp('temp', '기온', 5, '12°') + inp('label', '한 줄 메모', 16, '맑음 · 바람 약함') + wxHTML();
       if (L.k === 'data_course') h += inp('dist', '거리', 10, '10.0 km') + inp('name', '코스 이름', 18, '반포 → 잠수교');
       if (L.k === 'data_bib') h += inp('num', '배번', 5, '1031') + inp('race', '대회 (영문)', 18, 'SEOUL 10K') + `<span class="lbl sm">머리 색</span>${colRow('dfCol', F.color)}`;
       if (L.k === 'data_memo') h += inp('text1', '첫 줄', 14) + inp('text2', '둘째 줄', 16) + inp('date', '날짜 (MM.DD)', 5, '10.14'); }
@@ -1999,6 +2072,20 @@ function paintPanel() {
 }
 async function renderMini(g, L) { const cv = await renderDoc(state.story, { bg: { type: 'solid', c1: '#1F2B3B' }, layers: [{ ...L, x: 540, y: 960, s: 1 }] }, photos); const b = cv.__boxes[0], sz = Math.max(b.w, b.h) * 1.15; g.drawImage(cv, 540 - sz / 2, 960 - sz / 2, sz, sz, 0, 0, 120, 120); }
 function paintSelInfo() { const L = sel && getL(sel); if (!L) return; for (const [id, v, u] of [['pS', Math.round(L.s * 100), '%'], ['pR', Math.round((L.r || 0) * 180 / Math.PI), '°']]) { const e = $(id); if (e && document.activeElement !== e) { e.value = v; $(id + 'V').textContent = v + u; } } }
+// ---- weather sticker auto-fill (Open-Meteo): record date + hour + place; location is used once and never stored ----
+let wxDate = isoDay(), wxHour = new Date().getHours(), wxPlaces = [], wxMsg = '', wxBusy = false;
+const wxHTML = () => `<div class="wxfill" id="wxFill"><span class="lbl sm">날씨 불러오기</span><div class="wxrow"><input type="date" id="wxDate" value="${wxDate}" max="${isoDay()}" aria-label="기록 날짜"><select id="wxHour" aria-label="시간">${Array.from({ length: 24 }, (_, h) => `<option value="${h}"${h === wxHour ? ' selected' : ''}>${h}시</option>`).join('')}</select></div>
+  <button type="button" class="chip-btn primary-chip" id="wxGeo"${wxBusy ? ' disabled' : ''}>📍 날씨 불러오기 (현재 위치)</button>
+  <div class="wxrow"><input id="wxQ" type="search" autocomplete="off" placeholder="장소 검색 (예: 반포한강공원)" aria-label="장소 검색"><button type="button" class="chip-btn" id="wxFind">검색</button></div>
+  ${wxPlaces.length ? `<div class="wxres" id="wxRes">${wxPlaces.map((q, i) => `<button type="button" class="chip-btn" data-wxp="${i}">${esc(q.name)}</button>`).join('')}</div>` : ''}<p class="hint" id="wxMsg" role="status" aria-live="polite">${esc(wxMsg) || '위치는 날씨 조회에만 한 번 쓰이고 저장되지 않아요'}</p></div>`;
+function bindWx(L) { const on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); }, msg = t => { wxMsg = t; const m = $('wxMsg'); if (m) m.textContent = t; };
+  on('wxDate', 'change', e => { wxDate = e.target.value || isoDay(); }); on('wxHour', 'change', e => { wxHour = +e.target.value; });
+  const fill = async (lat, lon) => { wxBusy = true; msg('날씨를 불러오는 중…'); try { const r = await fetchWeather(lat, lon, wxDate, wxHour); L.f = { ...(L.f || {}), ...r }; wxPlaces = []; wxMsg = ''; wxBusy = false; changed(true); paintPanel(); status('날씨를 채웠어요 · 직접 고쳐도 돼요'); }
+    catch { wxBusy = false; msg(navigator.onLine === false ? '오프라인이에요 · 날씨를 직접 입력해 주세요' : '날씨를 불러오지 못했어요 · 직접 입력해 주세요'); } };
+  on('wxGeo', 'click', async () => { msg('위치 확인 중…'); let p; try { p = await wxHere(); } catch (e) { msg(e && e.code === 1 ? '위치 권한이 없어요 · 장소를 검색하거나 직접 입력해 주세요' : '위치를 알 수 없어요 · 장소를 검색하거나 직접 입력해 주세요'); return; } fill(p.lat, p.lon); });
+  const find = async () => { const q = ($('wxQ').value || '').trim(); if (!q) return; msg('장소 찾는 중…'); try { wxPlaces = await searchPlace(q); wxMsg = wxPlaces.length ? '장소를 골라 주세요' : '찾는 장소가 없어요 · 다른 이름으로 검색해 보세요'; paintPanel(); } catch { msg(navigator.onLine === false ? '오프라인이에요 · 날씨를 직접 입력해 주세요' : '장소 검색에 실패했어요 · 직접 입력해 주세요'); } };
+  on('wxFind', 'click', find); on('wxQ', 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); find(); } });
+  on('wxRes', 'click', e => { const b = e.target.closest('[data-wxp]'); if (!b) return; const q = wxPlaces[+b.dataset.wxp]; if (q) fill(q.lat, q.lon); }); }
 function bindPanel(L) {
   const P = $('panel'), on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
   on('pDone', 'click', () => { sel = null; multi.clear(); multiSnap = null; libOpen = false; paintPanel(); paintOvl(); });
@@ -2023,6 +2110,7 @@ function bindPanel(L) {
   if (L && L.type === 'photo') bindPhotoEd(L); else if (!L && mode === 'bg' && doc.bg.type === 'photo') bindPhotoEd(doc.bg);
   if (L && (L.type === 'text' || L.type === 'stat')) bindFx(L);
   if (L && L.type === 'sticker') { for (const e of P.querySelectorAll('[data-df]')) { e.addEventListener('input', () => { L.f = { ...(L.f || {}), [e.dataset.df]: e.value }; changed(); }); e.addEventListener('change', () => commit()); }
+    bindWx(L);
     on('dfIcon', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; L.f = { ...(L.f || {}), icon: b.dataset.v }; changed(true); paintPanel(); });
     on('dfCol', 'click', e => { const b = e.target.closest('[data-olc]'); if (!b) return; L.f = { ...(L.f || {}), color: b.dataset.olc }; changed(true); paintPanel(); }); const cp = $('dfColPick'); if (cp) cp.addEventListener('input', e => { L.f = { ...(L.f || {}), color: e.target.value }; changed(); }); }
   on('wxIcons', 'click', e => { const b = e.target.closest('[data-wx]'); if (!b) return; L.t = b.dataset.wx + ' ' + String(L.t || '').replace(/^\S*\p{Extended_Pictographic}\S*\s*/u, ''); changed(true); paintPanel(); });
