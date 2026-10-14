@@ -3,6 +3,7 @@
 <title>hoohaa · 러닝 티어 &amp; VDOT 기록 계산기 | 내 러닝 티어는?</title>
 <meta name="description" content="5K·10K·하프·풀코스 기록으로 내 러닝 티어를 확인하세요. VDOT 계산기로 마라톤 예상 기록과 E·M·T·I·R 훈련 페이스까지 한 번에. 같은 성별·나이대 상위 %로 아이언부터 챌린저까지, 무료·로그인 없이 브라우저에서 계산해요.">
 <link rel="canonical" href="https://hoohaa.run/">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0F1620">
 <link rel="icon" href="favicon.ico" sizes="32x32">
@@ -19,7 +20,7 @@
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="hoohaa · 내 러닝 티어는?"><meta name="twitter:description" content="후하후하, 내 PB는 무슨 티어?">
 <meta name="twitter:image" content="https://hoohaa.run/og.png?v=1">
 <style>
-:root{--bg:#0F1620;--surface:#171B22;--raised:#20262F;--t1:#F2F4F7;--t2:#B3BAC5;--t3:#8790A0;--border:#2C333E;--border2:#5A6474;--accent:#3DC8F5;--accent-h:#6ED6F8;--accent2:#B9ECFF;--on-accent:#0F1620;--focus:#7CC4FF;--danger:#FF6B6B;--r:14px;--pad:16px;
+:root{--bg:#0F1620;--surface:#172130;--raised:#1F2B3B;--t1:#F4F6F8;--t2:#B8C2CF;--t3:#8A97A8;--border:#2A3748;--border2:#56657A;--accent:#3DC8F5;--accent-h:#6ED6F8;--accent2:#B9ECFF;--on-accent:#0F1620;--focus:#7CC4FF;--danger:#FF6B6B;--r:14px;--pad:16px;
   font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -130,6 +131,10 @@ details.method summary{color:var(--t3);font-size:13px}
 .tpl-btn[aria-checked=true] .tn{color:var(--t1);font-weight:700}
 .tpl-btn .tn{font-size:13px;font-weight:600}
 .tpl-btn .th{font-size:11px;color:var(--t3);line-height:1.2;text-align:center;margin-top:-4px}
+.tc-quote{max-width:440px;margin:12px auto 0;padding:12px 16px;background:#172130;border-radius:12px;border-left:3px solid var(--qc)}
+.tc-quote .ql{display:block;font-size:12px;color:var(--t3);font-weight:500;margin-bottom:4px}
+.tc-quote p{margin:0;font-family:"TC Pretendard","Pretendard",sans-serif;font-size:17px;line-height:1.5;font-weight:600;color:#F4F6F8;word-break:keep-all;overflow-wrap:break-word}
+.lr .lcm{grid-column:1/-1;font-size:13px;font-weight:500;color:var(--t3);white-space:normal;word-break:keep-all;line-height:1.4;padding:2px 0 2px 18px}
 .who-line{margin:12px 2px 0;text-align:center;color:var(--t2);font-size:15px;font-weight:500}
 .who-line b{color:var(--t1);font-weight:700}
 #tplPreview.editable{touch-action:none;cursor:grab}
@@ -269,10 +274,19 @@ main{max-width:760px}
 .seg{display:grid;gap:4px;background:var(--surface);border-radius:12px;padding:4px}
 .seg.n2{grid-template-columns:1fr 1fr}.seg.n3{grid-template-columns:repeat(3,1fr)}.seg.n4{grid-template-columns:repeat(4,1fr)}.seg.n6{grid-template-columns:repeat(3,1fr)}
 .seg button{min-height:44px}.seg button[aria-checked=true]{background:var(--raised);color:var(--t1)}
-.fquick{display:flex;flex-wrap:wrap;gap:6px}
+.fquick{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 1px 4px;-webkit-overflow-scrolling:touch}.fquick::-webkit-scrollbar{display:none}
+.fquick .fq{flex:none;height:44px;max-width:150px;display:inline-flex;align-items:center;gap:4px;font-size:16px;line-height:1}
+.fquick .fq.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.fquick .fq .ck{color:var(--accent)}
+.fsheet{position:fixed;inset:0;z-index:60;background:rgba(5,8,12,.55);display:flex;align-items:flex-end;justify-content:center}.fsheet[hidden]{display:none}
+.fs-card{width:100%;max-width:520px;max-height:78vh;display:flex;flex-direction:column;background:var(--surface);border-radius:18px 18px 0 0;padding:6px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.fs-card .fcats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.fs-card .fcats button{flex:none}
+.fs-card .flist{overflow-y:auto;flex:1;min-height:0}
+.fs-card #fSearch{min-height:44px;width:100%;box-sizing:border-box;border-radius:12px;border:1px solid var(--border2);background:var(--raised);color:var(--t1);padding:0 12px;font-size:16px}
+.kob{font-style:normal;font-size:10px;font-weight:700;color:#0F1620;background:var(--accent2,#B9ECFF);border-radius:4px;padding:1px 4px;margin-right:5px}
+body.fs-open{overflow:hidden}
 .fq,.fopt{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-size:16px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fq[aria-pressed=true],.fopt[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.fq.more{font:600 13px inherit;font-family:inherit;color:var(--accent);border-style:dashed}
+.fq.more{font:600 14px inherit;font-family:inherit;color:var(--t1)}
 .fq.loading,.fopt.loading{background:linear-gradient(90deg,var(--raised) 25%,rgba(255,255,255,.08) 50%,var(--raised) 75%);background-size:200% 100%;animation:sk 1s linear infinite;color:transparent}
 @keyframes sk{to{background-position:-200% 0}}
 .fcats{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
@@ -292,6 +306,23 @@ main{max-width:760px}
 .qcs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
 .qc.qt{width:auto;padding:0 12px;border-radius:22px;border:1px solid var(--border2);background:none;color:var(--t2);font:600 13px inherit;font-family:inherit;min-height:44px}
 .qc.grad{border-radius:50%;border:2px solid var(--border2)}
+.qcs.one{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.qcs.one::-webkit-scrollbar{display:none}.qcs.one .qc{flex:none}
+.qc[data-tierc]{background:radial-gradient(circle,var(--c) 0 13px,#F4F6F8 13.5px 15px,transparent 15.5px)}
+.qc.qi{display:grid;place-items:center;background:none;color:var(--t1);border:1px solid var(--border2)}
+.qc.wheel{border:0;background:radial-gradient(circle,var(--surface) 0 5px,transparent 5.5px),conic-gradient(#ff5a5f,#ffd166,#b9ecff,#3dc8f5,#9b8cff,#ff8fd8,#ff5a5f);-webkit-mask:radial-gradient(circle,#000 15px,transparent 15.5px);mask:radial-gradient(circle,#000 15px,transparent 15.5px)}
+.seg.segt button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:64px;font-size:12px}
+.segt .thumb{display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:28px;border-radius:6px;background:#0F1620;color:#F4F6F8;line-height:1;overflow:hidden}
+.segt .thumb b{font:800 11px/1 "TC Archivo",sans-serif}.segt .thumb .th-l{font:600 6px/1 "TC Archivo",sans-serif;font-style:normal;letter-spacing:.08em;color:#B8C2CF;margin:1px 0}
+.segt .thumb .th-big{font-size:15px}.segt .thumb .th-pill{background:#3DC8F5;color:#0F1620;border-radius:99px;padding:3px 6px}.segt .thumb .th-run{font-style:italic;font-size:14px;font-weight:900}
+.adj-row.rgx{display:grid;grid-template-columns:40px minmax(0,1fr) 44px;gap:2px;align-items:center}
+.rgx .trk{display:flex;align-items:center;min-width:0}.rgx input[type=range]{flex:1;min-width:0;margin:0}
+.stp{position:relative;flex:none;width:22px;height:28px;padding:0;border:0;background:none;color:var(--t2);font:500 20px/1 inherit;font-family:inherit;cursor:pointer}.stp::after{content:'';position:absolute;inset:-8px -11px}.stp:active{color:var(--accent)}
+.rgx .trk .stp{min-width:0;min-height:0;width:16px;height:28px}
+.rv{flex:none;width:44px;min-width:0;min-height:44px;border:0;border-radius:10px;background:var(--surface);color:var(--t1);cursor:text;padding:0 6px;font:600 13px inherit;font-family:inherit}
+.rv-in{flex:none;width:44px;padding:0;min-height:44px;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--t1);font-size:16px;text-align:center}
+.rgx .lbl{min-width:0;white-space:nowrap;overflow:visible;font-size:11.5px;letter-spacing:-.04em}
+.acc{display:flex;width:100%;align-items:center;justify-content:space-between;min-height:44px;margin-top:4px;padding:0 12px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.acc-body{padding:2px 0 4px}
 .ed-btns.acts .chip-btn{flex:1}
 .tl{display:block;margin:4px 0 6px}
 .tpl .tpl-list{display:flex;overflow-x:auto;gap:8px;padding:4px 2px 8px;scroll-snap-type:x proximity}
@@ -303,17 +334,17 @@ main{max-width:760px}
 .ph-btn{display:none}
 .bg-btn{position:absolute;left:8px;top:8px;min-height:44px;padding:0 14px;border-radius:22px;border:0;background:rgba(15,22,32,.72);color:#fff;font:600 13px inherit;font-family:inherit;cursor:pointer;z-index:1;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 .tg.loading{opacity:.6}
-.behind-tg{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;margin:4px 0 12px;padding:10px 14px;border-radius:14px;border:1.5px solid #3DC8F5;background:rgba(61,200,245,.10);color:#F2F4F7;font:inherit;text-align:left;cursor:pointer}
-.behind-tg .bi{font-size:22px}.behind-tg>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px}.behind-tg b{font-size:15px}.behind-tg small{font-size:12px;color:#B3BAC5}
+.behind-tg{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;margin:4px 0 12px;padding:10px 14px;border-radius:14px;border:1.5px solid #3DC8F5;background:rgba(61,200,245,.10);color:#F4F6F8;font:inherit;text-align:left;cursor:pointer}
+.behind-tg .bi{font-size:22px}.behind-tg>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px}.behind-tg b{font-size:15px}.behind-tg small{font-size:12px;color:#B8C2CF}
 .behind-tg .sw{flex:none;width:44px;height:26px;border-radius:13px;background:#3a4656;position:relative}.behind-tg .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
 .behind-tg[aria-pressed="true"]{background:#3DC8F5;color:#0F1620}.behind-tg[aria-pressed="true"] small{color:#0F1620}.behind-tg[aria-pressed="true"] .sw{background:#0F1620}.behind-tg[aria-pressed="true"] .sw::after{left:21px;background:#3DC8F5}
 .behind-tg.loading{opacity:.6}
 .mini{position:absolute;z-index:5;pointer-events:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none;display:flex;gap:2px;padding:3px;border-radius:12px;background:rgba(15,22,32,.88);box-shadow:0 2px 10px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.14)}.mini[hidden]{display:none}
-.mini button{min-width:44px;height:44px;padding:0 4px;border:0;border-radius:9px;background:transparent;color:#F2F4F7;font:700 16px/1 inherit;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}.mini button[hidden]{display:none}.mini small{font-size:9px;font-weight:600;color:#B3BAC5}
+.mini button{min-width:44px;height:44px;padding:0 4px;border:0;border-radius:9px;background:transparent;color:#F4F6F8;font:700 16px/1 inherit;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}.mini button[hidden]{display:none}.mini small{font-size:9px;font-weight:600;color:#B8C2CF}
 .mini button:active{background:rgba(255,255,255,.12)}.mini [aria-pressed="true"]{background:#3DC8F5;color:#0F1620}.mini [aria-pressed="true"] small{color:#0F1620}
 .mini [data-mb=behind][aria-pressed="true"]{background:#3DC8F5;color:#0F1620;box-shadow:0 0 0 2px #fff inset}.mini .loading{opacity:.6}
-.fcur{margin:2px 0 6px;font-size:13px;color:#B3BAC5}.fcur b{color:#3DC8F5}
-.fq.on,.fopt.on{border-color:#3DC8F5!important;background:rgba(61,200,245,.16)!important;box-shadow:0 0 0 1.5px #3DC8F5 inset;color:#F2F4F7}.ck{font-style:normal;color:#3DC8F5;font-family:system-ui,sans-serif;font-weight:800;margin-right:5px}
+.fcur{margin:2px 0 6px;font-size:13px;color:#B8C2CF}.fcur b{color:#3DC8F5}
+.fq.on,.fopt.on{border-color:#3DC8F5!important;background:rgba(61,200,245,.16)!important;box-shadow:0 0 0 1.5px #3DC8F5 inset;color:#F4F6F8}.ck{font-style:normal;color:#3DC8F5;font-family:system-ui,sans-serif;font-weight:800;margin-right:5px}
 .ctsw{margin-bottom:8px}.ctsw [aria-checked="true"]{background:#3DC8F5;color:#0F1620;font-weight:700}
 
 </style>
@@ -377,19 +408,41 @@ main{max-width:760px}
 .tc-meta .rank b{color:var(--ink);font-weight:700}
 
 /* ---- Tiers: material escalates ---- */
-.t-iron{--c1:#4a4f57;--c2:#454a52;--c3:#40444b;--ink:#e9ebee;--ink2:rgba(233,235,238,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 10px 30px -12px rgba(0,0,0,.6)}
-.t-bronze{--c1:#9a6a4c;--c2:#7a4e36;--c3:#5c3826;--sheen:.25;--grain:.3;--ink:#fff3ea;--ink2:rgba(255,243,234,.62)}
-.t-silver{--c1:#e3e7ec;--c2:#aeb5be;--c3:#878f9a;--sheen:.45;--grain:.4;--ink:#1b1f26;--ink2:rgba(27,31,38,.6);--edge:rgba(255,255,255,.35)}
-.t-gold{--c1:#f6dc8e;--c2:#d4a747;--c3:#9e7426;--sheen:.55;--grain:.45;--ink:#2a1d05;--ink2:rgba(42,29,5,.62);--edge:rgba(255,240,200,.4);--glow:rgba(230,180,70,.35);--glow-size:22px}
-.t-platinum{--c1:#9fe3dc;--c2:#4fb3ad;--c3:#2a7f80;--sheen:.6;--grain:.5;--ink:#06231f;--ink2:rgba(6,35,31,.62);--edge:rgba(210,255,250,.4);--glow:rgba(80,200,190,.4);--glow-size:26px}
-.t-emerald{--c1:#3fd68a;--c2:#13a05e;--c3:#0a6a3e;--sheen:.65;--grain:.5;--holo:.08;--ink:#eafff3;--ink2:rgba(234,255,243,.68);--edge:rgba(190,255,220,.35);--glow:rgba(40,210,120,.45);--glow-size:30px}
-.t-diamond{--c1:#b9d4ff;--c2:#5a8cf0;--c3:#3a4fc4;--sheen:.75;--grain:.5;--holo:.18;--ink:#fff;--ink2:rgba(255,255,255,.72);--edge:rgba(220,235,255,.45);--glow:rgba(100,150,255,.5);--glow-size:34px}
-.t-master{--c1:#d9a8ff;--c2:#9a52e6;--c3:#5a24a8;--sheen:.8;--grain:.55;--holo:.25;--ink:#fff;--ink2:rgba(255,255,255,.72);--edge:rgba(240,220,255,.45);--glow:rgba(170,90,255,.55);--glow-size:38px}
-.t-grandmaster{--c1:#ff9c8a;--c2:#e2384a;--c3:#8e1530;--sheen:.85;--grain:.55;--holo:.3;--ink:#fff;--ink2:rgba(255,255,255,.74);--edge:rgba(255,220,215,.45);--glow:rgba(255,70,80,.55);--glow-size:42px}
-.t-challenger{--c1:#fff2c4;--c2:#a6f0ff;--c3:#c9a8ff;--sheen:.9;--grain:.6;--holo:.95;--ink:#14121f;--ink2:rgba(20,18,31,.62);--edge:rgba(255,255,255,.7);--glow:rgba(200,225,255,.85);--glow-size:56px;
+.t-iron{box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 10px 30px -12px rgba(0,0,0,.6)}
+.t-bronze{--sheen:.25;--grain:.3;}
+.t-silver{--sheen:.45;--grain:.4;--edge:rgba(255,255,255,.35)}
+.t-gold{--sheen:.55;--grain:.45;--edge:rgba(255,240,200,.4);--glow-size:22px}
+.t-platinum{--sheen:.6;--grain:.5;--edge:rgba(210,255,250,.4);--glow-size:26px}
+.t-emerald{--sheen:.65;--grain:.5;--holo:.08;--edge:rgba(190,255,220,.35);--glow-size:30px}
+.t-diamond{--sheen:.75;--grain:.5;--holo:.18;--edge:rgba(220,235,255,.45);--glow-size:34px}
+.t-master{--sheen:.8;--grain:.55;--holo:.25;--edge:rgba(240,220,255,.45);--glow-size:38px}
+.t-grandmaster{--sheen:.85;--grain:.55;--holo:.3;--edge:rgba(255,220,215,.45);--glow-size:42px}
+.t-challenger{--sheen:.9;--grain:.6;--holo:.95;--edge:rgba(255,255,255,.7);--glow-size:56px;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),inset 0 1px 0 #fff,0 10px 30px -12px rgba(0,0,0,.6),-14px 0 44px -16px rgba(255,150,220,.7),14px 0 44px -16px rgba(110,220,255,.75),0 0 56px -18px rgba(220,230,255,.9);
-  background:linear-gradient(125deg,#fff3c8 0%,#ffc9ec 25%,#c7d2ff 50%,#a8f3ff 72%,#d9ffcf 100%)}
+  background:linear-gradient(125deg,#A8F3FF 0%,#FFF2C4 33%,#FFC9EC 66%,#C7B8FF 100%)}
 .t-challenger .tc-holo{mix-blend-mode:soft-light}
+
+/* ---- v5 premium metal cards (colours/backgrounds injected from TK.tier[*].card) ---- */
+.tier-card{font-family:"Inter","TC Pretendard",system-ui,sans-serif;border-radius:16px;padding:5.5% 6%;box-shadow:var(--card-sh);border:var(--card-bd);outline:var(--card-ol,none);outline-offset:-4px;background:var(--card-bg);color:var(--ink)}
+.tier-card::after,.tier-card .tc-holo{display:none}
+.tier-card::before{opacity:1;z-index:0;mix-blend-mode:normal;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.22) 48%,transparent 60%);background-size:250% 100%;background-position:150% 0;display:none}
+.tier-card.b-mid::before,.tier-card.b-top::before{display:block;animation:tcSweep 4.5s ease-in-out infinite}
+@keyframes tcSweep{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
+@media (prefers-reduced-motion:reduce){.tier-card::before{animation:none!important;background-position:50% 0}}
+.tier-card>*{position:relative;z-index:1}
+.tc-top{display:flex;justify-content:space-between;align-items:center}
+.tc-brand{font-family:"Inter",sans-serif;font-weight:700;font-size:clamp(9px,3cqw,12px);letter-spacing:.28em;color:var(--ink)}
+.tier-card .tc-label,.tier-card.fluid .tc-label{font-family:"Inter",sans-serif;font-stretch:100%;font-weight:600;font-size:clamp(8px,2.4cqw,10px);letter-spacing:.24em;color:var(--ink)}
+.tc-wm{position:absolute!important;right:6%;top:24%;z-index:0!important;font-family:"Inter",sans-serif;font-weight:300;font-size:clamp(26px,11cqw,44px);letter-spacing:.08em;color:rgba(0,0,0,.07);text-shadow:0 1px 0 rgba(255,255,255,.14);pointer-events:none}
+.tc-chip{display:grid;place-items:center;width:clamp(30px,10cqw,40px);aspect-ratio:1.28;border-radius:6px;margin-top:4%;border:1px solid color-mix(in srgb,var(--ink) 70%,transparent);background:linear-gradient(160deg,color-mix(in srgb,var(--ink) 18%,transparent),color-mix(in srgb,var(--ink) 4%,transparent))}
+.tc-chip svg{width:55%;height:auto;overflow:visible}
+.tier-card .tc-name,.tier-card.fluid .tc-name{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:auto 0 2.5%;line-height:1}
+.tier-card .tc-name .w,.tier-card.fluid .tc-name .w{font-family:"Inter",sans-serif;font-weight:600;font-stretch:100%;font-size:clamp(17px,6.6cqw,26px);letter-spacing:.24em;white-space:nowrap}
+.tier-card .tc-name.long .w{font-size:clamp(14px,5.2cqw,21px);letter-spacing:.16em}
+.tier-card .tc-name .n{font-family:"Inter",sans-serif;font-weight:400;font-size:clamp(16px,6cqw,24px);letter-spacing:.12em;opacity:1}
+.tier-card .tc-meta{border-top:1px solid color-mix(in srgb,var(--ink) 22%,transparent);padding-top:2.5%;font-family:"Inter","TC Pretendard",sans-serif;font-size:clamp(10px,3.1cqw,12px);font-weight:500;letter-spacing:.04em;color:var(--ink)}
+.tier-card .tc-meta .rec{font-family:"Inter",sans-serif;font-weight:600}
+.tier-card .tc-ko{color:var(--ink);font-size:inherit;font-weight:600}
 
 /* ---- app integration: fluid sizing via container units ---- */
 .tier-card.fluid{max-width:440px;margin:16px auto 0;container-type:inline-size;padding:6% 6.5%;border-radius:clamp(18px,5.5cqw,24px)}
@@ -475,12 +528,12 @@ main{max-width:760px}
   <h2 id="hMore">기록 기준표 더 보기</h2>
   <nav class="lanenav" aria-label="기록 가이드"><div class="lane"><span class="ln"><b aria-hidden="true">1</b>5K</span><div class="ls"><a href="5k/">티어표</a><a href="5k/20min/">20분</a><a href="5k/25min/">25분</a><a href="5k/30min/">30분</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">2</b>10K</span><div class="ls"><a href="10k/">티어표</a><a href="10k/40min/">40분</a><a href="10k/45min/">45분</a><a href="10k/50min/">50분</a><a href="10k/55min/">55분</a><a href="10k/60min/">1시간</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">3</b>하프</span><div class="ls"><a href="half/">티어표·계산기</a><a href="half/1h30/">1:30</a><a href="half/1h45/">1:45</a><a href="half/2h/">2:00</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">4</b>풀</span><div class="ls"><a href="full/">티어표·예상 기록</a><a href="full/sub3/">서브3</a><a href="full/sub330/">서브3:30</a><a href="full/sub4/">서브4</a><a href="full/sub430/">4:30</a><a href="full/sub5/">5:00</a><a href="predictor/">기록 예측기</a><a href="splits/">구간 기록표</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">5</b>공통</span><div class="ls"><a href="men/">남자 기준</a><a href="women/">여자 기준</a><a href="pace/">훈련 페이스</a><a href="pace-calculator/">페이스 계산기</a><a href="vdot/">VDOT</a><a href="vo2max/">VO2max</a><a href="tier-guide/">티어 기준</a><a href="age/20s-30s/">20·30대</a><a href="age/40s/">40대</a><a href="age/50s/">50대</a><a href="age/60s/">60대+</a><a href="guide/">전체 가이드</a></div></div></nav><style>.lanenav{margin:12px 0 4px;background:#0B1119;border:1px solid #26313F;border-radius:14px;overflow:hidden}
 .lane{display:flex;align-items:stretch;border-top:2px dashed rgba(255,255,255,.13);min-height:52px}.lane:first-child{border-top:0}
-.lane .ln{flex:none;width:78px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;border-right:2px solid rgba(255,255,255,.18);color:#F2F4F7;font-weight:800;font-size:14px;letter-spacing:.2px}
+.lane .ln{flex:none;width:78px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;border-right:2px solid rgba(255,255,255,.18);color:#F4F6F8;font-weight:800;font-size:14px;letter-spacing:.2px}
 .lane .ln b{font:800 20px/1 system-ui,sans-serif;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.45);width:14px;text-align:center}
 .lane .ls{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1}.lane .ls::-webkit-scrollbar{display:none}
-.lane .ls a{flex:none;display:flex;align-items:center;min-height:52px;padding:0 13px;color:#B3BAC5;text-decoration:none;font-size:14px;white-space:nowrap;position:relative}
+.lane .ls a{flex:none;display:flex;align-items:center;min-height:52px;padding:0 13px;color:#B8C2CF;text-decoration:none;font-size:14px;white-space:nowrap;position:relative}
 .lane .ls a+a::before{content:"";position:absolute;left:0;top:50%;width:1px;height:14px;margin-top:-7px;background:rgba(255,255,255,.18)}
-.lane .ls a:hover{color:#F2F4F7}.lane .ls a[aria-current]{color:#3DC8F5;font-weight:700}
+.lane .ls a:hover{color:#F4F6F8}.lane .ls a[aria-current]{color:#3DC8F5;font-weight:700}
 .lane .ls a[aria-current]::after{content:"";position:absolute;left:13px;right:13px;bottom:10px;height:2px;background:#3DC8F5;border-radius:2px}
 .lane.on{background:linear-gradient(90deg,rgba(61,200,245,.10),transparent 70%)}.lane.on .ln{color:#3DC8F5}.lane.on .ln b{-webkit-text-stroke-color:#3DC8F5}
 @media (min-width:601px){.lane .ls{flex-wrap:wrap;overflow:visible}}
@@ -532,7 +585,7 @@ main{max-width:760px}
 const D = {"source": "tier_thresholds_v4_3.csv, running_tier_population_v3.csv, age_curve_consensus.csv, validation_rules.json", "distances": {"5K": 5000, "10K": 10000, "half": 21097.5, "full": 42195}, "tierNames": ["아이언 3", "아이언 2", "아이언 1", "브론즈 3", "브론즈 2", "브론즈 1", "실버 3", "실버 2", "실버 1", "골드 3", "골드 2", "골드 1", "플래티넘 3", "플래티넘 2", "플래티넘 1", "에메랄드 3", "에메랄드 2", "에메랄드 1", "다이아몬드 3", "다이아몬드 2", "다이아몬드 1", "마스터", "그랜드마스터", "챌린저"], "targetTopPct": [96.0, 92.5, 88.0, 82.31, 76.98, 72.0, 64.6, 57.96, 52.0, 44.69, 38.4, 33.0, 26.96, 22.03, 18.0, 13.74, 10.48, 8.0, 5.04, 3.17, 2.0, 0.5, 0.1], "thresholds30s": {"M": {"5K": [2251, 2127, 2018, 1924, 1855, 1789, 1706, 1635, 1578, 1525, 1482, 1441, 1390, 1349, 1313, 1275, 1241, 1203, 1147, 1118, 1090, 1028, 973], "10K": [4341, 4117, 3928, 3766, 3646, 3534, 3395, 3275, 3178, 3087, 3007, 2932, 2838, 2766, 2703, 2629, 2563, 2492, 2378, 2318, 2261, 2125, 2011], "half": [9588, 9105, 8693, 8339, 8077, 7831, 7526, 7261, 7046, 6844, 6668, 6501, 6292, 6132, 5991, 5825, 5678, 5520, 5264, 5129, 5001, 4695, 4440], "full": [19572, 18623, 17813, 17117, 16600, 16114, 15510, 14985, 14559, 14157, 13806, 13472, 13053, 12732, 12450, 12115, 11818, 11498, 10979, 10703, 10442, 9816, 9290]}, "F": {"5K": [2327, 2203, 2106, 2062, 2025, 1982, 1924, 1871, 1827, 1787, 1752, 1716, 1669, 1633, 1589, 1530, 1476, 1420, 1354, 1319, 1276, 1193, 1119], "10K": [4652, 4505, 4367, 4245, 4150, 4053, 3930, 3818, 3727, 3643, 3568, 3494, 3397, 3324, 3258, 3155, 3050, 2941, 2806, 2735, 2645, 2465, 2313], "half": [10130, 9710, 9346, 9035, 8802, 8579, 8299, 8054, 7855, 7675, 7518, 7366, 7170, 7024, 6896, 6745, 6610, 6460, 6209, 6052, 5851, 5447, 5105], "full": [20324, 19346, 18513, 17847, 17453, 17055, 16558, 16106, 15735, 15402, 15101, 14805, 14420, 14130, 13872, 13560, 13278, 12962, 12438, 12171, 11910, 11265, 10683]}}, "popPct": [1, 5, 10, 20, 35, 50, 75, 90], "population": {"M": {"20s_and_under": {"full": [9894, 10893, 11752, 12611, 13681, 14475, 16496, 18228], "half": [4738, 5198, 5659, 6006, 6501, 6830, 7806, 8551], "10K": [2115, 2301, 2511, 2682, 2937, 3105, 3602, 4018], "5K": [1027, 1103, 1203, 1311, 1460, 1573, 1896, 2173]}, "30s": {"full": [10112, 10971, 11768, 12594, 13678, 14426, 16414, 18138], "half": [4885, 5268, 5714, 6056, 6549, 6882, 7859, 8590], "10K": [2180, 2342, 2537, 2709, 2967, 3149, 3655, 4050], "5K": [1059, 1137, 1239, 1341, 1489, 1603, 1928, 2199]}, "40s": {"full": [10623, 11309, 12078, 12795, 13809, 14583, 16526, 18222], "half": [5177, 5484, 5909, 6195, 6650, 6972, 7939, 8660], "10K": [2301, 2463, 2653, 2820, 3026, 3186, 3692, 4079], "5K": [1126, 1207, 1305, 1400, 1530, 1634, 1953, 2221]}, "50s": {"full": [11166, 11911, 12671, 13394, 14396, 15226, 17192, 18949], "half": [5484, 5794, 6227, 6486, 6940, 7281, 8270, 8977], "10K": [2456, 2616, 2817, 3003, 3243, 3398, 3861, 4208], "5K": [1201, 1295, 1398, 1500, 1640, 1745, 2038, 2293]}, "60plus": {"full": [12209, 12981, 13770, 14520, 15666, 16609, 18808, 20645], "half": [5961, 6315, 6766, 7048, 7540, 7846, 8892, 9717], "10K": [2660, 2853, 3051, 3229, 3453, 3596, 4103, 4564], "5K": [1316, 1412, 1529, 1648, 1791, 1893, 2197, 2472]}}, "F": {"20s_and_under": {"full": [11401, 12588, 13263, 14064, 14899, 15655, 17240, 18702], "half": [5849, 6259, 6537, 6953, 7344, 7753, 8468, 9217], "10K": [2617, 2869, 3046, 3259, 3488, 3729, 4071, 4464], "5K": [1276, 1385, 1473, 1582, 1710, 1838, 2061, 2258]}, "30s": {"full": [11572, 12633, 13262, 14026, 14868, 15621, 17199, 18635], "half": [5917, 6319, 6570, 6964, 7368, 7770, 8483, 9214], "10K": [2654, 2910, 3065, 3279, 3506, 3727, 4094, 4482], "5K": [1295, 1410, 1493, 1603, 1724, 1842, 2073, 2276]}, "40s": {"full": [12097, 13067, 13584, 14301, 15121, 15920, 17505, 18916], "half": [6202, 6492, 6723, 7078, 7462, 7869, 8569, 9282], "10K": [2758, 2968, 3103, 3309, 3530, 3746, 4108, 4493], "5K": [1346, 1445, 1510, 1615, 1732, 1847, 2073, 2290]}, "50s": {"full": [13046, 13750, 14250, 14975, 15784, 16662, 18293, 19758], "half": [6556, 6786, 6970, 7327, 7691, 8151, 8862, 9643], "10K": [2903, 3074, 3196, 3391, 3607, 3836, 4216, 4634], "5K": [1419, 1513, 1570, 1663, 1778, 1896, 2137, 2381]}, "60plus": {"full": [14194, 14873, 15377, 16229, 17206, 18292, 20008, 21537], "half": [6991, 7222, 7369, 7756, 8197, 8714, 9517, 10351], "10K": [3092, 3231, 3369, 3564, 3793, 4037, 4459, 4937], "5K": [1520, 1614, 1675, 1773, 1895, 2033, 2324, 2589]}}}, "ageMult": {"M": {"20s_and_under": {"5K": 1.0, "10K": 1.0, "half": 1.0, "full": 1.0}, "30s": {"5K": 1.0, "10K": 1.0, "half": 1.0, "full": 1.0}, "40s": {"5K": 1.0358237258466003, "10K": 1.030461295665472, "half": 1.0191514310115806, "full": 1.0174430895190691}, "50s": {"5K": 1.110182429341282, "10K": 1.1008080289472397, "half": 1.0653617428088857, "full": 1.0653617428088857}, "60plus": {"5K": 1.2157069602816657, "10K": 1.1778350127697348, "half": 1.157557317093092, "full": 1.1627938727360818}}, "F": {"20s_and_under": {"5K": 1.0, "10K": 1.0, "half": 1.0, "full": 1.0021432025114123}, "30s": {"5K": 1.0, "10K": 1.0, "half": 1.0, "full": 1.0}, "40s": {"5K": 1.006746784991831, "10K": 1.008029580652746, "half": 1.0146282383343506, "full": 1.021380036854318}, "50s": {"5K": 1.0416190369911815, "10K": 1.0340431616333372, "half": 1.0505809797551826, "full": 1.0712692528228038}, "60plus": {"5K": 1.121413667512778, "10K": 1.0942079522281583, "half": 1.1217864762670011, "full": 1.161408269898169}}}, "wrCheck": {"M": {"5000": 769, "10000": 1584, "21097.5": 3411, "42195": 7170}, "F": {"5000": 834, "10000": 1726, "21097.5": 3772, "42195": 7796}}, "wrFactor": 0.98, "nearWrFactor": 1.05, "vdotMax": 85};
 
 // generated from running-tier-color/tokens.json
-const TK = {"app": {"bg": "#0F1620", "surface": "#171B22", "surface_raised": "#20262F", "text_primary": "#F2F4F7", "text_secondary": "#B3BAC5", "text_tertiary": "#8790A0", "border": "#2C333E", "border_strong": "#5A6474", "accent": "#3DC8F5", "accent_hover": "#6ED6F8", "on_accent": "#0F1620", "success": "#3DD68C", "warning": "#FFB547", "danger": "#FF6B6B", "info": "#5AB8FF", "focus_ring": "#7CC4FF", "share_card_bg": ["#0F1620", "#1A2030"], "share_card_frame": "#2C333E"}, "tier": {"iron": {"base": "#64758F", "gradient": ["#677791", "#56667F", "#3E4A5F"], "gradient_angle_deg": 135, "on": "#FFFFFF", "tint": {"light": "#E9ECEF", "dark": "#252B36"}, "tint_text": {"light": "#5C6C84", "dark": "#A2ACBC"}, "divisions": {"III": "#58677E", "II": "#64758F", "I": "#697489"}, "glow": {"color": "#677791", "blur_px": 0, "alpha": 0.2}}, "bronze": {"base": "#C9804E", "gradient": ["#E3A272", "#C9804E", "#AA734F"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F7EDE6", "dark": "#372D2A"}, "tint_text": {"light": "#905C38", "dark": "#DFB395"}, "divisions": {"III": "#B17145", "II": "#C9804E", "I": "#D19267"}, "glow": {"color": "#E3A272", "blur_px": 0, "alpha": 0.26}}, "silver": {"base": "#B4C2D3", "gradient": ["#E4EBF3", "#B4C2D3", "#8494A8"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F4F6F9", "dark": "#333942"}, "tint_text": {"light": "#656D76", "dark": "#B4C2D3"}, "divisions": {"III": "#9EABBA", "II": "#B4C2D3", "I": "#BECBD9"}, "glow": {"color": "#E4EBF3", "blur_px": 0, "alpha": 0.32}}, "gold": {"base": "#F0B92E", "gradient": ["#FFE08A", "#F0B92E", "#C08A10"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FDF5E2", "dark": "#3E3724"}, "tint_text": {"light": "#85661A", "dark": "#F0B92E"}, "divisions": {"III": "#D3A328", "II": "#F0B92E", "I": "#F2C34B"}, "glow": {"color": "#FFE08A", "blur_px": 4, "alpha": 0.38}}, "platinum": {"base": "#2EC4B6", "gradient": ["#9AF0E4", "#2EC4B6", "#208F85"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E2F7F5", "dark": "#1B393D"}, "tint_text": {"light": "#1C786F", "dark": "#2EC4B6"}, "divisions": {"III": "#28ACA0", "II": "#2EC4B6", "I": "#4BCCC0"}, "glow": {"color": "#9AF0E4", "blur_px": 6, "alpha": 0.44}}, "emerald": {"base": "#22A45D", "gradient": ["#6EE59A", "#22A45D", "#438E66"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E0F2E8", "dark": "#19342D"}, "tint_text": {"light": "#197643", "dark": "#7AC89E"}, "divisions": {"III": "#259357", "II": "#22A45D", "I": "#41B174"}, "glow": {"color": "#6EE59A", "blur_px": 8, "alpha": 0.5}}, "diamond": {"base": "#5AA9FF", "gradient": ["#C4E2FF", "#5AA9FF", "#3D7FE0"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E8F3FF", "dark": "#23354A"}, "tint_text": {"light": "#3B6FA8", "dark": "#5AA9FF"}, "divisions": {"III": "#4F95E0", "II": "#5AA9FF", "I": "#71B5FF"}, "glow": {"color": "#C4E2FF", "blur_px": 12, "alpha": 0.56}}, "master": {"base": "#8A4DF0", "gradient": ["#8C51E2", "#7438E0", "#4A1FA8"], "gradient_angle_deg": 135, "on": "#FFFFFF", "tint": {"light": "#EFE6FD", "dark": "#2C2447"}, "tint_text": {"light": "#7F47DD", "dark": "#B994F6"}, "divisions": null, "glow": {"color": "#8C51E2", "blur_px": 16, "alpha": 0.62}}, "grandmaster": {"base": "#D63A7A", "gradient": ["#CE3F75", "#B82A6E", "#6E1A5E"], "gradient_angle_deg": 135, "on": "#FFFFFF", "tint": {"light": "#F9E3EC", "dark": "#392132"}, "tint_text": {"light": "#B53167", "dark": "#E689AF"}, "divisions": null, "glow": {"color": "#CE3F75", "blur_px": 20, "alpha": 0.68}}, "challenger": {"base": "#F5D76E", "gradient": ["#7FF3FF", "#F5D76E", "#FF9AD5", "#A78BFA"], "gradient_angle_deg": "conic", "on": "#0F1620", "tint": {"light": "#FEF9EB", "dark": "#3F3D30"}, "tint_text": {"light": "#7D6F39", "dark": "#F5D76E"}, "divisions": null, "glow": {"color": "#7FF3FF", "blur_px": 28, "alpha": 0.74}}}, "subdivision": {"method": "Roman numeral + 3 pips (filled = division strength, I=3 pips) + badge brightness step; III=base mixed 12% black, II=base, I=base mixed 14% white", "tiers": "iron..diamond only"}};
+const TK = {"app": {"bg": "#0F1620", "surface": "#172130", "surface_raised": "#1F2B3B", "text_primary": "#F4F6F8", "text_secondary": "#B8C2CF", "text_tertiary": "#8A97A8", "border": "#2A3748", "border_strong": "#56657A", "accent": "#3DC8F5", "accent_hover": "#6ED6F8", "on_accent": "#0F1620", "success": "#3DD68C", "warning": "#FFB547", "danger": "#FF6B6B", "info": "#5AB8FF", "focus_ring": "#7CC4FF", "share_card_bg": ["#0F1620", "#172338"], "share_card_frame": "#2A3748"}, "tier": {"iron": {"base": "#988C83", "gradient": ["#A49A92", "#8A7F77"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E9ECEF", "dark": "#242C38"}, "tint_text": {"light": "#5C6C84", "dark": "#9B8F87"}, "divisions": {"III": "#8C8179", "II": "#988C83", "I": "#A2988F"}, "glow": {"color": "#988C83", "blur_px": 0, "alpha": 0}, "text": "#9B8F87", "card": {"band": "plain", "ink": "#0F0F10", "ink_min_ratio": 4.51, "stops": ["#A2988F", "#988C83", "#837972"], "background": "linear-gradient(118deg, #A2988F 0%, #988C83 55%, #837972 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#988C83", "glyph": ["circle"]}}, "bronze": {"base": "#B98660", "gradient": ["#C29675", "#A87A57"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F7EDE6", "dark": "#272B35"}, "tint_text": {"light": "#905C38", "dark": "#B98660"}, "divisions": {"III": "#AA7B58", "II": "#B98660", "I": "#C09270"}, "glow": {"color": "#B98660", "blur_px": 0, "alpha": 0}, "text": "#B98660", "card": {"band": "plain", "ink": "#161110", "ink_min_ratio": 4.56, "stops": ["#C09270", "#B98660", "#A07454"], "background": "linear-gradient(118deg, #C09270 0%, #B98660 55%, #A07454 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#B98660", "glyph": ["p", 3, -90, [1]]}}, "silver": {"base": "#AEB6C1", "gradient": ["#BDC4CD", "#A0A7B2"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F4F6F9", "dark": "#26303E"}, "tint_text": {"light": "#656D76", "dark": "#AEB6C1"}, "divisions": {"III": "#A4ABB5", "II": "#AEB6C1", "I": "#BAC1CA"}, "glow": {"color": "#AEB6C1", "blur_px": 0, "alpha": 0}, "text": "#AEB6C1", "card": {"band": "plain", "ink": "#1D2024", "ink_min_ratio": 6.04, "stops": ["#B6BDC7", "#AEB6C1", "#969EA8"], "background": "linear-gradient(118deg, #B6BDC7 0%, #AEB6C1 55%, #969EA8 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#AEB6C1", "glyph": ["p", 4, -45, [0.85]]}}, "gold": {"base": "#D2B56E", "gradient": ["#DBC48B", "#C1A765"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FDF5E2", "dark": "#2A3036"}, "tint_text": {"light": "#85661A", "dark": "#D2B56E"}, "divisions": {"III": "#C5AA67", "II": "#D2B56E", "I": "#D9C185"}, "glow": {"color": "#D2B56E", "blur_px": 0, "alpha": 0}, "text": "#D2B56E", "card": {"band": "plain", "ink": "#221F19", "ink_min_ratio": 6.23, "stops": ["#D6BC7D", "#D2B56E", "#B59D60"], "background": "linear-gradient(118deg, #D6BC7D 0%, #D2B56E 55%, #B59D60 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#D2B56E", "glyph": ["p", 4, -90, [1]]}}, "platinum": {"base": "#A3C4B1", "gradient": ["#BFD6C8", "#A3C4B1", "#94B2A1"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E2F7F5", "dark": "#25313D"}, "tint_text": {"light": "#1C786F", "dark": "#A3C4B1"}, "divisions": {"III": "#99B8A6", "II": "#A3C4B1", "I": "#B3CEBE"}, "glow": {"color": "#A3C4B1", "blur_px": 0, "alpha": 0}, "text": "#A3C4B1", "card": {"band": "mid", "ink": "#1B2122", "ink_min_ratio": 5.37, "stops": ["#B7D1C2", "#A3C4B1", "#809A8C"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #B7D1C2 0%, #A3C4B1 55%, #809A8C 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#A3C4B1", "glyph": ["p", 6, -90, [1]]}}, "emerald": {"base": "#529E82", "gradient": ["#71AF98", "#529E82", "#498D74"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E0F2E8", "dark": "#1D2E38"}, "tint_text": {"light": "#197643", "dark": "#57A186"}, "divisions": {"III": "#4B9178", "II": "#529E82", "I": "#63A88E"}, "glow": {"color": "#529E82", "blur_px": 0, "alpha": 0}, "text": "#57A186", "card": {"band": "mid", "ink": "#101C1C", "ink_min_ratio": 4.72, "stops": ["#78B39E", "#529E82", "#4C9278"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #78B39E 0%, #529E82 55%, #4C9278 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#529E82", "glyph": ["p", 8, -67.5, [1]]}}, "diamond": {"base": "#9DA8E6", "gradient": ["#B4BCEC", "#9DA8E6", "#8D97CF"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E8F3FF", "dark": "#242F42"}, "tint_text": {"light": "#3B6FA8", "dark": "#9DA8E6"}, "divisions": {"III": "#929CD6", "II": "#9DA8E6", "I": "#ABB4EA"}, "glow": {"color": "#9DA8E6", "blur_px": 0, "alpha": 0}, "text": "#9DA8E6", "card": {"band": "mid", "ink": "#1A1E2A", "ink_min_ratio": 4.66, "stops": ["#B3BBEC", "#9DA8E6", "#7C85B6"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #B3BBEC 0%, #9DA8E6 55%, #7C85B6 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#9DA8E6", "glyph": ["pts", [[0, -1], [0.8, -0.2], [0, 1], [-0.8, -0.2]]]}}, "master": {"base": "#A587D4", "gradient": ["#BCA6DF", "#AC91D7", "#A587D4", "#8E74B6"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#EFE6FD", "dark": "#252B40"}, "tint_text": {"light": "#7F47DD", "dark": "#A587D4"}, "divisions": null, "glow": {"color": "#A587D4", "blur_px": 18, "alpha": 0.2}, "text": "#A587D4", "card": {"band": "top", "ink": "#F4F1FA", "ink_min_ratio": 4.89, "stops": ["#625180", "#453A5B", "#2F283F"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #625180 0%, #453A5B 55%, #2F283F 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #A587D470", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 40px rgba(165,135,212,.32)", "glow": "rgba(165,135,212,.32)", "topo_tint": "#A587D4", "glyph": ["p", 8, -90, [1, 0.4]]}}, "grandmaster": {"base": "#CC8094", "gradient": ["#DAA2B1", "#D18B9E", "#CC8094", "#AF6E7F"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F9E3EC", "dark": "#292B3A"}, "tint_text": {"light": "#B53167", "dark": "#CC8094"}, "divisions": null, "glow": {"color": "#CC8094", "blur_px": 26, "alpha": 0.26}, "text": "#CC8094", "card": {"band": "top", "ink": "#F9F0F2", "ink_min_ratio": 4.86, "stops": ["#784D5A", "#553742", "#39262F"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #784D5A 0%, #553742 55%, #39262F 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #CC809470", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 44px rgba(204,128,148,.37)", "glow": "rgba(204,128,148,.37)", "topo_tint": "#CC8094", "glyph": ["p", 12, -90, [1, 0.5]]}}, "challenger": {"base": "#E6DEFA", "gradient": ["#FFFDF8", "#EEE8FA", "#CFC3F2"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FEF9EB", "dark": "#272D44"}, "tint_text": {"light": "#7D6F39", "dark": "#E6DEFA"}, "divisions": null, "glow": {"color": "#E6DEFA", "blur_px": 38, "alpha": 0.34}, "text": "#E6DEFA", "card": {"band": "top", "ink": "#2B2350", "ink_min_ratio": 9.45, "stops": ["#FBF7EE", "#EEE7FA", "#D8CBF5"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #FBF7EE 0%, #EEE7FA 55%, #D8CBF5 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #B39CFA70", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 52px rgba(179,156,250,.47)", "glow": "rgba(179,156,250,.47)", "topo_tint": "#8F72F2", "glyph": ["p", 16, -90, [1, 0.55]]}}}, "subdivision": {"method": "Roman numeral + 3 pips (filled = division strength, I=3 pips) + badge brightness step; III=base mixed 12% black, II=base, I=base mixed 14% white", "tiers": "iron..diamond only"}};
 
 // Running tier calculator (v4.3 logic). Dependency-free ES module.
 
@@ -726,22 +779,33 @@ const W = 1080, H = 1920;
 const SYS_KO = '-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",sans-serif';
 const PRE = `"TC Pretendard",${SYS_KO}`;
 const ARC = '"TC Archivo",sans-serif';
-const STORY_MAT = {
-  iron: { s: ['#4a4f57', '#454a52', '#40444b'], ink: '#e9ebee', sheen: 0, holo: 0, glow: null },
-  bronze: { s: ['#9a6a4c', '#7a4e36', '#5c3826'], ink: '#fff3ea', sheen: .25, holo: 0, glow: null },
-  silver: { s: ['#e3e7ec', '#aeb5be', '#878f9a'], ink: '#1b1f26', sheen: .45, holo: 0, glow: null },
-  gold: { s: ['#f6dc8e', '#d4a747', '#9e7426'], ink: '#2a1d05', sheen: .55, holo: 0, glow: 'rgba(230,180,70,.45)' },
-  platinum: { s: ['#9fe3dc', '#4fb3ad', '#2a7f80'], ink: '#06231f', sheen: .6, holo: 0, glow: 'rgba(80,200,190,.5)' },
-  emerald: { s: ['#3fd68a', '#13a05e', '#0a6a3e'], ink: '#eafff3', sheen: .65, holo: .08, glow: 'rgba(40,210,120,.55)' },
-  diamond: { s: ['#b9d4ff', '#5a8cf0', '#3a4fc4'], ink: '#ffffff', sheen: .75, holo: .18, glow: 'rgba(100,150,255,.6)' },
-  master: { s: ['#d9a8ff', '#9a52e6', '#5a24a8'], ink: '#ffffff', sheen: .8, holo: .25, glow: 'rgba(170,90,255,.65)' },
-  grandmaster: { s: ['#ff9c8a', '#e2384a', '#8e1530'], ink: '#ffffff', sheen: .85, holo: .3, glow: 'rgba(255,70,80,.65)' },
-  challenger: { s: ['#fff3c8', '#ffc9ec', '#c7d2ff', '#a8f3ff', '#d9ffcf'], ink: '#14121f', sheen: .9, holo: .5, glow: 'rgba(200,225,255,.9)' },
-};
+// Tier colours come from TK.tier (single source of truth); only material effects live here.
+function alpha(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; }
+const STORY_FX = {"iron": {"sheen": 0, "holo": 0}, "bronze": {"sheen": 0.25, "holo": 0}, "silver": {"sheen": 0.45, "holo": 0}, "gold": {"sheen": 0.55, "holo": 0}, "platinum": {"sheen": 0.6, "holo": 0}, "emerald": {"sheen": 0.65, "holo": 0.08}, "diamond": {"sheen": 0.75, "holo": 0.18}, "master": {"sheen": 0.8, "holo": 0.25}, "grandmaster": {"sheen": 0.85, "holo": 0.3}, "challenger": {"sheen": 0.9, "holo": 0.5}};
+const STORY_MAT = Object.fromEntries(Object.entries(STORY_FX).map(([k, fx]) => { const t = TK.tier[k], cd = t.card;
+  return [k, { s: cd.stops, ink: cd.ink, text: t.text, band: cd.band, ...fx, glow: cd.glow }]; }));
+// chip glyphs (unit coords) shared by DOM SVG + canvas
+const TIER_COMMENTS = {"iron3": "만사가 귀찮다. 도대체 왜 뛰는 거지? 러닝화는 왜 사는 거야?", "iron2": "1km는 차로 이동해야 하는 거 아니야?", "iron1": "야야 좀 걷자. 숨찬다. 오늘 많이 뛰었잖아?", "bronze3": "그래도 오늘 나왔으니까 2km는 채우고 가자. 뛰는 게 어디냐.", "bronze2": "어? 생각보다 뛸 만한데? 욕심부렸다가 금방 후회한다.", "bronze1": "니가 5km를 뛰었다고? 나도 할 수 있을 것 같은데? 일단 내일 해본다.", "silver3": "5km는 이제 어떻게든 걷지 않고 뛴다. 대신 끝나고 한동안 아무것도 못 한다.", "silver2": "잠깐만. 나 어제보다 빨라졌는데?", "silver1": "슬슬 그냥 뛰는 건 재미없다. 기록을 좀 줄여볼까?", "gold3": "남들은 몇 분 페이스로 뛰나 보기 시작한다. 그리고 내 기록을 다시 본다.", "gold2": "남들 5분대가 느려 보인다. 근데 왜 나는 아직도 힘들지?", "gold1": "러닝 끝나고 기록부터 확인한다. 거리보다 페이스가 신경 쓰인다. 슬슬 사람들이 페이스를 물어본다.", "platinum3": "오늘 기록이 왜 이렇지? 날씨 때문인가? 바람 때문인가? 컨디션 때문인가?", "platinum2": "러닝화를 사면서 용도를 구분하기 시작한다. 이건 데일리, 이건 장거리, 이건 대회용.", "platinum1": "이지런 하려고 나왔는데 욕심부리다가 후반에 퍼져버린다.", "emerald3": "10km 뛰고 들어왔는데 생각보다 멀쩡하다. 이지런 속도를 올려볼까?", "emerald2": "남의 기록을 보면 부럽지가 않다. 저 기록을 위한 훈련법이 궁금하다.", "emerald1": "훈련에도 목적이 있다는 걸 알게 된다. 오늘은 왜 천천히 뛰는지도 설명할 수 있다.", "diamond3": "기록 하나 찍고 끝나는 게 아니다. 심박, 페이스, 케이던스까지 디테일에 신경 쓴다.", "diamond2": "남들이 빠르다고 하는 기록이 슬슬 내 PB가 된다.", "diamond1": "나도 이제 러닝 인플루언서가 될 수 있는 건가? 생각한다.", "master": "너의 질주는 나의 이지런이다.", "grandmaster": "웬만한 대회는 입상 또는 PB 갱신이 목표다. 작은 대회에 나갔더니 아는 사람이 이런 데 왜 나왔냐고 원망한다.", "challenger": "대한민국의 체육계를 들썩이게 할 괴물."};
+const tierComment = (key, roman) => TIER_COMMENTS[key + ({ III: 3, II: 2, I: 1 }[roman] || '')] || '';
+function glyphPts(k) { const g = TK.tier[k].card.glyph; if (g[0] === 'pts') return g[1]; if (g[0] === 'circle') return null;
+  const [, n, rot, rr] = g; return Array.from({ length: n }, (_, i) => { const r = rr[i % rr.length], a = (rot + 360 * i / n) * Math.PI / 180; return [r * Math.cos(a), r * Math.sin(a)]; }); }
+function glyphSVG(k) { const p = glyphPts(k), st = 'fill="none" stroke="currentColor" stroke-width=".14" stroke-linejoin="round"';
+  return `<svg viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true">${p ? `<polygon points="${p.map(q => q.map(v => v.toFixed(3)).join(',')).join(' ')}" ${st}/>` : `<circle r=".8" ${st}/>`}</svg>`; }
+// inline pattern art (tokens referenced crystal-hex.svg / topo-contours.svg)
+const HEX_SVG = (() => { const s = 26, h = s * Math.sqrt(3), P = (cx, cy) => Array.from({ length: 6 }, (_, i) => { const a = (60 * i + 30) * Math.PI / 180; return `${(cx + s * .55 * Math.cos(a)).toFixed(1)},${(cy + s * .55 * Math.sin(a)).toFixed(1)}`; }).join(' ');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s * 1.5 * 2}" height="${h.toFixed(1)}"><g fill="none" stroke="#fff" stroke-opacity=".10" stroke-width="1">${[[0, 0], [s * 1.5, h / 2], [s * 3, 0], [0, h], [s * 3, h], [s * 1.5, -h / 2]].map(([x, y]) => `<polygon points="${P(x, y)}"/>`).join('')}</g></svg>`; })();
+const TOPO_D = Array.from({ length: 24 }, (_, k) => { k++; let d = ''; for (let a = 0; a <= 360; a += 6) { const t = a * Math.PI / 180, r = k * 9.5 * (1 + .10 * Math.sin(3 * t + k * .3) + .06 * Math.sin(5 * t - k * .5)); d += (a ? 'L' : 'M') + (245 + r * Math.cos(t) * 1.25).toFixed(1) + ',' + (130 + r * Math.sin(t)).toFixed(1); } return d + 'Z'; }).join('');
+const topoSVG = col => `<svg xmlns="http://www.w3.org/2000/svg" width="340" height="214" viewBox="0 0 340 214" preserveAspectRatio="xMidYMid slice"><path d="${TOPO_D}" fill="none" stroke="${col}" stroke-opacity=".42" stroke-width=".7"/></svg>`;
+const svgURL = s => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
+document.head.insertAdjacentHTML('beforeend', '<style id="tier-tk">' + `.tier-card{--hex:${svgURL(HEX_SVG)} 0 0/78px auto repeat}` + Object.entries(TK.tier).map(([k, t]) => { const cd = t.card;
+  const bg = cd.background.replace('var(--topo)', svgURL(topoSVG(cd.topo_tint)) + ' center/cover no-repeat');
+  return `.t-${k}{--ink:${cd.ink};--ink2:${cd.ink};--card-bg:${bg};--card-bd:${cd.border.replace(/^1px solid /, '1px solid ')};--card-sh:${cd.shadow};${cd.outline ? `--card-ol:${cd.outline};` : ''}}`; }).join('') + '</style>');
+// --hex is a shorthand-ish layer; expand into background layers
+document.querySelectorAll('#tier-tk').forEach(s => { s.textContent = s.textContent.replace(/var\(--hex\)/g, svgURL(HEX_SVG) + ' 0 0/78px auto repeat'); });
+try { document.fonts && document.fonts.load('600 40px Inter'); document.fonts && document.fonts.load('300 40px Inter'); } catch { }
 const rr = (c, x, y, w, h, r) => { c.beginPath(); c.roundRect(x, y, w, h, r); };
 function font(c, size, weight, fam, stretch = 'normal') { c.font = `${weight} ${size}px ${fam}`; try { c.fontStretch = stretch; } catch { } }
 function fitText(c, txt, max) { while (c.measureText(txt).width > max && txt.length > 1) txt = txt.slice(0, -2) + '…'; return txt; }
-function alpha(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; }
 
 // ---------- font registry: 6 embedded + Pretendard, rest lazy-loaded on pick ----------
 const rng = s => { const [a, b] = String(s).split(' ').map(Number); if (!b) return [a]; const o = []; for (let w = a; w <= b; w += 100) o.push(w); return o; };
@@ -779,44 +843,43 @@ const nearW = (k, w) => { const ws = FONTS[k].ws; return ws.reduce((a, b) => Mat
 const W_ = W, H_ = H, ARC_ = ARC, PRE_ = PRE, SYS_KO_ = SYS_KO;
 { rr, font, alpha };
 function drawCard(c, d, x, y, w, h) {
-  const m = STORY_MAT[d.key], r = w * 0.063;
-  c.save();
-  if (m.glow) { c.shadowColor = m.glow; c.shadowBlur = d.key === 'challenger' ? 160 : 110; }
-  else { c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = 60; c.shadowOffsetY = 24; }
-  const g = c.createLinearGradient(x, y, x + w, y + h);
-  m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s));
-  rr(c, x, y, w, h, r); c.fillStyle = g; c.fill();
-  c.restore();
+  const t = TK.tier[d.key], cd = t.card, m = STORY_MAT[d.key], r = w * 0.05, u = w / 340, ink = cd.ink;
+  c.save(); // shadow + glow
+  c.shadowColor = cd.glow || 'rgba(0,0,0,.55)'; c.shadowBlur = cd.glow ? 40 * u * 1.6 : 28 * u; c.shadowOffsetY = cd.glow ? 0 : 12 * u;
+  rr(c, x, y, w, h, r); c.fillStyle = cd.stops[1]; c.fill(); c.restore();
   c.save(); rr(c, x, y, w, h, r); c.clip();
-  if (m.holo) { // iridescent sweep
-    const hg = c.createLinearGradient(x, y + h, x + w, y);
-    ['#ff9fd6', '#ffe08a', '#a6ffc0', '#7fe6ff', '#a798ff'].forEach((s, i) => hg.addColorStop(.15 + i * .17, s));
-    c.globalAlpha = m.holo; c.globalCompositeOperation = 'overlay'; c.fillStyle = hg; c.fillRect(x, y, w, h);
-  }
-  if (m.sheen) {
-    c.globalCompositeOperation = 'soft-light'; c.globalAlpha = m.sheen;
-    const b = c.createLinearGradient(x, y, x + w, y + h * .55);
-    b.addColorStop(.3, 'rgba(255,255,255,0)'); b.addColorStop(.45, 'rgba(255,255,255,.75)'); b.addColorStop(.53, 'rgba(255,255,255,.1)'); b.addColorStop(.64, 'rgba(255,255,255,0)');
-    c.fillStyle = b; c.fillRect(x, y, w, h);
-    const rg = c.createRadialGradient(x, y, 0, x, y, w * .7); rg.addColorStop(0, 'rgba(255,255,255,.6)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
-    c.fillStyle = rg; c.fillRect(x, y, w, h);
-    const dg = c.createRadialGradient(x + w, y + h, 0, x + w, y + h, w * .6); dg.addColorStop(0, 'rgba(0,0,0,.45)'); dg.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = dg; c.fillRect(x, y, w, h);
-  }
+  const ang = 118 * Math.PI / 180, dx = Math.sin(ang), dy = -Math.cos(ang), L = Math.abs(w * dx) + Math.abs(h * dy), cx = x + w / 2, cy = y + h / 2;
+  const lg = (stops) => { const g = c.createLinearGradient(cx - dx * L / 2, cy - dy * L / 2, cx + dx * L / 2, cy + dy * L / 2); stops.forEach(([o, s]) => g.addColorStop(o, s)); return g; };
+  c.fillStyle = lg([[0, cd.stops[0]], [.55, cd.stops[1]], [1, cd.stops[2]]]); c.fillRect(x, y, w, h);
+  if (cd.band === 'plain') { c.fillStyle = 'rgba(255,255,255,.035)'; for (let yy = y; yy < y + h; yy += 3 * u) c.fillRect(x, yy, w, u); }
+  if (cd.band === 'mid') { c.strokeStyle = 'rgba(255,255,255,.10)'; c.lineWidth = u; const s = 13 * u, hh = s * Math.sqrt(3);
+    for (let gx = x - s; gx < x + w + s * 3; gx += s * 3) for (let gy = y - hh; gy < y + h + hh; gy += hh) for (const [ox, oy] of [[0, 0], [s * 1.5, hh / 2]]) {
+      c.beginPath(); for (let i = 0; i < 6; i++) { const a = (60 * i + 30) * Math.PI / 180; c.lineTo(gx + ox + s * .55 * Math.cos(a), gy + oy + s * .55 * Math.sin(a)); } c.closePath(); c.stroke(); } }
+  if (cd.band === 'top') { c.strokeStyle = alpha(cd.topo_tint, .42); c.lineWidth = .7 * u; const k2 = Math.max(w / 340, h / 214);
+    c.save(); c.translate(x + w / 2 - 170 * k2, y + h / 2 - 107 * k2); c.scale(k2, k2); c.lineWidth = .7 * u / k2; c.stroke(new Path2D(TOPO_D)); c.restore();
+    c.fillStyle = lg([[.32, 'rgba(159,240,224,0)'], [.42, 'rgba(159,240,224,.18)'], [.5, 'rgba(179,156,250,.22)'], [.58, 'rgba(243,163,196,.18)'], [.68, 'rgba(243,163,196,0)']]); c.fillRect(x, y, w, h); }
+  if (cd.band !== 'plain') { c.fillStyle = lg([[.3, 'rgba(255,255,255,0)'], [.48, 'rgba(255,255,255,.16)'], [.62, 'rgba(255,255,255,0)']]); c.fillRect(x, y, w, h); }
   c.restore();
-  c.save(); rr(c, x + 1.5, y + 1.5, w - 3, h - 3, r); c.strokeStyle = `rgba(255,255,255,${.08 + m.sheen * .35})`; c.lineWidth = 3; c.stroke(); c.restore();
+  c.save(); const bw = Math.max(1, u); rr(c, x + bw / 2, y + bw / 2, w - bw, h - bw, r); c.lineWidth = bw;
+  c.strokeStyle = { plain: 'rgba(255,255,255,.16)', mid: 'rgba(255,255,255,.37)', top: 'rgba(255,255,255,.47)' }[cd.band]; c.stroke();
+  if (cd.outline) { const col = cd.outline.match(/#[0-9A-Fa-f]{6}/)[0]; rr(c, x + 4 * u, y + 4 * u, w - 8 * u, h - 8 * u, r - 4 * u); c.strokeStyle = alpha(col, .44); c.stroke(); }
+  c.restore();
   // text
-  const px = x + w * .065, ink = m.ink, ink2 = alpha(ink, .62);
-  c.save(); c.textBaseline = 'alphabetic';
-  font(c, 26, 600, ARC, 'expanded'); c.letterSpacing = '6px'; c.fillStyle = ink2; c.fillText('RUNNING TIER', px, y + 82);
-  c.letterSpacing = '0px'; font(c, 38, 600, PRE); c.textAlign = 'right'; c.fillText(d.tierKo, x + w - w * .065, y + 84); c.textAlign = 'left';
-  const big = d.long ? 76 : 98, base = y + h - 168;
-  font(c, big, 800, ARC, 'expanded'); c.fillStyle = ink; c.fillText(d.word, px, base);
-  if (d.roman) { const ww = c.measureText(d.word).width; font(c, big, 300, ARC, 'expanded'); c.globalAlpha = .7; c.fillText(d.roman, px + ww + 30, base); c.globalAlpha = 1; }
-  c.fillStyle = alpha(ink, .16); c.fillRect(px, y + h - 122, w - w * .13, 2);
-  font(c, 34, 600, ARC); c.fillStyle = ink; c.fillText(d.recLine, px, y + h - 58);
-  c.textAlign = 'right'; font(c, 34, 700, PRE); const tp = d.topLabel; c.fillText(tp, x + w - w * .065, y + h - 58);
-  const tw = c.measureText(tp).width; font(c, 34, 500, PRE); c.fillStyle = ink2; c.fillText(d.who + ' ', x + w - w * .065 - tw, y + h - 58);
+  const pad = w * .06, IN = '"Inter",' + PRE; c.save(); c.textBaseline = 'alphabetic'; c.fillStyle = ink;
+  font(c, 11 * u, 700, IN); c.letterSpacing = 3 * u + 'px'; c.fillText('HOOHAA', x + pad, y + pad + 9 * u);
+  font(c, 8.5 * u, 600, IN); c.letterSpacing = 2 * u + 'px'; c.textAlign = 'right'; c.fillText('RUNNING TIER', x + w - pad + 2 * u, y + pad + 9 * u);
+  c.save(); font(c, 40 * u, 300, IN); c.letterSpacing = 3 * u + 'px'; c.fillStyle = 'rgba(255,255,255,.14)'; c.fillText('hoohaa', x + w - pad, y + h * .40 + u);
+  c.fillStyle = 'rgba(0,0,0,.07)'; c.fillText('hoohaa', x + w - pad, y + h * .40); c.restore(); c.textAlign = 'left';
+  // chip
+  const chW = 36 * u, chH = chW / 1.28, chX = x + pad, chY = y + h * .30;
+  rr(c, chX, chY, chW, chH, 6 * u); c.fillStyle = alpha(ink, .12); c.fill(); c.strokeStyle = alpha(ink, .7); c.lineWidth = u; c.stroke();
+  const gr = chH * .3, gx = chX + chW / 2, gy = chY + chH / 2, gp = glyphPts(d.key); c.strokeStyle = ink; c.lineWidth = 1.2 * u; c.lineJoin = 'round'; c.beginPath();
+  if (gp) { gp.forEach(([px, py], i) => c[i ? 'lineTo' : 'moveTo'](gx + px * gr, gy + py * gr)); c.closePath(); } else c.arc(gx, gy, gr * .8, 0, 7); c.stroke();
+  // name + numeral
+  c.fillStyle = ink; const nb = y + h - pad - 30 * u; font(c, (d.long ? 19 : 24) * u, 600, IN); c.letterSpacing = (d.long ? 3 : 5.5) * u + 'px'; c.fillText(d.word, x + pad, nb);
+  if (d.roman) { font(c, 22 * u, 400, IN); c.letterSpacing = 3 * u + 'px'; c.textAlign = 'right'; c.fillText(d.roman, x + w - pad, nb); c.textAlign = 'left'; }
+  c.letterSpacing = '0px'; c.fillStyle = alpha(ink, .22); c.fillRect(x + pad, nb + 9 * u, w - 2 * pad, Math.max(1, u * .8)); c.fillStyle = ink;
+  font(c, 10.5 * u, 600, IN); c.fillText(d.recLine, x + pad, y + h - pad); c.textAlign = 'right'; font(c, 10.5 * u, 600, IN); c.fillText(d.tierKo + ' · ' + d.topLabel, x + w - pad, y + h - pad);
   c.restore();
 }
 
@@ -830,7 +893,7 @@ function tierBg(c, d) {
   c.fillStyle = rg; c.fillRect(0, 0, W, H);
 }
 const ymd = (now = new Date()) => `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
-function accentOf(d) { const m = STORY_MAT[d.key]; return d.key === 'iron' ? '#c9ced6' : d.key === 'challenger' ? '#a8f3ff' : m.s[0]; }
+function accentOf(d) { return TK.tier[d.key].text; }
 async function saveStory(cv, name = 'running-tier.png') {
   const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
   const file = new File([blob], name, { type: 'image/png' });
@@ -911,7 +974,7 @@ function layerGeom(c, L, d, doc, photos) {
       const sz = base * (L.labK ?? .2), pd = L.box && L.box !== 'none' ? sz * .4 : 0;
       return { w: B.w + pd * 2, h: B.h + pd * 1.4, draw: () => { boxBehind(c, B.w, B.h, L.box, col, pd, sz * .3, L); drawTextBlock(c, B, { al: L.al || 'left', w: lw, fam: lfam, ls: L.ls || 0 }, L.box === 'full' && !L.bcol ? contrast(col) : col); } }; }
     const vt = [1, 2, 3].includes(L.v) ? L.v : 0;
-    // typeface "look" is independent of the design (layout): switching 라벨+값/값만/알약/런앱 never changes the font
+    // typeface "look" is independent of the display style (layout): switching 기본/숫자만/배지/러닝앱 never changes the font
     const run = !L.font && !ko && (L.look ?? (vt === 3 ? 'run' : 'std')) === 'run';
     const VW = L.font ? w : run ? 900 : 700, VST = L.font || ko ? 'normal' : run ? 'condensed' : L.stat !== 'next' ? 'semi-expanded' : 'normal', SK = run ? (L.sk ?? -.1) : (L.sk ?? 0);
     if (vt === 3) { // run-app style: huge value, tiny label underneath
@@ -983,7 +1046,7 @@ function bgDraw(c, doc, d, photos) {
   const b = doc.bg || { type: 'tier' };
   if (b.type === 'solid') { c.fillStyle = b.c1 || '#0F1620'; c.fillRect(0, 0, W_, H_); }
   else if (b.type === 'grad') { const g = c.createLinearGradient(0, 0, W_ * .35, H_); g.addColorStop(0, b.c1); g.addColorStop(1, b.c2); c.fillStyle = g; c.fillRect(0, 0, W_, H_); }
-  else if (b.type === 'dark') { c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); const m = STORY_MAT[d.key], tint = m.glow || 'rgba(255,255,255,.06)', rg = c.createRadialGradient(W_ / 2, 700, 0, W_ / 2, 700, 900); rg.addColorStop(0, tint.replace(/[\d.]+\)$/, '0.22)')); rg.addColorStop(1, 'rgba(18,22,28,0)'); c.fillStyle = rg; c.fillRect(0, 0, W_, H_); }
+  else if (b.type === 'dark') { c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); const m = STORY_MAT[d.key], tint = m.glow || 'rgba(255,255,255,.06)', rg = c.createRadialGradient(W_ / 2, 700, 0, W_ / 2, 700, 900); rg.addColorStop(0, tint.replace(/[\d.]+\)$/, '0.22)')); rg.addColorStop(1, 'rgba(15,22,32,0)'); c.fillStyle = rg; c.fillRect(0, 0, W_, H_); }
   else if (b.type === 'photo' && photos[b.pid]) { const im = filtered(photos[b.pid], b.filter, b.pid), sc = Math.max(W_ / im.width, H_ / im.height) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (iw - W_) / 2, my = (ih - H_) / 2;
     c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); c.drawImage(im, ...bgRect(b, photos[b.pid])); }
   else if (b.type === 'tone' || b.type === 'photo') { const m = STORY_MAT[d.key], g = c.createLinearGradient(0, 0, W_ * .3, H_); g.addColorStop(0, '#6f7a86'); g.addColorStop(.5, '#3c4652'); g.addColorStop(1, '#1d232b'); c.fillStyle = g; c.fillRect(0, 0, W_, H_);
@@ -1338,26 +1401,43 @@ dragArea($('cpHue'), x => { hsv = { ...hsv, h: x * 360 }; if (hsv.s < .05) hsv.s
 $('cpSV').addEventListener('keydown', e => { const d = { ArrowLeft: [-.05, 0], ArrowRight: [.05, 0], ArrowUp: [0, .05], ArrowDown: [0, -.05] }[e.key]; if (!d) return; e.preventDefault(); hsv = { ...hsv, s: Math.min(1, Math.max(0, hsv.s + d[0])), v: Math.min(1, Math.max(0, hsv.v + d[1])) }; setCol(hsv2hex(hsv), true); });
 $('cpHue').addEventListener('keydown', e => { const d = { ArrowLeft: -10, ArrowRight: 10 }[e.key]; if (!d) return; e.preventDefault(); hsv = { ...hsv, h: (hsv.h + d + 360) % 360 }; setCol(hsv2hex(hsv), true); });
 $('cpHex').addEventListener('input', e => { let v = e.target.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{6}$/i.test(v)) setCol(v); });
-const QC = ['#ffffff', '#111111', '#3dc8f5', '#ff5a5f', '#ffd166', '#c6f432', '#ff8fd8', '#9b8cff', '#f2994a', '#16181c'];
-const chipsHTML = () => `<div class="qcs">${QC.map(c => `<button type="button" class="qc" data-c="${c}" aria-label="색 ${c}" aria-pressed="false" style="--c:${c}"></button>`).join('')}<button type="button" class="qc qt" data-tierc="1">티어 색</button><button type="button" class="qc qt" id="eyedrop">스포이드</button><button type="button" class="qc qt" data-more-col="1" aria-expanded="false">더보기</button></div><div id="cpHost" hidden></div>`;
+const QC = ['#ffffff', '#111111', '#3dc8f5', '#ff5a5f', '#ffd166', '#b9ecff', '#ff8fd8', '#9b8cff', '#f2994a'];
+const ICO_DROP = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 4.5 5 5"/><path d="M17 2.5a2.1 2.1 0 0 1 3 3L17.5 8 16 6.5 17 2.5z"/><path d="M15.5 6.5 5 17l-1 4 4-1L18.5 9.5"/></svg>';
+const chipsHTML = () => `<div class="qcs one"><button type="button" class="qc" data-tierc="1" aria-label="티어 색 (${esc((state.story || {}).tierKo || '')})" aria-pressed="false" style="--c:${state.story ? accentOf(state.story) : '#3dc8f5'}"></button>${QC.map(c => `<button type="button" class="qc" data-c="${c}" aria-label="색 ${c}" aria-pressed="false" style="--c:${c}"></button>`).join('')}<button type="button" class="qc qi" id="eyedrop" aria-label="스포이드: 캔버스에서 색 가져오기">${ICO_DROP}</button><button type="button" class="qc qi wheel" data-more-col="1" aria-expanded="false" aria-label="직접 색 고르기"></button></div><div id="cpHost" hidden></div>`;
 // ---- fonts ----
-const fontBtn = (k, cls = 'fq', on = false) => `<button type="button" class="${cls}${on ? ' on' : ''}" data-fk="${k || ''}" aria-pressed="${on}" style="font-family:${(k ? previewFam(k) : 'inherit').replace(/"/g, "'")};${k ? `font-weight:${nearW(k, 700)}` : ''}">${on ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${k ? esc(FONTS[k].n.replace(/ \(.+\)$/, '')) : '기본'}</button>`;
+const fontBtn = (k, cls = 'fq', on = false) => `<button type="button" class="${cls}${on ? ' on' : ''}" aria-label="글꼴 ${k ? esc(FONTS[k].n) : '기본'}${on ? ' (선택됨)' : ''}" data-fk="${k || ''}" aria-pressed="${on}" style="font-family:${(k ? previewFam(k) : 'inherit').replace(/"/g, "'")};${k ? `font-weight:${nearW(k, 700)}` : ''}">${on ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${k ? esc(FONTS[k].n.replace(/ \(.+\)$/, '')) : '기본'}</button>`;
 const sampleOf = L => L.type === 'text' ? (L.t || '').split('\n')[0].slice(0, 16) || 'Aa' : statValue(state.story, doc, L.stat);
-function fontRow(L) { const cur = L.font && FONTS[L.font] ? L.font : null; let ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(k => FONTS[k]).slice(0, 6);
-  if (cur && !ks.includes(cur)) ks = [cur, ...ks.slice(0, 5)]; else if (cur) ks = [cur, ...ks.filter(k => k !== cur)]; ks.forEach(loadPreviewFont);
-  return `<p class="fcur" id="fCur">현재 글꼴: <b>${cur ? esc(FONTS[cur].n) : '기본'}</b></p><div class="fquick">${cur ? '' : fontBtn(null, 'fq', true)}${ks.map(k => fontBtn(k, 'fq', k === cur)).join('')}${cur ? fontBtn(null) : ''}<button type="button" class="fq more" data-flib="1">전체 글꼴 (${Object.keys(FONTS).length}종) →</button></div>`; }
+function fontRow(L) { const cur = L.font && FONTS[L.font] ? L.font : null; let ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(k => FONTS[k]).slice(0, 8);
+  if (cur && !ks.includes(cur)) ks = [cur, ...ks.slice(0, 7)]; else if (cur) ks = [cur, ...ks.filter(k => k !== cur)]; ks.forEach(loadPreviewFont);
+  return `<p class="fcur" id="fCur">현재 글꼴: <b>${cur ? esc(FONTS[cur].n) : '기본'}</b></p><div class="fquick">${cur ? '' : fontBtn(null, 'fq', true)}${ks.map(k => fontBtn(k, 'fq', k === cur)).join('')}${cur ? fontBtn(null) : ''}<button type="button" class="fq more" data-flib="1" aria-haspopup="dialog">전체 ${Object.keys(FONTS).length} ›</button></div>`; }
 function libHTML(L) { const q = ($('fSearch') || {}).value || '', fv = favs(), rc = recents(), smp = esc(sampleOf(L));
   let ks = Object.keys(FONTS); if (fontCat === 'fav') ks = fv.filter(k => FONTS[k]); else if (fontCat === 'recent') ks = rc.filter(k => FONTS[k]); else if (fontCat !== 'all') ks = ks.filter(k => FONTS[k].cat === fontCat);
-  const ql = q.trim().toLowerCase(); if (ql) ks = ks.filter(k => (FONTS[k].n + ' ' + k + ' ' + ((FONT_CATS.find(c => c[0] === FONTS[k].cat) || [])[1] || '')).toLowerCase().includes(ql)); ks.forEach(loadPreviewFont);
-  return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt${L.font === k ? ' on' : ''}" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${L.font === k ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${smp}</b><small>${esc(FONTS[k].n)} · ${FONTS[k].lic}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
+  ks.sort((a, b) => (FONTS[b].ko ? 1 : 0) - (FONTS[a].ko ? 1 : 0)); const ql = q.trim().toLowerCase(); if (ql) ks = ks.filter(k => (FONTS[k].n + ' ' + k + ' ' + ((FONT_CATS.find(c => c[0] === FONTS[k].cat) || [])[1] || '')).toLowerCase().includes(ql)); ks.forEach(loadPreviewFont);
+  return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt${L.font === k ? ' on' : ''}" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${L.font === k ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${smp}</b><small>${FONTS[k].ko ? '<em class="kob">한글</em>' : ''}${esc(FONTS[k].n)}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
 async function pickFont(k) { const L = getL(sel); if (!L) return; const bs = document.querySelectorAll(`[data-fk="${k || ''}"]`); bs.forEach(b => b.classList.add('loading'));
   const ok = k ? await loadFont(k) : true; bs.forEach(b => b.classList.remove('loading')); if (!ok) { status('글꼴을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
   if (k) LS('runtier:fontrecent', [k, ...recents().filter(x => x !== k)].slice(0, 8)); L.font = k || null; changed(true); paintPanel(); }
+// ---- font bottom sheet: tap applies live, sheet stays open until 완료 ----
+function fontSheetHTML(L) { return `<div class="fs-card" role="dialog" aria-modal="true" aria-labelledby="fsT"><div class="sh-head"><h3 id="fsT">글꼴 ${Object.keys(FONTS).length}</h3><button type="button" class="chip-btn primary-chip" id="fsDone">완료</button></div>
+  <input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats" role="radiogroup" aria-label="글꼴 분류">${[['all', '전체'], ['recent', '최근'], ['fav', '★'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div>
+  <div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용이 허용된 OFL·Apache 라이선스예요</p></div>`; }
+function openFontSheet() { const L = getL(sel); if (!L) return; let sh = $('fSheet'); if (!sh) { sh = document.createElement('div'); sh.id = 'fSheet'; sh.className = 'fsheet'; document.body.appendChild(sh);
+    sh.addEventListener('click', e => { const L2 = getL(sel); if (e.target === sh || e.target.closest('#fsDone')) return closeFontSheet(); const b = e.target.closest('button'); if (!b || !L2) return; const d = b.dataset;
+      if (d.c && b.closest('#fCats')) { fontCat = d.c; for (const x of $('fCats').children) x.setAttribute('aria-checked', String(x === b)); $('fList').innerHTML = libHTML(L2); }
+      else if (d.star) { const f = favs(); LS('runtier:fontfav', f.includes(d.star) ? f.filter(x => x !== d.star) : [d.star, ...f]); $('fList').innerHTML = libHTML(L2); }
+      else if (d.fk !== undefined) pickFont(d.fk || null).then(() => { if (!$('fSheet').hidden) $('fList').innerHTML = libHTML(getL(sel)); }); });
+    sh.addEventListener('input', e => { if (e.target.id === 'fSearch') $('fList').innerHTML = libHTML(getL(sel)); });
+    sh.addEventListener('keydown', e => { if (e.key === 'Escape') closeFontSheet(); }); }
+  sh.innerHTML = fontSheetHTML(L); sh.hidden = false; document.body.classList.add('fs-open'); $('fsDone').focus(); }
+function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); }
 // ---- bottom panel (one level deep, in page flow) ----
 const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', sticker: '스티커', shape: '도형' };
 const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커' : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
 const seg = (id, opts, cur) => `<div class="seg n${opts.length}" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
-const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row"><label for="${id}" class="lbl sm">${lab}</label><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><output id="${id}V">${val}${unit}</output></div>`;
+const STYLE_THUMB = ['<i class="th-l">PACE</i><b>4:54</b>', '<b class="th-big">4:54</b>', '<b class="th-pill">4:54</b>', '<b class="th-run">4:54</b><i class="th-l">PACE</i>'];
+const segT = (id, opts, cur) => `<div class="seg segt n${opts.length}" id="${id}" role="radiogroup" aria-label="표시 스타일">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}"><span class="thumb" aria-hidden="true">${STYLE_THUMB[v]}</span>${n}</button>`).join('')}</div>`;
+// slider row: −/+ fine steps, tap value to type a number
+const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row rgx"><label for="${id}" class="lbl sm">${lab}</label><div class="trk"><button type="button" class="stp" data-stp="${id}" data-d="-1" aria-label="${lab} 줄이기">−</button><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><button type="button" class="stp" data-stp="${id}" data-d="1" aria-label="${lab} 늘리기">+</button></div><button type="button" class="rv" data-rv="${id}" data-u="${unit}" aria-label="${lab} 값 직접 입력"><output id="${id}V">${val}${unit}</output></button></div>`;
 let moreCol = false, moreTxt = false, colMode = 'fg';
 function paintPanel() {
   { const L0 = sel && getL(sel), b = L0 && L0.ax && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; } }
@@ -1371,20 +1451,19 @@ function paintPanel() {
       h += `<input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats">${[['all', '전체'], ['fav', '★ 즐겨찾기'], ['recent', '최근'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div><div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용·웹 임베딩이 허용된 OFL·Apache 라이선스예요</p><button type="button" class="chip-btn" id="fClose">글꼴 목록 닫기</button>`;
       P.innerHTML = h; bindPanel(L); return; }
     if (L.type === 'text') h += `<label class="lbl sm" for="tText">내용</label><textarea id="tText" rows="2" maxlength="80">${esc(L.t || '')}</textarea>`;
-    if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 바꿀 수 없어요 · 위치·크기·스타일만 바꿀 수 있어요${isTop(L) ? ' · 상위 %는 항상 크게 보여요' : ''}</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `${L.v === 4 ? '' : `<span class="lbl sm">디자인</span>${seg('pV', [[0, '라벨+값'], [1, '값만'], [2, '알약'], [3, '런앱']], L.v || 0)}`}`;
+    if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 고정돼요</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `${L.v === 4 ? '' : `<span class="lbl sm">표시 스타일</span>${segT('pV', [[0, '기본'], [1, '숫자만'], [2, '배지'], [3, '러닝앱']], L.v || 0)}`}`;
     if (L.type === 'card') h += `<span class="lbl sm">디자인</span>${seg('pV', [[0, '카드'], [1, '배지']], L.v || 0)}`;
     if (L.type === 'text' || L.type === 'stat') h += `<span class="lbl sm">글꼴</span>${fontRow(L)}`;
     const tb = L.type === 'text' || L.type === 'stat'; if (!tb) colMode = 'fg';
     if (L.type !== 'card' && L.type !== 'photo') h += `<span class="lbl sm">색</span>` + (tb ? `<div class="seg n2 ctsw" id="pCT" role="radiogroup" aria-label="색 대상">${[['fg', '글자 색'], ['bg', '배경 색']].map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${colMode === v}">${n}</button>`).join('')}</div>` : '')
-      + (tb && colMode === 'bg' ? `<div class="ed-btns"><button type="button" class="chip-btn" id="pBgNone" aria-pressed="${!hasBg(L)}">배경 없음</button></div>` : '') + chipsHTML()
+      + (tb && colMode === 'bg' ? (L.v === 2 ? `<div class="ed-btns"><button type="button" class="chip-btn" id="pBgNone" aria-pressed="${!L.bcol}">기본 배지 색</button></div>` : `<span class="lbl sm">배경 박스</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '채움']], L.box || 'none')}`) : '') + chipsHTML()
       + (tb && colMode === 'bg' && hasBg(L) ? range('pBo', '배경 불투명도', 0, 100, Math.round((L.bo ?? (L.v !== 2 && L.box === 'semi' ? .45 : 1)) * 100), '%') : '');
-    if (L.type === 'text' || (L.type === 'stat' && L.v !== 2)) h += `<span class="lbl sm">배경 박스</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '꽉 찬']], L.box || 'none')}`;
+    if (!tb && L.type === 'text') h += `<span class="lbl sm">배경 박스</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '채움']], L.box || 'none')}`;
     if (L.type === 'text') h += `<span class="lbl sm">정렬</span>${seg('pAl', [['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']], L.al || 'center')}`;
-    if (L.type === 'text' || L.type === 'stat') h += `<button type="button" class="chip-btn" id="pMoreT" aria-expanded="${moreTxt}">자간·행간 ${moreTxt ? '접기' : '더보기'}</button>` + (moreTxt ? range('pLs', '자간', -10, 60, L.ls || 0, 'px') + range('pLh', '행간', 0, 250, Math.round((L.lh ?? 1.15) * 100), '%') : '');
     if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}<span class="lbl sm">필터</span>${seg('pFilter', FILTERS, L.filter || 'none')}` + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경으로 쓰기</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
     if (L.type === 'sticker' || L.type === 'shape') {}
-    h += range('pS', '크기', 8, 400, Math.round(L.s * 100), '%') + range('pR', '회전', -180, 180, Math.round((L.r || 0) * 180 / Math.PI), '°') + (isTop(L) ? '' : range('pO', '불투명도', 5, 100, Math.round((L.o ?? 1) * 100), '%'));
-    h += `<div class="ed-btns acts">${isTop(L) ? '' : '<button type="button" class="chip-btn" data-act="dup">복제</button>'}<button type="button" class="chip-btn" data-act="up">앞으로</button><button type="button" class="chip-btn" data-act="down">뒤로</button>${isTop(L) ? '' : '<button type="button" class="chip-btn danger" data-act="del">삭제</button>'}</div>`;
+    h += range('pS', '크기', 8, 400, Math.round(L.s * 100), '%') + (L.type === 'text' || L.type === 'stat' ? `<button type="button" class="acc" id="pMoreT" aria-expanded="${moreTxt}" aria-controls="pTxtAcc"><span>자간·행간</span><i aria-hidden="true">${moreTxt ? '▴' : '▾'}</i></button><div id="pTxtAcc" class="acc-body"${moreTxt ? '' : ' hidden'}>${range('pLs', '자간', -10, 60, L.ls || 0, 'px') + range('pLh', '행간', 0, 250, Math.round((L.lh ?? 1.15) * 100), '%')}</div>` : '') + range('pR', '회전', -180, 180, Math.round((L.r || 0) * 180 / Math.PI), '°') + (isTop(L) ? '' : range('pO', '불투명도', 5, 100, Math.round((L.o ?? 1) * 100), '%'));
+    // block actions (앞으로/뒤로/인물 뒤로/복제/삭제) live in the on-canvas mini toolbar (#miniBar) for every block type
   } else if (mode === 'stat') {
     h += `<div class="sh-head"><h3>기록 블록 추가</h3></div><p class="hint lock">🔒 값은 계산 결과 그대로예요</p><div class="grid2">${Object.entries(STATS).map(([k, [n]]) => `<button type="button" class="pre" data-addstat="${k}"><b>${n}</b><small>${esc(statValue(state.story, doc, k))}</small></button>`).join('')}<button type="button" class="pre" data-addcard="0"><b>티어 카드</b><small>카드</small></button><button type="button" class="pre" data-addcard="1"><b>티어 배지</b><small>${esc(state.story.word)}</small></button></div>`;
   } else if (mode === 'sticker') {
@@ -1402,7 +1481,7 @@ function paintPanel() {
   for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
   paintSelInfo();
 }
-async function renderMini(g, L) { const cv = await renderDoc(state.story, { bg: { type: 'solid', c1: '#20262F' }, layers: [{ ...L, x: 540, y: 960, s: 1 }] }, photos); const b = cv.__boxes[0], sz = Math.max(b.w, b.h) * 1.15; g.drawImage(cv, 540 - sz / 2, 960 - sz / 2, sz, sz, 0, 0, 120, 120); }
+async function renderMini(g, L) { const cv = await renderDoc(state.story, { bg: { type: 'solid', c1: '#1F2B3B' }, layers: [{ ...L, x: 540, y: 960, s: 1 }] }, photos); const b = cv.__boxes[0], sz = Math.max(b.w, b.h) * 1.15; g.drawImage(cv, 540 - sz / 2, 960 - sz / 2, sz, sz, 0, 0, 120, 120); }
 function paintSelInfo() { const L = sel && getL(sel); if (!L) return; for (const [id, v, u] of [['pS', Math.round(L.s * 100), '%'], ['pR', Math.round((L.r || 0) * 180 / Math.PI), '°']]) { const e = $(id); if (e && document.activeElement !== e) { e.value = v; $(id + 'V').textContent = v + u; } } }
 function bindPanel(L) {
   const P = $('panel'), on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
@@ -1414,7 +1493,14 @@ function bindPanel(L) {
   const rg = (id, f, u = '') => on(id, 'input', e => { f(+e.target.value); $(id + 'V').textContent = e.target.value + u; changed(); });
   rg('pS', v => L.s = v / 100, '%'); rg('pR', v => L.r = v * Math.PI / 180, '°'); rg('pO', v => L.o = v / 100, '%'); rg('pBo', v => L.bo = v / 100, '%'); rg('pLs', v => L.ls = v, 'px'); rg('pLh', v => L.lh = v / 100, '%');
   rg('pCz', v => L.cz = v / 100, '%'); rg('pCx', v => L.cx = v / 100); rg('pCy', v => L.cy = v / 100); rg('bgZ', v => doc.bg.pz = v / 100, '%');
-  on('pMoreT', 'click', () => { moreTxt = !moreTxt; paintPanel(); });
+  on('pMoreT', 'click', e => { moreTxt = !moreTxt; const b = e.currentTarget; b.setAttribute('aria-expanded', moreTxt); b.querySelector('i').textContent = moreTxt ? '▴' : '▾'; $('pTxtAcc').hidden = !moreTxt; });
+  const setR = (id, v) => { const r = $(id); if (!r) return; v = Math.min(+r.max, Math.max(+r.min, Math.round(v))); if (id === 'pR' && Math.abs(v) <= 3) v = 0; r.value = v; r.dispatchEvent(new Event('input')); commit(); };
+  on('pR', 'input', e => { const v = +e.target.value; if (v !== 0 && Math.abs(v) <= 3) { e.target.value = 0; e.target.dispatchEvent(new Event('input')); } });
+  for (const b of P.querySelectorAll('[data-stp]')) b.addEventListener('click', () => { const r = $(b.dataset.stp); setR(b.dataset.stp, +r.value + +b.dataset.d); });
+  for (const b of P.querySelectorAll('[data-rv]')) b.addEventListener('click', () => { const id = b.dataset.rv, r = $(id), inp = document.createElement('input');
+    Object.assign(inp, { type: 'number', inputMode: 'numeric', min: r.min, max: r.max, value: r.value, className: 'rv-in' }); inp.setAttribute('aria-label', b.getAttribute('aria-label'));
+    b.replaceWith(inp); inp.focus(); inp.select(); let done = false; const fin = ok => { if (done) return; done = true; inp.replaceWith(b); if (ok && inp.value !== '' && !isNaN(+inp.value)) setR(id, +inp.value); b.querySelector('output').textContent = r.value + b.dataset.u; };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') fin(true); if (e.key === 'Escape') fin(false); }); inp.addEventListener('blur', () => fin(true)); });
   on('pFill', 'click', () => { photoTarget = 'fill'; pickPhoto(); }); on('pRefill', 'click', () => { photoTarget = 'fill'; pickPhoto(); });
   on('pAsBg', 'click', () => { if (!L.pid) return; doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== L); sel = null; changed(true); paintPanel(); });
   on('bgPhoto', 'click', () => { photoTarget = 'bg'; pickPhoto(); });
@@ -1426,7 +1512,7 @@ function bindPanel(L) {
     if (d.c && t.classList.contains('qc')) setCol(d.c);
     if (d.tierc) setCol('@tier');
     if (d.moreCol) { const host = $('cpHost'); host.hidden = !host.hidden; t.setAttribute('aria-expanded', String(!host.hidden)); if (!host.hidden) { host.appendChild($('cpick')); $('cpick').hidden = false; hsvCol = ''; paintPicker(); } }
-    if (d.flib) { libOpen = true; paintPanel(); }
+    if (d.flib) openFontSheet();
     if (d.fk !== undefined && t.closest('#panel')) pickFont(d.fk || null);
     if (d.star) { const f = favs(); LS('runtier:fontfav', f.includes(d.star) ? f.filter(x => x !== d.star) : [d.star, ...f]); $('fList').innerHTML = libHTML(L); }
     if (d.act) act(d.act);
@@ -1508,17 +1594,20 @@ function renderResult(r) {
       <span class="line"><span class="ltr">${L}</span><span class="nm">${n}</span><span class="pv">${r.trainingPaces[L].replace(/\/km/g, '').replace(' ~ ', '~')}<small>/km</small></span><span class="chev" aria-hidden="true">▾</span></span>
       <span class="exp" id="pe${i}" hidden>${d}</span></button>`).join('');
   $('resBody').innerHTML = `
-    <section class="tier-card fluid t-${ts.key}" aria-label="내 티어: ${esc(r.tier)}"><i class="tc-holo" aria-hidden="true"></i>
-      <div class="tc-top"><span class="tc-label" aria-hidden="true">RUNNING TIER</span><span class="tc-ko" id="tierName">${esc(r.tier)}</span></div>
+    <section class="tier-card fluid t-${ts.key} b-${TK.tier[ts.key].card.band}" aria-label="내 티어: ${esc(r.tier)}">
+      <span class="tc-wm" aria-hidden="true">hoohaa</span>
+      <div class="tc-top"><span class="tc-brand" aria-hidden="true">HOOHAA</span><span class="tc-label" aria-hidden="true">RUNNING TIER</span></div>
+      <span class="tc-chip" aria-hidden="true">${glyphSVG(ts.key)}</span>
       <div class="tc-name${LONG.has(ts.key) ? ' long' : ''}" aria-hidden="true"><span class="w">${ts.key.toUpperCase()}</span>${ts.roman ? `<span class="n">${ts.roman}</span>` : ''}</div>
-      <div class="tc-meta"><span class="rec">${esc(evName)} ${short(r.input.time)} · ${r.pace}</span><span class="rank"><b>${esc(r.topPercentLabel)}</b></span></div>
+      <div class="tc-meta"><span class="rec">${esc(evName)} ${short(r.input.time)} · ${r.pace}</span><span class="rank"><span class="tc-ko" id="tierName">${esc(r.tier)}</span> · <b>${esc(r.topPercentLabel)}</b></span></div>
     </section>
+    <figure class="tc-quote" style="--qc:${TK.tier[ts.key].text}"><span class="ql">이 티어 러너는</span><p id="tierCmt">${esc(tierComment(ts.key, ts.roman))}</p></figure>
     <p class="who-line" id="topPct">${who} <b>${esc(r.topPercentLabel)}</b></p>
     ${prog}
     <section class="card ladder" aria-labelledby="hLad"><h2 id="hLad">전체 티어 <span class="lad-sub">${esc(evName)} · ${esc(who)} 기준</span></h2>
       <div class="lad-head" aria-hidden="true"><span>티어</span><span>기록</span><span>상위</span></div>
       <ol class="lad" id="ladder">${[...r.tierLadder].reverse().map(x => { const k = KEY[x.tier.split(' ')[0]], me = x.index === r.tierIndex, m = STORY_MAT[k];
-        return `<li class="lr${me ? ' me' : ''}" style="--tc:${m.s[1]};--tc2:${m.s[0]};--ta:${accentOf({ key: k })}"${me ? ' id="ladMe" aria-current="true"' : ''}><span class="ln"><i class="dot"></i>${esc(x.tier)}${me ? '<em class="tag">내 티어</em>' : ''}</span><span class="lt">${x.minTime ? short(x.minTime) + ' 이내' : '기록 무관'}${me ? `<small>내 기록 ${short(r.input.time)}</small>` : ''}</span><span class="lp">${x.topPct === 100 ? '전체' : (+x.topPct).toFixed(1) + '%'}</span></li>`; }).join('')}</ol>
+        return `<li class="lr${me ? ' me' : ''}" style="--tc:${TK.tier[k].text};--tc2:${TK.tier[k].base};--ta:${accentOf({ key: k })}"${me ? ' id="ladMe" aria-current="true"' : ''}><span class="ln"><i class="dot"></i>${esc(x.tier)}${me ? '<em class="tag">내 티어</em>' : ''}</span><span class="lt">${x.minTime ? short(x.minTime) + ' 이내' : '기록 무관'}${me ? `<small>내 기록 ${short(r.input.time)}</small>` : ''}</span><span class="lp">${x.topPct === 100 ? '전체' : (+x.topPct).toFixed(1) + '%'}</span>${me ? `<span class="lcm">${esc(tierComment(k, ({ 3: 'III', 2: 'II', 1: 'I' })[x.tier.split(' ')[1]] || ''))}</span>` : ''}</li>`; }).join('')}</ol>
     </section>
     <section class="card vdot"><h2>VDOT <button type="button" class="info" aria-expanded="false" aria-controls="vdInfo" aria-label="VDOT 설명">ⓘ</button></h2>
       <div class="val num">${r.vdot.toFixed(1)}</div>
