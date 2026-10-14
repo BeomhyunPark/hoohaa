@@ -1337,8 +1337,9 @@ function layerGeom(c, L, d, doc, photos) {
   return { w: 10, h: 10, draw: () => { } };
 }
 // ---- v4 template text: CSS-like box (font px, weight, letter-spacing, line-height, align, underline), anchored by the template ----
-// official hoohaa wordmark (same geometry as the app header logo), drawn in white for in-image branding
+// official hoohaa wordmark (same geometry as the app header logo). Master is white; each layer tints it to its text colour.
 let LOGO_C = null;
+const LOGO_TINT = new Map();
 function logoCanvas() { if (LOGO_C) return LOGO_C; const K = 4, cv = document.createElement('canvas'); cv.width = 470 * K; cv.height = 122 * K; const g = cv.getContext('2d'); g.scale(K, K); g.translate(40, 4); g.transform(1, 0, Math.tan(-14 * Math.PI / 180), 1, 0, 0);
   g.strokeStyle = g.fillStyle = '#ffffff'; g.lineWidth = 16; const st = d => g.stroke(new Path2D(d)), ring = (x) => { g.beginPath(); g.arc(x, 70, 22, 0, Math.PI * 2); g.stroke(); };
   st('M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100'); st('M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100'); st('M340 40V100'); st('M412 40V100'); [102, 174, 318, 390].forEach(ring);
@@ -1346,6 +1347,7 @@ function logoCanvas() { if (LOGO_C) return LOGO_C; const K = 4, cv = document.cr
   g.beginPath(); g.arc(102, 70, 22, 0, Math.PI * 2); g.fill(); // stopwatch face filled, hand cut out
   g.globalCompositeOperation = 'destination-out'; g.lineWidth = 7; g.lineCap = 'round'; g.beginPath(); g.moveTo(102, 70); g.lineTo(113.81, 63.18); g.stroke(); g.beginPath(); g.arc(102, 70, 5.95, 0, Math.PI * 2); g.fill();
   return (LOGO_C = cv); }
+function logoTint(col) { const key = col || '#ffffff'; const hit = LOGO_TINT.get(key); if (hit) return hit; const src = logoCanvas(), cv = document.createElement('canvas'); cv.width = src.width; cv.height = src.height; const g = cv.getContext('2d'); g.drawImage(src, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = key; g.fillRect(0, 0, cv.width, cv.height); LOGO_TINT.set(key, cv); return cv; }
 const LOGO_TXT = 'hoohaa.run';
 function specText(c, L, d, doc) {
   const sp = L.sp, str = L.type === 'stat' ? statValue(d, doc, L.stat, L) : String(L.t || ' '), lines = str.split('\n'), sz = L.size || sp.sz, fk = L.font && FONTS[L.font] ? L.font : 'pretendard';
@@ -1358,7 +1360,7 @@ function specText(c, L, d, doc) {
     lines.forEach((t, i) => { const x = -W / 2 + ink[i][0] + (al === 'center' ? (W - lw[i]) / 2 : al === 'right' ? W - lw[i] : 0), y = (() => { const m2 = c.measureText(t.trim() ? t : 'H'), a = m2.actualBoundingBoxAscent ?? asc * .75, d = m2.actualBoundingBoxDescent ?? 0; return -H / 2 + i * lh + lh / 2 + (a - d) / 2; })();
       if (sp.ul) { c.save(); c.fillStyle = sp.ul[0]; c.fillRect(x, y + sp.ul[2], lw[i] - ls, sp.ul[1]); c.restore(); }
       if (t) fxText(c, t, x, y, sz, col);
-      if (LG) { c.save(); c.globalAlpha *= .92; const sh = L.fsh; if (Array.isArray(sh)) { c.shadowOffsetX = sh[0]; c.shadowOffsetY = sh[1]; c.shadowBlur = sh[2]; c.shadowColor = sh[3]; } c.drawImage(logoCanvas(), x + lw[i] - lgW, -lgH / 2, lgW, lgH); c.restore(); } }); c.letterSpacing = '0px'; } }; }
+      if (LG) { c.save(); c.globalAlpha *= .92; const sh = L.fsh; if (Array.isArray(sh)) { c.shadowOffsetX = sh[0]; c.shadowOffsetY = sh[1]; c.shadowBlur = sh[2]; c.shadowColor = sh[3]; } c.drawImage(logoTint(col), x + lw[i] - lgW, -lgH / 2, lgW, lgH); c.restore(); } }); c.letterSpacing = '0px'; } }; }
 // css-like fills for template boxes: colour, linear-gradient(angle), radial-gradient(ellipse|circle at x% y%) (farthest-corner)
 function cssFill(c, f, w, h) { if (!f || typeof f === 'string') return f || '#000';
   let g; if (f.t === 'lin') { const a = f.a * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), len = Math.abs(w * dx) + Math.abs(h * dy); g = c.createLinearGradient(-dx * len / 2, -dy * len / 2, dx * len / 2, dy * len / 2); }
