@@ -308,9 +308,12 @@ main{max-width:760px}
 .behind-tg .sw{flex:none;width:44px;height:26px;border-radius:13px;background:#3a4656;position:relative}.behind-tg .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
 .behind-tg[aria-pressed="true"]{background:#3DC8F5;color:#0F1620}.behind-tg[aria-pressed="true"] small{color:#0F1620}.behind-tg[aria-pressed="true"] .sw{background:#0F1620}.behind-tg[aria-pressed="true"] .sw::after{left:21px;background:#3DC8F5}
 .behind-tg.loading{opacity:.6}
-.mini{position:absolute;z-index:2;display:flex;gap:2px;padding:3px;border-radius:12px;background:rgba(15,22,32,.88);box-shadow:0 2px 10px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.14)}.mini[hidden]{display:none}
+.mini{position:absolute;z-index:5;pointer-events:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none;display:flex;gap:2px;padding:3px;border-radius:12px;background:rgba(15,22,32,.88);box-shadow:0 2px 10px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.14)}.mini[hidden]{display:none}
 .mini button{min-width:44px;height:44px;padding:0 4px;border:0;border-radius:9px;background:transparent;color:#F2F4F7;font:700 16px/1 inherit;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}.mini button[hidden]{display:none}.mini small{font-size:9px;font-weight:600;color:#B3BAC5}
 .mini button:active{background:rgba(255,255,255,.12)}.mini [aria-pressed="true"]{background:#3DC8F5;color:#0F1620}.mini [aria-pressed="true"] small{color:#0F1620}
+.mini [data-mb=behind][aria-pressed="true"]{background:#3DC8F5;color:#0F1620;box-shadow:0 0 0 2px #fff inset}.mini .loading{opacity:.6}
+.fcur{margin:2px 0 6px;font-size:13px;color:#B3BAC5}.fcur b{color:#3DC8F5}
+.fq.on,.fopt.on{border-color:#3DC8F5!important;background:rgba(61,200,245,.16)!important;box-shadow:0 0 0 1.5px #3DC8F5 inset;color:#F2F4F7}.ck{font-style:normal;color:#3DC8F5;font-family:system-ui,sans-serif;font-weight:800;margin-right:5px}
 
 </style>
 <style>
@@ -505,7 +508,7 @@ main{max-width:760px}
         <button type="button" data-tool="layers" aria-label="레이어" aria-pressed="false"><b>☰</b><small>레이어</small></button>
       </div>
     </div>
-    <input id="photo" type="file" accept="image/*" multiple class="vh" tabindex="-1" aria-hidden="true">
+    <input id="photo" type="file" accept="image/*" class="vh" tabindex="-1" aria-hidden="true">
     <p class="pv-hint" id="pvHint" role="status" aria-live="polite"></p>
     <div class="panel" id="panel"></div>
     <span class="lbl sm tl">템플릿</span>
@@ -841,6 +844,7 @@ async function saveStory(cv, name = 'running-tier.png') {
 // v3 story editor: document = background + ordered layers, rendered 1:1 to a 1080x1920 canvas (preview == export).
 // ---- stat ("기록 블록") values come only from the calculation result: never editable ----
 const STATS = { rec: ['기록', 'RECORD'], pace: ['페이스', 'PACE'], tier: ['티어', 'TIER'], top: ['상위 %', 'RANK'], vdot: ['VDOT', 'VDOT'], next: ['다음 티어까지', 'NEXT'], date: ['날짜', 'DATE'], race: ['대회명', 'RACE'], event: ['종목', 'EVENT'] };
+const statLabel = (d, k) => k === 'rec' ? d.recLine.split(' ')[0] + ' 기록' : STATS[k][0];
 const statValue = (d, doc, k) => ({ rec: d.time, pace: d.pace, tier: d.word + (d.roman ? ' ' + d.roman : ''), top: d.topLabel, vdot: d.vdot, next: d.nextLine, date: ymd(), race: (doc.race || '').trim() || '대회명을 입력하세요', event: d.recLine.split(' ')[0] })[k];
 const STAT_SIZE0 = { rec: 120, pace: 96, tier: 92, top: 104, vdot: 72, next: 40, date: 40, race: 56, event: 64 };
 const STAT_SIZE = STAT_SIZE0;
@@ -887,6 +891,7 @@ function drawTextBlock(c, B, o, col) {
 function boxBehind(c, w, h, style, col, pad, rad) { if (!style || style === 'none') return; rr(c, -w / 2 - pad, -h / 2 - pad * .7, w + pad * 2, h + pad * 1.4, rad); c.fillStyle = style === 'semi' ? 'rgba(0,0,0,.45)' : col; c.fill(); }
 // ---- each layer type: measure() -> {w,h} local, draw(c) centred at 0,0 ----
 function layerGeom(c, L, d, doc, photos) {
+  if (L.col === '@tier') L = { ...L, col: accentOf(d) }; // tier colour follows the current result
   if (L.type === 'text') {
     const ko = HAN.test(L.t || ''), fam = famOf(L.font, ko || !L.font), size = L.size || 72;
     const B = textBlock(c, String(L.t || ' ').split('\n').map(t => ({ t: t || ' ' })), { size, fam, w: wOf(L.font, L.w || 700), ls: L.ls || 0, lh: L.lh ?? 1.15 });
@@ -896,22 +901,29 @@ function layerGeom(c, L, d, doc, photos) {
   if (L.type === 'stat') {
     const v = statValue(d, doc, L.stat), lab = STATS[L.stat][1], base = STAT_SIZE[L.stat], ko = HAN.test(v);
     const fam = L.font ? famOf(L.font) : ko ? PRE_ : ARC_, w = wOf(L.font, L.w || 700), col = L.col || '#ffffff', acc = accentOf(d), m = STORY_MAT[d.key];
+    if (L.v === 4) { // label-only element (e.g. '5K 기록', '페이스'): derived from the result, styled/moved on its own
+      const lb = L.lab != null && L.lab !== '' ? L.lab : statLabel(d, L.stat), lfam = L.font ? fam : PRE_, lw = L.font ? w : 600;
+      const B = textBlock(c, [{ t: lb, size: base * (L.labK ?? .2) }], { size: base * (L.labK ?? .2), fam: lfam, w: lw, ls: L.ls || 0, lh: L.lh ?? 1 });
+      return { w: B.w, h: B.h, draw: () => drawTextBlock(c, B, { al: L.al || 'left', w: lw, fam: lfam, ls: L.ls || 0 }, col) }; }
     const vt = [1, 2, 3].includes(L.v) ? L.v : 0;
+    // typeface "look" is independent of the design (layout): switching 라벨+값/값만/알약/런앱 never changes the font
+    const run = !L.font && !ko && (L.look ?? (vt === 3 ? 'run' : 'std')) === 'run';
+    const VW = L.font ? w : run ? 900 : 700, VST = L.font || ko ? 'normal' : run ? 'condensed' : L.stat !== 'next' ? 'semi-expanded' : 'normal', SK = run ? (L.sk ?? -.1) : (L.sk ?? 0);
     if (vt === 3) { // run-app style: huge value, tiny label underneath
       const lb = L.lab != null ? L.lab : L.stat === 'rec' ? d.recLine.split(' ')[0] + ' 기록' : STATS[L.stat][0];
-      const vfam = L.font ? fam : ko ? PRE_ : ARC_, vw = L.font ? w : (ko ? 700 : 900);
-      const B = textBlock(c, [{ t: v, size: base, fam: vfam, w: vw, st: !L.font && !ko ? 'condensed' : 'normal' }, ...(lb ? [{ t: lb, size: base * (L.labK ?? .2), fam: PRE_, w: 600, alpha: .92, ls: 0, gap: base * .03 }] : [])], { size: base, fam: vfam, w: vw, ls: L.ls ?? (ko ? 0 : -2), lh: L.lh ?? .95 });
-      const sk = L.sk ?? (ko ? 0 : -.1), extra = Math.abs(sk) * B.h;
+      const vfam = fam, vw = ko && !L.font ? 700 : VW;
+      const B = textBlock(c, [{ t: v, size: base, fam: vfam, w: vw, st: VST }, ...(lb ? [{ t: lb, size: base * (L.labK ?? .2), fam: PRE_, w: 600, alpha: .92, ls: 0, gap: base * .03 }] : [])], { size: base, fam: vfam, w: vw, ls: L.ls ?? (ko ? 0 : -2), lh: L.lh ?? .95 });
+      const sk = ko ? 0 : SK, extra = Math.abs(sk) * B.h;
       return { w: B.w + extra, h: B.h, draw: () => { c.transform(1, 0, sk, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'left', w: vw, fam: vfam, ls: L.ls ?? (ko ? 0 : -2) }, col); } };
     }
-    const lines = vt === 0 ? [{ t: L.stat === 'event' ? v : lab, size: Math.max(22, base * .26), fam: ARC_, w: 600, st: 'expanded', ls: 6, alpha: .8 }, { t: v, size: base, gap: base * .05 }] : [{ t: v, size: base }];
+    const lines = vt === 0 ? [{ t: L.stat === 'event' ? v : lab, size: Math.max(22, base * .26), fam: ARC_, w: 600, st: 'expanded', ls: 6, alpha: .8 }, { t: v, size: base, gap: base * .05, w: VW, st: VST }] : [{ t: v, size: base, w: VW, st: VST }];
     if (vt === 0 && L.stat === 'event') lines.shift();
     const B = textBlock(c, lines, { size: base, fam, w, ls: L.ls || 0, lh: L.lh ?? 1.1, st: !L.font && !ko && L.stat !== 'next' ? 'semi-expanded' : 'normal' });
     const pad = vt === 2 ? base * .32 : L.box && L.box !== 'none' ? base * .3 : 0;
-    return { w: B.w + pad * 2, h: B.h + pad * 1.4, draw: () => {
+    return { w: B.w + pad * 2 + Math.abs(SK) * B.h, h: B.h + pad * 1.4, draw: () => {
       if (vt === 2) { rr(c, -B.w / 2 - pad, -B.h / 2 - pad * .7, B.w + pad * 2, B.h + pad * 1.4, (B.h + pad * 1.4) / 2); const g = c.createLinearGradient(-B.w / 2, 0, B.w / 2, 0); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s)); c.fillStyle = L.col ? col : g; c.fill(); drawTextBlock(c, B, { al: 'center', w, fam, ls: L.ls || 0, st: 'normal' }, L.col ? contrast(col) : m.ink); return; }
       boxBehind(c, B.w, B.h, L.box, L.col || acc, pad, base * .25);
-      drawTextBlock(c, B, { al: L.al || 'center', w, fam, ls: L.ls || 0 }, L.box === 'full' ? contrast(L.col || acc) : col); } };
+      if (SK) c.transform(1, 0, SK, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'center', w, fam, ls: L.ls || 0 }, L.box === 'full' ? contrast(L.col || acc) : col); } };
   }
   if (L.type === 'card') {
     if (L.v === 1) { const lab = d.word + (d.roman ? ' ' + d.roman : ''); font(c, 44, 800, ARC_, 'expanded'); const tw = c.measureText(lab).width, w = tw + 120, h = 96, m = STORY_MAT[d.key];
@@ -980,7 +992,7 @@ function subjectLayer(doc, photos) { const b = doc.bg, im = b.type === 'photo' &
   g.drawImage(mk2, ...r); g.globalCompositeOperation = 'source-in'; g.drawImage(filtered(im, b.filter, b.pid), ...r); return t; }
 const PRE_FONTS = ['400 40px "OV Bebas"', '400 40px "OV Anton"', '800 40px "OV Playfair"', '700 40px "OV Mono"', '400 40px "OV BlackHan"', '800 40px "TC Archivo"', '300 40px "TC Archivo"', '600 40px "TC Archivo"', '700 40px "TC Pretendard"', '500 40px "TC Pretendard"', '600 40px "TC Pretendard"'];
 // effective transform: 상위 % is clamped so it can never become small or invisible
-function eff(L, g) { if (L.type === 'stat' && L.stat === 'top') { const minS = TOP_MIN_PX / Math.max(1, g.h); return { ...L, s: Math.max(L.s, minS), o: Math.max(L.o ?? 1, .9), hidden: false }; } return L; }
+function eff(L, g) { if (L.type === 'stat' && L.stat === 'top' && L.v !== 4) { const minS = TOP_MIN_PX / Math.max(1, g.h); return { ...L, s: Math.max(L.s, minS), o: Math.max(L.o ?? 1, .9), hidden: false }; } return L; }
 async function renderDoc(d, doc, photos = {}, cv) {
   await document.fonts.ready; await Promise.all(PRE_FONTS.map(f => document.fonts.load(f, 'A가').catch(() => { })));
   await Promise.all([...new Set(doc.layers.map(l => l.font).filter(Boolean))].map(loadFont));
@@ -993,7 +1005,7 @@ async function renderDoc(d, doc, photos = {}, cv) {
     if (L0 === null) { c.drawImage(subj, 0, 0); continue; }
     c.save(); const g = layerGeom(c, L0, d, doc, photos), L = { ...eff(L0, g) }; c.restore();
     if (L.ax === 'left') L.x += g.w * L.s / 2; else if (L.ax === 'right') L.x -= g.w * L.s / 2;
-    boxes.push({ id: L.id, x: L.x, y: L.y, s: L.s, r: L.r, w: g.w, h: g.h, type: L.type, stat: L.stat, hidden: !!L.hidden });
+    boxes.push({ id: L.id, x: L.x, y: L.y, s: L.s, r: L.r, w: g.w, h: g.h, type: L.type, stat: L.stat, v: L.v, hidden: !!L.hidden });
     if (L.hidden) continue;
     c.save(); c.translate(L.x, L.y); c.rotate(L.r || 0); c.scale(L.s, L.s); c.globalAlpha = L.o ?? 1; g.draw(); c.restore();
   }
@@ -1003,20 +1015,25 @@ async function renderDoc(d, doc, photos = {}, cv) {
 const TEMPLATES = [['nrc', '인증샷'], ['center', '센터'], ['right', '오른쪽'], ['bottom', '하단'], ['rank', '상위 % 크게'], ['cutout', '투명'], ['black', '블랙'], ['sparkle', '반짝']];
 // run-app "인증샷" style: full-bleed photo, one huge number, 2–3 small stats, tiny wordmark. No boxes, no panels, no shadows.
 function templateDoc(t, d) {
-  const acc = accentOf(d), V = (stat, x, y, s, p = {}) => mk('stat', { stat, v: 3, x, y, s, ax: 'left', al: 'left', ...p }), K = (k, x, y, p = {}) => mk('sticker', { k, x, y, ...p });
-  const doc = { tpl: t, bg: { type: 'tone' }, race: '', layers: [] }, A = (...l) => doc.layers.push(...l);
+  const K = (k, x, y, p = {}) => mk('sticker', { k, x, y, ...p });
+  // every stat = two independent elements: the value, and its small label underneath (both derived from the result)
+  const V = (stat, x, y, s, p = {}) => { const { labK = .2, noLab, ...q } = p, base = STAT_SIZE[stat];
+    const val = mk('stat', { stat, v: 1, look: 'run', x, y, s, ax: 'left', al: 'left', lh: .95, ...q });
+    if (noLab) return [val]; const ly = y + base * s * (.5 + labK * .62) + 6;
+    const { o, col, ax = 'left', al = 'left' } = q; return [val, mk('stat', { stat, v: 4, x: ax === 'left' ? x + 4 : ax === 'right' ? x - 4 : x, y: ly, s, ax, al, labK, ...(o != null ? { o } : {}), col: col === '@tier' ? '#ffffff' : col || '#ffffff' })]; };
+  const doc = { tpl: t, bg: { type: 'tone' }, race: '', layers: [] }, A = (...l) => doc.layers.push(...l.flat(3));
   const WM = (x, y, p = {}) => K('wordmark', x, y, { s: .34, o: .9, ...p });
   const small = (stat, x, y, p = {}) => V(stat, x, y, .6, { labK: .45, ...p }), BIG = 2.9;
   // stats: pace + 상위 % side by side, tier on its own line (tier colour)
-  const row = (x, y, ax = 'left', p = {}) => { const dx = ax === 'right' ? -1 : 1, al = ax; return [small('pace', ax === 'center' ? x - 150 : x, y, { ax: ax === 'center' ? 'center' : ax, al, ...p }), small('top', ax === 'center' ? x + 150 : x + dx * 300, y, { ax: ax === 'center' ? 'center' : ax, al, ...p }), small('tier', x, y + 150, { ax, al, col: p.col || acc, ...p, ...(p.col ? {} : { col: acc }) })]; };
-  if (t === 'nrc') A(V('rec', 90, 470, BIG), ...row(96, 790), WM(890, 1830));
-  else if (t === 'center') A(...row(540, 560, 'center'), V('rec', 540, 960, BIG, { ax: 'center', al: 'center' }), WM(540, 1830));
-  else if (t === 'right') A(V('rec', 990, 520, BIG * .9, { ax: 'right', al: 'right' }), small('pace', 984, 820, { ax: 'right', al: 'right' }), small('top', 984, 970, { ax: 'right', al: 'right' }), small('tier', 984, 1120, { ax: 'right', al: 'right', col: acc }), WM(190, 1830));
-  else if (t === 'bottom') A(...row(96, 1200), V('rec', 90, 1560, BIG), WM(890, 1830));
-  else if (t === 'rank') A(V('top', 96, 480, 1.55, { lab: '' }), small('rec', 96, 700), small('pace', 420, 700), small('tier', 96, 850, { col: acc }), WM(890, 1830));
-  else if (t === 'cutout') A(V('rec', 540, 960, BIG * 1.15, { ax: 'center', al: 'center', o: .55 }), ...row(540, 1300, 'center', { o: .85 }), WM(540, 1830, { o: .7 }));
-  else if (t === 'black') { doc.bg = { type: 'solid', c1: '#e9e5de' }; const k = '#111111'; A(V('rec', 90, 470, BIG, { col: k }), ...row(96, 790, 'left', { col: k }), WM(890, 1830, { col: k })); }
-  else if (t === 'sparkle') A(K('sparkle', 170, 300, { s: .45, fill: false }), K('sparkle', 930, 600, { s: .3 }), K('star', 880, 1450, { s: .3, col: '#ffd166' }), V('rec', 540, 480, BIG * .95, { ax: 'center', al: 'center' }), ...row(540, 800, 'center'), WM(540, 1830));
+  const row = (x, y, ax = 'left', p = {}) => { const dx = ax === 'right' ? -1 : 1, al = ax, a2 = ax === 'center' ? 'center' : ax; return [small('pace', ax === 'center' ? x - 150 : x, y, { ax: a2, al, ...p }), small('top', ax === 'center' ? x + 150 : x + dx * 300, y, { ax: a2, al, ...p }), small('tier', x, y + 150, { ax, al, ...p, col: p.col || '@tier' })]; };
+  if (t === 'nrc') A(V('rec', 90, 470, BIG), row(96, 790), WM(890, 1830));
+  else if (t === 'center') A(row(540, 560, 'center'), V('rec', 540, 960, BIG, { ax: 'center', al: 'center' }), WM(540, 1830));
+  else if (t === 'right') A(V('rec', 990, 520, BIG * .9, { ax: 'right', al: 'right' }), small('pace', 984, 820, { ax: 'right', al: 'right' }), small('top', 984, 970, { ax: 'right', al: 'right' }), small('tier', 984, 1120, { ax: 'right', al: 'right', col: '@tier' }), WM(190, 1830));
+  else if (t === 'bottom') A(row(96, 1200), V('rec', 90, 1560, BIG), WM(890, 1830));
+  else if (t === 'rank') A(V('top', 96, 480, 1.55, { noLab: true }), small('rec', 96, 700), small('pace', 420, 700), small('tier', 96, 850, { col: '@tier' }), WM(890, 1830));
+  else if (t === 'cutout') A(V('rec', 540, 960, BIG * 1.15, { ax: 'center', al: 'center', o: .55 }), row(540, 1300, 'center', { o: .85 }), WM(540, 1830, { o: .7 }));
+  else if (t === 'black') { doc.bg = { type: 'solid', c1: '#e9e5de' }; const k = '#111111'; A(V('rec', 90, 470, BIG, { col: k }), row(96, 790, 'left', { col: k }), WM(890, 1830, { col: k })); }
+  else if (t === 'sparkle') A(K('sparkle', 170, 300, { s: .45, fill: false }), K('sparkle', 930, 600, { s: .3 }), K('star', 880, 1450, { s: .3, col: '#ffd166' }), V('rec', 540, 480, BIG * .95, { ax: 'center', al: 'center' }), row(540, 800, 'center'), WM(540, 1830));
   return doc;
 }
 
@@ -1118,7 +1135,7 @@ const MAX_PHOTOS = 12, PCV = { W: 1080, H: 1920 };
 let doc = null, photos = {}, sel = null, boxes = [], mode = null, libOpen = false, fontCat = 'all', pickMode = false, guides = null, trashHot = false, dragging = false;
 const favs = () => LS('runtier:fontfav') || [], recents = () => LS('runtier:fontrecent') || [];
 window.__doc = () => clone(doc); window.__boxes = () => clone(boxes); window.__sel = () => sel; window.__inkBounds = async id => { const L = getL(id); const cv = await renderDoc(state.story, { ...doc, bg: { type: 'solid', c1: '#000000' }, layers: [L] }, photos); const d = cv.getContext('2d').getImageData(0, 0, 1080, 1920).data; let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1; for (let y = 0; y < 1920; y += 2) for (let x = 0; x < 1080; x += 2) { const i = (y * 1080 + x) * 4; if (d[i] + d[i + 1] + d[i + 2] > 60) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } return { x0, y0, x1, y1 }; };
-window.__photos = () => Object.keys(photos).filter(k => !k.startsWith('mask:')).length; window.__statTexts = () => doc.layers.filter(l => l.type === 'stat').map(l => statValue(state.story, doc, l.stat));
+window.__story = () => clone(state.story); window.__acc = () => accentOf(state.story); window.__photos = () => Object.keys(photos).filter(k => !k.startsWith('mask:')).length; window.__statTexts = () => doc.layers.filter(l => l.type === 'stat').map(l => statValue(state.story, doc, l.stat));
 // ---- photos stay on the device: IndexedDB only ----
 const idb = (() => { let p; const open = () => p || (p = new Promise((res, rej) => { const r = indexedDB.open('hoohaa', 1); r.onupgradeneeded = () => r.result.createObjectStore('photos'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
   const tx = (m, f) => open().then(db => new Promise((res, rej) => { const t = db.transaction('photos', m), s = t.objectStore('photos'), q = f(s); t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); }));
@@ -1146,10 +1163,10 @@ async function toggleBehind(L) {
   if (L.behind) { L.behind = false; changed(true); paintPanel(); return; }
   const src = personPid(); if (!src) { status('먼저 인물 사진을 넣어 주세요', 3000); return; }
   if (!src.bg) { doc.bg = { type: 'photo', pid: src.pid, pz: 1, px: 0, py: 0, filter: src.L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== src.L); status('사진을 배경으로 깔고 인물을 찾을게요', 3000); changed(true); }
-  const b = $('pBehind'); if (b) { b.classList.add('loading'); b.querySelector('b').textContent = '인물 찾는 중…'; } status('인물을 찾는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
+  const b = document.querySelector('#miniBar [data-mb=behind]'); if (b) { b.classList.add('loading'); b.querySelector('small').textContent = '찾는 중…'; } status('인물을 찾는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
   const ok = await ensureMask(doc.bg.pid);
   if (ok) { L.behind = true; status('인물 뒤로 보냈어요'); } else status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000);
-  changed(true); paintPanel(); }
+  document.querySelector('#miniBar [data-mb=behind]')?.classList.remove('loading'); changed(true); paintPanel(); }
 async function restorePhotos() { const ids = new Set([doc.bg.pid, ...doc.layers.map(l => l.pid)].filter(Boolean)); let n = 0;
   for (const id of ids) if (!photos[id]) { const b = await idb.get(id); if (b) { photos[id] = await blobToImg(b); n++; } } if (n) changed(true);
   if (doc.bg.type === 'photo' && photos[doc.bg.pid] && doc.layers.some(l => l.behind)) { if (await ensureMask(doc.bg.pid)) changed(true); else { doc.layers.forEach(l => l.behind = false); changed(true); } } }
@@ -1161,10 +1178,14 @@ function undoRedo(dd) { commit(); const n = hi + dd; if (n < 0 || n >= hist.leng
 $('undo').addEventListener('click', () => undoRedo(-1)); $('redo').addEventListener('click', () => undoRedo(1));
 function paintTop() { $('undo').disabled = hi <= 0; $('redo').disabled = hi >= hist.length - 1; }
 const getL = id => doc.layers.find(l => l.id === id);
-const isTop = L => L && L.type === 'stat' && L.stat === 'top';
+const isTop = L => L && L.type === 'stat' && L.stat === 'top' && L.v !== 4;
 // ---- rendering ----
 let rafQ = 0, lastCv = null;
-function changed(now) { const bb = $('bgBtn'); if (bb && doc) bb.hidden = doc.bg.type === 'photo' && !!photos[doc.bg.pid]; if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; $('tplPreview').getContext('2d').drawImage(cv, 0, 0); paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
+// re-derive tier styling for a new result: old docs stored the tier accent as a hex; treat that as '@tier'
+function syncTier() { if (!doc || !state.story) return; const a = accentOf(state.story);
+  if (doc.acc && doc.acc !== a) for (const l of doc.layers) if (l.col && l.col.toLowerCase() === doc.acc.toLowerCase()) l.col = '@tier';
+  doc.acc = a; }
+function changed(now) { syncTier(); const bb = $('bgBtn'); if (bb && doc) bb.hidden = doc.bg.type === 'photo' && !!photos[doc.bg.pid]; if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; $('tplPreview').getContext('2d').drawImage(cv, 0, 0); paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
 async function refreshTpl() { // called from renderResult
   if (!state.story) return;
   if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : templateDoc('nrc', state.story); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
@@ -1197,15 +1218,21 @@ function paintOvl() {
 // floating contextual mini toolbar, positioned inside the canvas next to the selection (DOM over the overlay → never exported)
 function placeMini(b) { const m = $('miniBar'); if (!m) return; const L = b && getL(b.id);
   if (!L || dragging || pickMode) { m.hidden = true; return; }
-  m.querySelector('[data-mb=behind]').hidden = !canBehind(L); const bh = m.querySelector('[data-mb=behind]'); bh.setAttribute('aria-pressed', !!L.behind); bh.title = L.behind ? '인물 앞으로' : '인물 뒤로';
+  m.querySelector('[data-mb=behind]').hidden = !canBehind(L); const bh = m.querySelector('[data-mb=behind]'); bh.setAttribute('aria-pressed', !!L.behind); bh.title = L.behind ? '인물 앞으로' : '인물 뒤로'; bh.setAttribute('aria-label', bh.title); bh.querySelector('small').textContent = bh.title;
   m.querySelectorAll('[data-mb=dup],[data-mb=del]').forEach(e => e.hidden = isTop(L)); m.hidden = false;
   const r = $('ovl').getBoundingClientRect(), kx = r.width / 1080, ky = r.height / 1920, c = corners(b), xs = c.map(q => q[0] * kx), ys = c.map(q => q[1] * ky);
   const bw = m.offsetWidth, bhh = m.offsetHeight, top = Math.min(...ys), bot = Math.max(...ys), cx = (Math.min(...xs) + Math.max(...xs)) / 2;
-  let y = top - bhh - 10; if (y < 4) y = bot + 10; if (y + bhh > r.height - 4) y = Math.max(4, Math.min(r.height - bhh - 4, top + 4));
+  let y = top - bhh - 10; if (y < 4) { y = bot + 10; if (y + bhh > r.height - 4) y = top > r.height - bot ? Math.max(4, top - bhh - 4) : Math.min(r.height - bhh - 4, bot + 4); }
   m.style.left = Math.max(4, Math.min(r.width - bw - 4, cx - bw / 2)) + 'px'; m.style.top = y + 'px'; }
-$('miniBar').addEventListener('pointerdown', e => e.stopPropagation());
-$('miniBar').addEventListener('click', e => { const b = e.target.closest('[data-mb]'); if (!b) return; const a = b.dataset.mb, L = getL(sel); if (!L) return;
-  if (a === 'behind') toggleBehind(L); else { act(a); } });
+// iOS Safari: the stage blocks touch defaults for gestures, so act on pointerup directly (click is only a keyboard fallback)
+function tapButtons(el, sel_, run) { let down = null, last = 0;
+  const stop = e => e.stopPropagation();
+  el.addEventListener('pointerdown', e => { stop(e); down = e.target.closest(sel_); });
+  el.addEventListener('touchstart', stop, { passive: true }); el.addEventListener('touchend', stop, { passive: true }); el.addEventListener('mousedown', stop);
+  el.addEventListener('pointerup', e => { stop(e); const b = e.target.closest(sel_); if (b && b === down && !b.hidden) { last = Date.now(); e.preventDefault(); run(b); } down = null; });
+  el.addEventListener('pointercancel', () => { down = null; });
+  el.addEventListener('click', e => { stop(e); const b = e.target.closest(sel_); if (b && Date.now() - last > 700) run(b); }); }
+tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(sel); if (!L) return; if (a === 'behind') toggleBehind(L); else act(a); });
 const toLocal = (b, x, y) => { const c = Math.cos(-(b.r || 0)), s = Math.sin(-(b.r || 0)), dx = x - b.x, dy = y - b.y; return [(dx * c - dy * s) / b.s, (dx * s + dy * c) / b.s]; };
 function hitAt(x, y) { for (let i = boxes.length - 1; i >= 0; i--) { const b = boxes[i]; if (b.hidden) continue; const [lx, ly] = toLocal(b, x, y), pad = Math.max(0, 30 / b.s - 0); if (Math.abs(lx) <= b.w / 2 + pad && Math.abs(ly) <= b.h / 2 + pad) return b; } return null; }
 window.__hitAt = (x, y) => (hitAt(x, y) || {}).id;
@@ -1250,12 +1277,12 @@ const onHandle = (x, y) => { const b = sel && boxes.find(q => q.id === sel); if 
   ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
   ov.addEventListener('wheel', e => { const L = sel && getL(sel); if (!L) return; e.preventDefault(); L.s = Math.max(.08, Math.min(8, L.s * Math.exp(-e.deltaY / 500))); changed(); }, { passive: false });
   // no page scroll / zoom while touching the canvas (iOS needs non-passive handlers)
-  for (const el of [st, $('cpSV'), $('cpHue')]) { const block = e => e.preventDefault(); el.addEventListener('touchstart', block, { passive: false }); el.addEventListener('touchmove', block, { passive: false }); }
+  for (const el of [st, $('cpSV'), $('cpHue')]) { const block = e => { if (e.target.closest && e.target.closest('.mini, .bg-btn, .ctx')) return; e.preventDefault(); }; el.addEventListener('touchstart', block, { passive: false }); el.addEventListener('touchmove', block, { passive: false }); }
 }
 const snapR = r => { const t = Math.PI / 2, n = Math.round(r / t); return Math.abs(r - n * t) < .06 ? n * t : r; };
 function showMenu(p) { const bh = $('ctxBehind'), L0 = getL(sel); if (bh) { bh.hidden = !canBehind(L0); bh.textContent = L0 && L0.behind ? '인물 앞으로' : '인물 뒤로'; } const m = $('ctxMenu'), r = $('ovl').getBoundingClientRect(), k = r.width / 1080; m.hidden = false; m.style.left = Math.min(r.width - 200, Math.max(0, p[0] * k - 100)) + 'px'; m.style.top = Math.max(0, p[1] * k - 60) + 'px'; }
 function hideMenu() { $('ctxMenu').hidden = true; }
-$('ctxMenu').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (!b) return; hideMenu(); if (b.dataset.act === 'behind') { const L0 = getL(sel); if (L0) toggleBehind(L0); } else act(b.dataset.act); });
+tapButtons($('ctxMenu'), '[data-act]', b => { hideMenu(); if (b.dataset.act === 'behind') { const L0 = getL(sel); if (L0) toggleBehind(L0); } else act(b.dataset.act); });
 function delLayer(id) { const L = getL(id); if (!L) return; if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
 function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) return; const L = doc.layers[i];
   if (a === 'del') return delLayer(sel);
@@ -1289,9 +1316,9 @@ const hsv2hex = ({ h, s, v }) => { const f = k => { const x = (k + h / 60) % 6; 
   return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join(''); };
 let hsv = { h: 0, s: 0, v: 1 }, hsvCol = '';
 const adoptHex = hex => { const n = hex2hsv(hex); if (n.v === 0) n.s = hsv.s; if (n.s === 0 || n.v === 0) n.h = hsv.h; hsv = n; hsvCol = hex.toLowerCase(); };
-const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { doc.bg = { type: 'solid', c1: c }; } } : { get: () => (getL(sel) || {}).col || '#ffffff', set: c => { const L = getL(sel); if (L) L.col = c; } };
-function setCol(hex, fromHsv) { hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex); paintPicker(); changed(); }
-function paintPicker() { if (!$('cpick').isConnected || $('cpick').closest('[hidden]')) return; const c = colTarget().get(); if (c.toLowerCase() !== hsvCol) adoptHex(c);
+const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { doc.bg = c === '@tier' ? { type: 'tier' } : { type: 'solid', c1: c }; } } : { get: () => (getL(sel) || {}).col || '#ffffff', set: c => { const L = getL(sel); if (L) L.col = c; } };
+function setCol(hex, fromHsv) { if (hex === '@tier') { colTarget().set('@tier'); adoptHex(accentOf(state.story).toLowerCase()); paintPicker(); changed(); return; } hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex); paintPicker(); changed(); }
+function paintPicker() { if (!$('cpick').isConnected || $('cpick').closest('[hidden]')) return; let c = colTarget().get(); if (c === '@tier') c = accentOf(state.story); if (c.toLowerCase() !== hsvCol) adoptHex(c);
   $('cpChip').style.background = c; if (document.activeElement !== $('cpHex')) $('cpHex').value = c.toUpperCase();
   $('cpSV').style.setProperty('--hue', `hsl(${hsv.h} 100% 50%)`); $('cpSVk').style.left = `${hsv.s * 100}%`; $('cpSVk').style.top = `${(1 - hsv.v) * 100}%`; $('cpSVk').style.background = c;
   $('cpHuek').style.left = `${hsv.h / 360 * 100}%`; $('cpHue').setAttribute('aria-valuenow', Math.round(hsv.h)); $('cpSV').setAttribute('aria-valuetext', `채도 ${Math.round(hsv.s * 100)}%, 밝기 ${Math.round(hsv.v * 100)}%`);
@@ -1306,20 +1333,21 @@ $('cpHex').addEventListener('input', e => { let v = e.target.value.trim(); if (!
 const QC = ['#ffffff', '#111111', '#3dc8f5', '#ff5a5f', '#ffd166', '#c6f432', '#ff8fd8', '#9b8cff', '#f2994a', '#16181c'];
 const chipsHTML = () => `<div class="qcs">${QC.map(c => `<button type="button" class="qc" data-c="${c}" aria-label="색 ${c}" aria-pressed="false" style="--c:${c}"></button>`).join('')}<button type="button" class="qc qt" data-tierc="1">티어 색</button><button type="button" class="qc qt" id="eyedrop">스포이드</button><button type="button" class="qc qt" data-more-col="1" aria-expanded="false">더보기</button></div><div id="cpHost" hidden></div>`;
 // ---- fonts ----
-const fontBtn = (k, cls = 'fq') => `<button type="button" class="${cls}" data-fk="${k || ''}" aria-pressed="false" style="font-family:${(k ? previewFam(k) : 'inherit').replace(/"/g, "'")};${k ? `font-weight:${nearW(k, 700)}` : ''}">${k ? esc(FONTS[k].n.replace(/ \(.+\)$/, '')) : '기본'}</button>`;
+const fontBtn = (k, cls = 'fq', on = false) => `<button type="button" class="${cls}${on ? ' on' : ''}" data-fk="${k || ''}" aria-pressed="${on}" style="font-family:${(k ? previewFam(k) : 'inherit').replace(/"/g, "'")};${k ? `font-weight:${nearW(k, 700)}` : ''}">${on ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${k ? esc(FONTS[k].n.replace(/ \(.+\)$/, '')) : '기본'}</button>`;
 const sampleOf = L => L.type === 'text' ? (L.t || '').split('\n')[0].slice(0, 16) || 'Aa' : statValue(state.story, doc, L.stat);
-function fontRow(L) { const ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(k => FONTS[k]).slice(0, 6); ks.forEach(loadPreviewFont);
-  return `<div class="fquick">${fontBtn(null)}${ks.map(k => fontBtn(k)).join('')}<button type="button" class="fq more" data-flib="1">전체 글꼴 (${Object.keys(FONTS).length}종) →</button></div>`; }
+function fontRow(L) { const cur = L.font && FONTS[L.font] ? L.font : null; let ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(k => FONTS[k]).slice(0, 6);
+  if (cur && !ks.includes(cur)) ks = [cur, ...ks.slice(0, 5)]; else if (cur) ks = [cur, ...ks.filter(k => k !== cur)]; ks.forEach(loadPreviewFont);
+  return `<p class="fcur" id="fCur">현재 글꼴: <b>${cur ? esc(FONTS[cur].n) : '기본'}</b></p><div class="fquick">${cur ? '' : fontBtn(null, 'fq', true)}${ks.map(k => fontBtn(k, 'fq', k === cur)).join('')}${cur ? fontBtn(null) : ''}<button type="button" class="fq more" data-flib="1">전체 글꼴 (${Object.keys(FONTS).length}종) →</button></div>`; }
 function libHTML(L) { const q = ($('fSearch') || {}).value || '', fv = favs(), rc = recents(), smp = esc(sampleOf(L));
   let ks = Object.keys(FONTS); if (fontCat === 'fav') ks = fv.filter(k => FONTS[k]); else if (fontCat === 'recent') ks = rc.filter(k => FONTS[k]); else if (fontCat !== 'all') ks = ks.filter(k => FONTS[k].cat === fontCat);
   const ql = q.trim().toLowerCase(); if (ql) ks = ks.filter(k => (FONTS[k].n + ' ' + k + ' ' + ((FONT_CATS.find(c => c[0] === FONTS[k].cat) || [])[1] || '')).toLowerCase().includes(ql)); ks.forEach(loadPreviewFont);
-  return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${smp}</b><small>${esc(FONTS[k].n)} · ${FONTS[k].lic}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
+  return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt${L.font === k ? ' on' : ''}" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${L.font === k ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${smp}</b><small>${esc(FONTS[k].n)} · ${FONTS[k].lic}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
 async function pickFont(k) { const L = getL(sel); if (!L) return; const bs = document.querySelectorAll(`[data-fk="${k || ''}"]`); bs.forEach(b => b.classList.add('loading'));
   const ok = k ? await loadFont(k) : true; bs.forEach(b => b.classList.remove('loading')); if (!ok) { status('글꼴을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
   if (k) LS('runtier:fontrecent', [k, ...recents().filter(x => x !== k)].slice(0, 8)); L.font = k || null; changed(true); paintPanel(); }
 // ---- bottom panel (one level deep, in page flow) ----
 const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', sticker: '스티커', shape: '도형' };
-const lname = L => L.type === 'stat' ? STATS[L.stat][0] : L.type === 'sticker' ? (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커' : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
+const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커' : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
 const seg = (id, opts, cur) => `<div class="seg n${opts.length}" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
 const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row"><label for="${id}" class="lbl sm">${lab}</label><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><output id="${id}V">${val}${unit}</output></div>`;
 let moreCol = false, moreTxt = false;
@@ -1331,12 +1359,11 @@ function paintPanel() {
   let h = '';
   if (L) {
     h += `<div class="sh-head"><h3 id="pName">${esc(lname(L))}</h3><button type="button" class="chip-btn primary-chip" id="pDone">완료</button></div>`;
-    if (canBehind(L)) h += `<button type="button" class="behind-tg" id="pBehind" aria-pressed="${!!L.behind}"><span class="bi" aria-hidden="true">👤</span><span><b>${L.behind ? '인물 뒤로 · 켜짐' : '인물 뒤로 보내기'}</b><small>${L.behind ? '탭하면 다시 앞으로 와요' : '사진 속 인물 뒤에 이 요소를 숨겨요'}</small></span><span class="sw" aria-hidden="true"></span></button>`;
     if (libOpen && (L.type === 'text' || L.type === 'stat')) {
       h += `<input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats">${[['all', '전체'], ['fav', '★ 즐겨찾기'], ['recent', '최근'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div><div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용·웹 임베딩이 허용된 OFL·Apache 라이선스예요</p><button type="button" class="chip-btn" id="fClose">글꼴 목록 닫기</button>`;
       P.innerHTML = h; bindPanel(L); return; }
     if (L.type === 'text') h += `<label class="lbl sm" for="tText">내용</label><textarea id="tText" rows="2" maxlength="80">${esc(L.t || '')}</textarea>`;
-    if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 바꿀 수 없어요 · 위치·크기·스타일만 바꿀 수 있어요${isTop(L) ? ' · 상위 %는 항상 크게 보여요' : ''}</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `<span class="lbl sm">디자인</span>${seg('pV', [[0, '라벨+값'], [1, '값만'], [2, '알약'], [3, '런앱']], L.v || 0)}`;
+    if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 바꿀 수 없어요 · 위치·크기·스타일만 바꿀 수 있어요${isTop(L) ? ' · 상위 %는 항상 크게 보여요' : ''}</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `${L.v === 4 ? '' : `<span class="lbl sm">디자인</span>${seg('pV', [[0, '라벨+값'], [1, '값만'], [2, '알약'], [3, '런앱']], L.v || 0)}`}`;
     if (L.type === 'card') h += `<span class="lbl sm">디자인</span>${seg('pV', [[0, '카드'], [1, '배지']], L.v || 0)}`;
     if (L.type === 'text' || L.type === 'stat') h += `<span class="lbl sm">글꼴</span>${fontRow(L)}`;
     if (L.type !== 'card' && L.type !== 'photo') h += `<span class="lbl sm">색</span>${chipsHTML()}`;
@@ -1372,11 +1399,10 @@ function bindPanel(L) {
   on('tText', 'input', e => { L.t = e.target.value; changed(); $('pName').textContent = lname(L); });
   on('raceIn', 'input', e => { doc.race = e.target.value; changed(); });
   const segOn = (id, f) => { const s = $(id); if (s) s.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { f(b.dataset.v); changed(true); paintPanel(); } }); };
-  segOn('pV', v => L.v = +v); segOn('pBox', v => L.box = v); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => doc.bg.filter = v);
+  segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => doc.bg.filter = v);
   const rg = (id, f, u = '') => on(id, 'input', e => { f(+e.target.value); $(id + 'V').textContent = e.target.value + u; changed(); });
   rg('pS', v => L.s = v / 100, '%'); rg('pR', v => L.r = v * Math.PI / 180, '°'); rg('pO', v => L.o = v / 100, '%'); rg('pLs', v => L.ls = v, 'px'); rg('pLh', v => L.lh = v / 100, '%');
   rg('pCz', v => L.cz = v / 100, '%'); rg('pCx', v => L.cx = v / 100); rg('pCy', v => L.cy = v / 100); rg('bgZ', v => doc.bg.pz = v / 100, '%');
-  on('pBehind', 'click', () => toggleBehind(L));
   on('pMoreT', 'click', () => { moreTxt = !moreTxt; paintPanel(); });
   on('pFill', 'click', () => { photoTarget = 'fill'; pickPhoto(); }); on('pRefill', 'click', () => { photoTarget = 'fill'; pickPhoto(); });
   on('pAsBg', 'click', () => { if (!L.pid) return; doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== L); sel = null; changed(true); paintPanel(); });
@@ -1387,7 +1413,7 @@ function bindPanel(L) {
   on('eyedrop', 'click', () => { pickMode = true; status('캔버스에서 가져올 색을 탭하세요', 4000); });
   P.onclick = e => { const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
     if (d.c && t.classList.contains('qc')) setCol(d.c);
-    if (d.tierc) setCol(accentOf(state.story));
+    if (d.tierc) setCol('@tier');
     if (d.moreCol) { const host = $('cpHost'); host.hidden = !host.hidden; t.setAttribute('aria-expanded', String(!host.hidden)); if (!host.hidden) { host.appendChild($('cpick')); $('cpick').hidden = false; hsvCol = ''; paintPicker(); } }
     if (d.flib) { libOpen = true; paintPanel(); }
     if (d.fk !== undefined && t.closest('#panel')) pickFont(d.fk || null);
