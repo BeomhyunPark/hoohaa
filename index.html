@@ -1,22 +1,33 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0F1620">
-<link rel="icon" href="data:,"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"><title>hoohaa · 내 러닝 티어는?</title>
-<meta name="description" content="후하후하, 내 PB는 무슨 티어?">
+<title>hoohaa · 러닝 티어 &amp; VDOT 기록 계산기 | 내 러닝 티어는?</title>
+<meta name="description" content="5K·10K·하프·풀코스 기록으로 내 러닝 티어를 확인하세요. VDOT 계산기로 마라톤 예상 기록과 E·M·T·I·R 훈련 페이스까지 한 번에. 같은 성별·나이대 상위 %로 아이언부터 챌린저까지, 무료·로그인 없이 브라우저에서 계산해요.">
+<link rel="canonical" href="https://hoohaa.run/">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0F1620">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <meta property="og:type" content="website"><meta property="og:site_name" content="hoohaa">
 <meta property="og:title" content="hoohaa · 내 러닝 티어는?"><meta property="og:description" content="후하후하, 내 PB는 무슨 티어?">
 <meta property="og:url" content="https://hoohaa.run/">
-<meta name="twitter:card" content="summary"><meta name="twitter:title" content="hoohaa · 내 러닝 티어는?"><meta name="twitter:description" content="후하후하, 내 PB는 무슨 티어?">
+<meta property="og:image" content="https://hoohaa.run/og.png?v=1">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="hoohaa 로고와 문구 '후하후하, 내 PB는 무슨 티어?'"><meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="hoohaa · 내 러닝 티어는?"><meta name="twitter:description" content="후하후하, 내 PB는 무슨 티어?">
+<meta name="twitter:image" content="https://hoohaa.run/og.png?v=1">
 <style>
-:root{--bg:#0F1620;--surface:#172130;--raised:#1F2B3B;--t1:#F4F6F8;--t2:#B8C2CF;--t3:#8A97A8;--border:#2A3748;--border2:#56657A;--accent:#3DC8F5;--accent-h:#6FD8FA;--on-accent:#0F1620;--focus:#7CC4FF;--danger:#FF6B6B;--r:14px;--pad:16px;
+:root{--bg:#0F1620;--surface:#172130;--raised:#1F2B3B;--t1:#F4F6F8;--t2:#B8C2CF;--t3:#8A97A8;--border:#2A3748;--border2:#56657A;--accent:#3DC8F5;--accent-h:#6ED6F8;--accent2:#B9ECFF;--on-accent:#0F1620;--focus:#7CC4FF;--danger:#FF6B6B;--r:14px;--pad:16px;
   font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--t1)}
 body{font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
 .num,.big,input,.time,.pace,.gap,.pct{font-variant-numeric:tabular-nums}
-main{max-width:430px;margin:0 auto;padding:0 var(--pad) calc(200px + env(safe-area-inset-bottom))}
+main{max-width:430px;margin:0 auto;padding:0 var(--pad) calc(32px + env(safe-area-inset-bottom))}
 .top{padding:24px 0 8px}
 h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em}
 .sub{margin:0;color:var(--t2);font-size:14px}
@@ -39,8 +50,6 @@ input[aria-invalid=true]{border-color:var(--danger)}
 .chips button{min-height:48px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--t1);font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;padding:0 4px}
 .chips button[aria-checked=true]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .err{color:var(--danger);font-size:15px;min-height:1px;margin:8px 0}
-.bar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(to top,var(--bg) 70%,rgba(14,17,22,0));padding:16px var(--pad) calc(16px + env(safe-area-inset-bottom))}
-.bar>div{max-width:398px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 .btn{min-height:52px;border-radius:14px;font-size:17px;font-weight:700;font-family:inherit;border:0;cursor:pointer;width:100%}
 .btn.primary{background:var(--accent);color:var(--on-accent)}
 .btn.primary:hover:not(:disabled){background:var(--accent-h)}
@@ -66,7 +75,7 @@ input[aria-invalid=true]{border-color:var(--danger)}
 .cell{background:var(--raised);border-radius:12px;padding:12px;border:1px solid transparent}
 .cell.me{border-color:var(--accent)}
 .cell .ev{font-size:13px;color:var(--t2);display:flex;justify-content:space-between}
-.cell .ev em{font-style:normal;color:var(--accent);font-weight:700}
+.cell .ev em{font-style:normal;color:var(--accent2);font-weight:700}
 .cell .time{font-size:22px;font-weight:800;margin-top:2px}
 .cell .pace{font-size:13px;color:var(--t3)}
 details.method{margin-top:10px;color:var(--t2);font-size:14px}
@@ -155,7 +164,7 @@ details.method summary{color:var(--t3);font-size:13px}
 .cp-sv:focus-visible,.cp-hue:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 /* overlay editor */
-.tpl-ed.editing .ed-head{position:sticky;top:0;z-index:5;background:var(--surface);margin:0 -16px;padding:8px 16px 6px;border-radius:0 0 14px 14px;box-shadow:0 8px 16px -12px rgba(0,0,0,.6)}
+.tpl-ed.editing .ed-head{position:static}
 .tpl-ed.editing .tpl-prev{margin-bottom:8px}
 .tpl-prev{position:relative}
 .tpl-ed.editing #tplPreview{width:auto;height:min(40vh,340px)}
@@ -211,6 +220,105 @@ details.method summary{color:var(--t3);font-size:13px}
 .tpl-ed.editing .tpl-prev,.tpl-ed.editing #tplPreview{touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .cp-sv,.cp-hue{overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
 .ed input[type=range]{touch-action:pan-y}
+
+.top h1.logo{margin:0;line-height:0}.top h1.logo svg{height:30px;width:auto;display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* static SEO / info section */
+.seo{margin:36px 0 8px;padding-top:20px;border-top:1px solid var(--border);color:var(--t2);font-size:14px;line-height:1.65}
+.seo h2{font-size:16px;color:var(--t1);margin:22px 0 8px}.seo>h2:first-child{margin-top:0}
+.seo strong{color:var(--accent2);font-weight:600}
+.seo details{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin:8px 0;padding:0 14px}
+.seo summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:48px;gap:12px}
+.seo summary::-webkit-details-marker{display:none}
+.seo summary::after{content:"+";color:var(--t3);font-size:20px;flex:none}.seo details[open] summary::after{content:"−"}
+.seo summary h2,.seo summary h3{margin:0;font-size:15px;font-weight:600;color:var(--t1)}
+.seo details p{margin:0 0 14px}
+.seo-tbl{width:100%;border-collapse:collapse;font-size:13px;margin:0 0 10px;font-variant-numeric:tabular-nums}
+.seo-tbl th,.seo-tbl td{padding:7px 4px;border-bottom:1px solid var(--border);text-align:right}
+.seo-tbl th:first-child{text-align:left;color:var(--t1);font-weight:600}.seo-tbl thead th{color:var(--t3);font-weight:500}
+.seo-links{display:flex;flex-wrap:wrap;gap:8px}.seo-links a{border:1px solid var(--border);border-radius:999px;padding:8px 13px;color:var(--t1);text-decoration:none;font-size:13.5px;min-height:36px}
+/* unified page width with landing pages (760px incl. padding) */
+main{max-width:760px}
+@media (min-width:600px){.grid{grid-template-columns:repeat(4,1fr)}#tplPreview{width:min(60%,300px)}.tpl-ed.editing #tplPreview{height:min(48vh,420px)}}
+
+/* in-flow primary actions (no sticky bars) */
+.actions{display:flex;flex-direction:column;gap:8px;margin:16px 0 8px}
+/* ===== share editor v3 (story-style; everything in page flow, no sticky/fixed) ===== */
+.st-top{display:flex;align-items:center;gap:6px;margin-bottom:8px}.st-top .sp{flex:1}
+.stp{min-width:44px;min-height:44px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-size:18px;cursor:pointer;flex:none}
+.stp:disabled{opacity:.35;cursor:not-allowed}
+.st-row{display:flex;gap:6px;align-items:flex-start;justify-content:center}
+.st-stage{position:relative;flex:0 0 auto;width:min(calc(100% - 58px),calc((100vh - 200px)*9/16),480px);height:auto;aspect-ratio:9/16;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.st-stage canvas,.st-stage #tplPreview{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;aspect-ratio:auto!important;border-radius:12px}
+#tplPreview{background:var(--raised);box-shadow:0 10px 30px -10px rgba(0,0,0,.6);height:100%;max-width:none}
+#ovl{cursor:grab}
+.st-tools{display:flex;flex-direction:column;gap:4px;flex:none;width:52px}
+.st-tools button{width:52px;min-height:52px;border-radius:12px;border:1px solid var(--border2);background:var(--raised);color:var(--t1);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0}
+.st-tools button b{font-size:18px;line-height:1}.st-tools button small{font-size:10px;color:var(--t2)}
+.st-tools button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.st-left{flex:none;width:44px;display:flex;justify-content:center;align-self:stretch}
+.st-left input{writing-mode:vertical-lr;direction:rtl;width:44px;height:100%;min-height:200px;accent-color:var(--accent);margin:0}
+.ctx{position:absolute;display:flex;flex-wrap:wrap;gap:4px;background:#0F1620;border:1px solid var(--border2);border-radius:12px;padding:4px;width:200px;z-index:2}
+.ctx button{flex:1 1 45%;min-height:44px;border:0;border-radius:9px;background:var(--raised);color:var(--t1);font:600 13px inherit;font-family:inherit;cursor:pointer}
+.pv-hint{margin:6px 0;text-align:center;font-size:13px;color:var(--t3);min-height:18px}
+.panel{background:var(--raised);border-radius:14px;padding:6px 12px 12px;margin-bottom:12px}
+.panel .lbl{display:block;margin:12px 0 6px}
+.panel textarea{width:100%;font-size:17px;padding:10px;border-radius:10px;min-height:64px}
+.panel input[type=search],.panel #raceIn{width:100%}
+.panel .hint.lock{color:var(--t2)}
+.sh-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0}
+.sh-head h3{margin:0;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.primary-chip{background:var(--accent)!important;border-color:var(--accent)!important;color:#0F1620!important}
+.chip-btn.danger{color:#FF6B6B;border-color:#7a3a3a}
+.seg{display:grid;gap:4px;background:var(--surface);border-radius:12px;padding:4px}
+.seg.n2{grid-template-columns:1fr 1fr}.seg.n3{grid-template-columns:repeat(3,1fr)}.seg.n4{grid-template-columns:repeat(4,1fr)}.seg.n6{grid-template-columns:repeat(3,1fr)}
+.seg button{min-height:44px}.seg button[aria-checked=true]{background:var(--raised);color:var(--t1)}
+.fquick{display:flex;flex-wrap:wrap;gap:6px}
+.fq,.fopt{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-size:16px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fq[aria-pressed=true],.fopt[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.fq.more{font:600 13px inherit;font-family:inherit;color:var(--accent);border-style:dashed}
+.fq.loading,.fopt.loading{background:linear-gradient(90deg,var(--raised) 25%,rgba(255,255,255,.08) 50%,var(--raised) 75%);background-size:200% 100%;animation:sk 1s linear infinite;color:transparent}
+@keyframes sk{to{background-position:-200% 0}}
+.fcats{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fcats button{min-height:44px;padding:0 12px;border-radius:22px;border:1px solid var(--border2);background:none;color:var(--t2);font:600 13px inherit;font-family:inherit;cursor:pointer}
+.fcats button[aria-checked=true]{background:var(--accent);border-color:var(--accent);color:#0F1620}
+.flist{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.frow,.layers li{display:flex;gap:6px}
+.layers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.fopt{flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:8px 12px;min-height:56px;text-align:left}
+.fopt b{font-size:22px;font-weight:inherit;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.fopt small{font:500 11px/1.2 "TC Pretendard",-apple-system,sans-serif;color:var(--t3);margin-top:3px}
+.star{width:48px;min-height:44px;border-radius:12px;border:1px solid var(--border2);background:none;color:#FFD166;font-size:20px;cursor:pointer;flex:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pre{min-height:56px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:8px 10px;min-width:0}
+.pre b{font-size:15px}.pre small{font:500 11px "TC Pretendard",sans-serif;color:var(--t3);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pre.stk{align-items:center}.pre.stk canvas{width:56px;height:56px}
+.qcs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.qc.qt{width:auto;padding:0 12px;border-radius:22px;border:1px solid var(--border2);background:none;color:var(--t2);font:600 13px inherit;font-family:inherit;min-height:44px}
+.qc.grad{border-radius:50%;border:2px solid var(--border2)}
+.ed-btns.acts .chip-btn{flex:1}
+.tl{display:block;margin:4px 0 6px}
+.tpl .tpl-list{display:flex;overflow-x:auto;gap:8px;padding:4px 2px 8px;scroll-snap-type:x proximity}
+.tpl .tpl-btn{flex:0 0 76px;min-width:76px}
+.tpl-btn .tn{white-space:nowrap;font-size:12px}
+.tpl-mine{position:relative;display:flex;flex:0 0 76px}.tpl-mine .tpl-btn{flex:1}
+.tpl-del{position:absolute;top:-4px;right:-4px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(15,22,32,.85);color:#fff;cursor:pointer;font-size:14px}
+.actions .ghost-btn{background:none;border:0;color:var(--t2);text-decoration:underline;min-height:44px;font-size:15px}
+.ph-btn{display:none}
+.bg-btn{position:absolute;left:8px;top:8px;min-height:44px;padding:0 14px;border-radius:22px;border:0;background:rgba(15,22,32,.72);color:#fff;font:600 13px inherit;font-family:inherit;cursor:pointer;z-index:1;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.tg.loading{opacity:.6}
+.behind-tg{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;margin:4px 0 12px;padding:10px 14px;border-radius:14px;border:1.5px solid #3DC8F5;background:rgba(61,200,245,.10);color:#F4F6F8;font:inherit;text-align:left;cursor:pointer}
+.behind-tg .bi{font-size:22px}.behind-tg>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px}.behind-tg b{font-size:15px}.behind-tg small{font-size:12px;color:#B8C2CF}
+.behind-tg .sw{flex:none;width:44px;height:26px;border-radius:13px;background:#3a4656;position:relative}.behind-tg .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.behind-tg[aria-pressed="true"]{background:#3DC8F5;color:#0F1620}.behind-tg[aria-pressed="true"] small{color:#0F1620}.behind-tg[aria-pressed="true"] .sw{background:#0F1620}.behind-tg[aria-pressed="true"] .sw::after{left:21px;background:#3DC8F5}
+.behind-tg.loading{opacity:.6}
+.mini{position:absolute;z-index:5;pointer-events:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none;display:flex;gap:2px;padding:3px;border-radius:12px;background:rgba(15,22,32,.88);box-shadow:0 2px 10px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.14)}.mini[hidden]{display:none}
+.mini button{min-width:44px;height:44px;padding:0 4px;border:0;border-radius:9px;background:transparent;color:#F4F6F8;font:700 16px/1 inherit;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}.mini button[hidden]{display:none}.mini small{font-size:9px;font-weight:600;color:#B8C2CF}
+.mini button:active{background:rgba(255,255,255,.12)}.mini [aria-pressed="true"]{background:#3DC8F5;color:#0F1620}.mini [aria-pressed="true"] small{color:#0F1620}
+.mini [data-mb=behind][aria-pressed="true"]{background:#3DC8F5;color:#0F1620;box-shadow:0 0 0 2px #fff inset}.mini .loading{opacity:.6}
+.fcur{margin:2px 0 6px;font-size:13px;color:#B8C2CF}.fcur b{color:#3DC8F5}
+.fq.on,.fopt.on{border-color:#3DC8F5!important;background:rgba(61,200,245,.16)!important;box-shadow:0 0 0 1.5px #3DC8F5 inset;color:#F4F6F8}.ck{font-style:normal;color:#3DC8F5;font-family:system-ui,sans-serif;font-weight:800;margin-right:5px}
 
 </style>
 <style>
@@ -331,7 +439,7 @@ details.method summary{color:var(--t3);font-size:13px}
 <main id="app">
 <!-- INPUT -->
 <section id="scrInput" class="screen" aria-labelledby="hIn">
-  <header class="top"><h1 id="hIn">러닝 티어</h1><p class="sub">기록을 넣으면 내 티어와 훈련 페이스를 알려드려요</p></header>
+  <header class="top"><h1 id="hIn" class="logo"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 122" width="470" height="122"><g transform="translate(0,4)"><g transform="translate(40,0) skewX(-14)"><g transform="translate(6,6)"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#3DC8F5"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="174" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M340 40V100" stroke="#3DC8F5" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M412 40V100" stroke="#3DC8F5" stroke-width="16"/></g><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#F4F6F8"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#F4F6F8"/><circle cx="102" cy="70" r="22" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M102 70L113.81258650761974 63.18" stroke="#0F1620" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5.95" fill="#0F1620"/><circle cx="174" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M340 40V100" stroke="#F4F6F8" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M412 40V100" stroke="#F4F6F8" stroke-width="16"/></g></g></svg><span class="sr">hoohaa 러닝 티어</span></h1><p class="sub">기록을 넣으면 내 티어와 훈련 페이스를 알려드려요</p></header>
   <div class="field">
     <span class="lbl" id="lEv">종목</span>
     <div class="chips five" role="radiogroup" aria-labelledby="lEv" id="evChips">
@@ -364,6 +472,48 @@ details.method summary{color:var(--t3);font-size:13px}
     <p class="hint">나이 = 올해 − 출생연도로 계산해요</p>
   </div>
   <p id="err" class="err" role="alert"></p>
+  <div id="barInput" class="actions"><button id="go" class="btn primary" disabled>내 티어 보기</button></div>
+<!--SEO-->
+<section class="seo" aria-labelledby="hHow">
+  <h2 id="hHow">어떻게 계산하나요</h2>
+  <p>5K·10K·하프·풀코스 기록을 넣으면 <strong>VDOT</strong>(잭 다니엘스 러닝 지수)을 계산하고, 같은 성별 러너 기록 분포에서 상위 몇 %인지로 <strong>러닝 티어</strong>를 정해요. 같은 VDOT으로 다른 거리의 <strong>마라톤 예상 기록</strong>과 E·M·T·I·R <strong>훈련 페이스</strong>도 함께 보여드려요.</p>
+  <details class="seo-box"><summary><h2 id="hTbl">티어 기준표 (예: 10K · 30대 남성)</h2></summary>
+  <table class="seo-tbl"><thead><tr><th scope="col">티어</th><th scope="col">10K 기록</th><th scope="col">누적 상위</th></tr></thead><tbody>
+<tr><th scope="row">챌린저</th><td>33:31 이내</td><td>상위 0.1%</td></tr>
+<tr><th scope="row">그랜드마스터</th><td>35:25 이내</td><td>상위 0.5%</td></tr>
+<tr><th scope="row">마스터</th><td>37:41 이내</td><td>상위 2%</td></tr>
+<tr><th scope="row">다이아몬드</th><td>41:32 이내</td><td>상위 8%</td></tr>
+<tr><th scope="row">에메랄드</th><td>45:03 이내</td><td>상위 18%</td></tr>
+<tr><th scope="row">플래티넘</th><td>48:52 이내</td><td>상위 33%</td></tr>
+<tr><th scope="row">골드</th><td>52:58 이내</td><td>상위 52%</td></tr>
+<tr><th scope="row">실버</th><td>58:54 이내</td><td>상위 72%</td></tr>
+<tr><th scope="row">브론즈</th><td>1:05:28 이내</td><td>상위 88%</td></tr>
+<tr><th scope="row">아이언</th><td>모든 완주 기록</td><td>누구나</td></tr>
+  </tbody></table>
+  <p class="hint">각 티어의 가장 낮은 단계(3단계) 진입 기준이에요. 성별·나이대·종목에 따라 기준 기록이 달라지며, 결과 화면에서 내 조건의 전체 24단계 표를 볼 수 있어요.</p></details>
+  <h2 id="hFaq">자주 묻는 질문</h2>
+<details class="faq"><summary><h3>VDOT이 뭔가요?</h3></summary><p>잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록으로 유산소 능력을 숫자 하나로 나타내고, 이 숫자로 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 같은 거리를 더 빨리 달릴 수 있어요.</p></details>
+<details class="faq"><summary><h3>티어는 어떤 기준으로 정해지나요?</h3></summary><p>같은 성별 러너들의 기록 분포에서 내 기록이 상위 몇 %인지 계산해, 아이언부터 챌린저까지 10개 티어(아이언~다이아몬드는 3·2·1 단계)로 나눠요.</p></details>
+<details class="faq"><summary><h3>마라톤 예상 기록은 얼마나 정확한가요?</h3></summary><p>VDOT 공식으로 계산한 이론값이라 참고용이에요. 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 많고, 장거리 훈련량·코스·날씨에 따라 달라져요. 가까운 거리의 최근 기록을 넣을수록 더 정확해요.</p></details>
+<details class="faq"><summary><h3>훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?</h3></summary><p>E(이지)는 대화가 가능한 편안한 조깅, M(마라톤)은 풀코스 목표 페이스, T(역치)는 20~30분 버틸 수 있는 ‘편하게 힘든’ 페이스, I(인터벌)는 3~5분 반복하는 빠른 달리기, R(반복)은 짧고 가장 빠른 질주예요. 대부분의 훈련은 E 페이스로 하는 게 좋아요.</p></details>
+<details class="faq"><summary><h3>입력한 기록이 저장되나요?</h3></summary><p>아니요. 모든 계산은 내 브라우저 안에서만 이뤄지고, 기록이나 사진은 서버로 전송되거나 저장되지 않아요.</p></details>
+<details class="faq"><summary><h3>느린 기록도 넣어도 되나요?</h3></summary><p>물론이에요. 완주 기록이라면 누구나 티어가 나오고, 다음 티어까지 얼마나 남았는지도 알려드려요. 모든 러너는 출발선에 선 순간부터 러너예요.</p></details>
+  <h2 id="hMore">기록 기준표 더 보기</h2>
+  <nav class="lanenav" aria-label="기록 가이드"><div class="lane"><span class="ln"><b aria-hidden="true">1</b>5K</span><div class="ls"><a href="5k/">티어표</a><a href="5k/20min/">20분</a><a href="5k/25min/">25분</a><a href="5k/30min/">30분</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">2</b>10K</span><div class="ls"><a href="10k/">티어표</a><a href="10k/40min/">40분</a><a href="10k/45min/">45분</a><a href="10k/50min/">50분</a><a href="10k/55min/">55분</a><a href="10k/60min/">1시간</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">3</b>하프</span><div class="ls"><a href="half/">티어표·계산기</a><a href="half/1h30/">1:30</a><a href="half/1h45/">1:45</a><a href="half/2h/">2:00</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">4</b>풀</span><div class="ls"><a href="full/">티어표·예상 기록</a><a href="full/sub3/">서브3</a><a href="full/sub330/">서브3:30</a><a href="full/sub4/">서브4</a><a href="full/sub430/">4:30</a><a href="full/sub5/">5:00</a><a href="predictor/">기록 예측기</a><a href="splits/">구간 기록표</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">5</b>공통</span><div class="ls"><a href="men/">남자 기준</a><a href="women/">여자 기준</a><a href="pace/">훈련 페이스</a><a href="pace-calculator/">페이스 계산기</a><a href="vdot/">VDOT</a><a href="vo2max/">VO2max</a><a href="tier-guide/">티어 기준</a><a href="age/20s-30s/">20·30대</a><a href="age/40s/">40대</a><a href="age/50s/">50대</a><a href="age/60s/">60대+</a><a href="guide/">전체 가이드</a></div></div></nav><style>.lanenav{margin:12px 0 4px;background:#0B1119;border:1px solid #26313F;border-radius:14px;overflow:hidden}
+.lane{display:flex;align-items:stretch;border-top:2px dashed rgba(255,255,255,.13);min-height:52px}.lane:first-child{border-top:0}
+.lane .ln{flex:none;width:78px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;border-right:2px solid rgba(255,255,255,.18);color:#F4F6F8;font-weight:800;font-size:14px;letter-spacing:.2px}
+.lane .ln b{font:800 20px/1 system-ui,sans-serif;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.45);width:14px;text-align:center}
+.lane .ls{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1}.lane .ls::-webkit-scrollbar{display:none}
+.lane .ls a{flex:none;display:flex;align-items:center;min-height:52px;padding:0 13px;color:#B8C2CF;text-decoration:none;font-size:14px;white-space:nowrap;position:relative}
+.lane .ls a+a::before{content:"";position:absolute;left:0;top:50%;width:1px;height:14px;margin-top:-7px;background:rgba(255,255,255,.18)}
+.lane .ls a:hover{color:#F4F6F8}.lane .ls a[aria-current]{color:#3DC8F5;font-weight:700}
+.lane .ls a[aria-current]::after{content:"";position:absolute;left:13px;right:13px;bottom:10px;height:2px;background:#3DC8F5;border-radius:2px}
+.lane.on{background:linear-gradient(90deg,rgba(61,200,245,.10),transparent 70%)}.lane.on .ln{color:#3DC8F5}.lane.on .ln b{-webkit-text-stroke-color:#3DC8F5}
+@media (min-width:601px){.lane .ls{flex-wrap:wrap;overflow:visible}}
+@media (max-width:600px){.lane .ln{width:64px;padding-left:10px;font-size:13px}}</style>
+</section>
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"hoohaa","alternateName":"hoohaa 러닝 티어","url":"https://hoohaa.run/","inLanguage":"ko","applicationCategory":"SportsApplication","operatingSystem":"Web","isAccessibleForFree":true,"description":"PB 기록으로 러닝 티어, VDOT, 마라톤 예상 기록, 훈련 페이스를 계산하는 무료 웹앱","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"VDOT이 뭔가요?","acceptedAnswer":{"@type":"Answer","text":"잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록으로 유산소 능력을 숫자 하나로 나타내고, 이 숫자로 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 같은 거리를 더 빨리 달릴 수 있어요."}},{"@type":"Question","name":"티어는 어떤 기준으로 정해지나요?","acceptedAnswer":{"@type":"Answer","text":"같은 성별 러너들의 기록 분포에서 내 기록이 상위 몇 %인지 계산해, 아이언부터 챌린저까지 10개 티어(아이언~다이아몬드는 3·2·1 단계)로 나눠요."}},{"@type":"Question","name":"마라톤 예상 기록은 얼마나 정확한가요?","acceptedAnswer":{"@type":"Answer","text":"VDOT 공식으로 계산한 이론값이라 참고용이에요. 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 많고, 장거리 훈련량·코스·날씨에 따라 달라져요. 가까운 거리의 최근 기록을 넣을수록 더 정확해요."}},{"@type":"Question","name":"훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"E(이지)는 대화가 가능한 편안한 조깅, M(마라톤)은 풀코스 목표 페이스, T(역치)는 20~30분 버틸 수 있는 ‘편하게 힘든’ 페이스, I(인터벌)는 3~5분 반복하는 빠른 달리기, R(반복)은 짧고 가장 빠른 질주예요. 대부분의 훈련은 E 페이스로 하는 게 좋아요."}},{"@type":"Question","name":"입력한 기록이 저장되나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 모든 계산은 내 브라우저 안에서만 이뤄지고, 기록이나 사진은 서버로 전송되거나 저장되지 않아요."}},{"@type":"Question","name":"느린 기록도 넣어도 되나요?","acceptedAnswer":{"@type":"Answer","text":"물론이에요. 완주 기록이라면 누구나 티어가 나오고, 다음 티어까지 얼마나 남았는지도 알려드려요. 모든 러너는 출발선에 선 순간부터 러너예요."}}]}]</script>
+<!--/SEO-->
 </section>
 
 <!-- RESULT -->
@@ -371,82 +521,44 @@ details.method summary{color:var(--t3);font-size:13px}
   <div id="resBody"></div>
   <section class="card tpl" aria-labelledby="hTpl">
     <h2 id="hTpl">공유 이미지</h2>
-    <div class="tpl-ed" id="tplEd">
-    <div class="ed-head" id="edHead">
-    <div class="tpl-prev" id="tplPrev"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="선택한 공유 이미지 미리보기"></canvas>
-      <button type="button" class="add-photo" id="addPhoto" hidden><span class="ap-plus" aria-hidden="true">＋</span> 사진 넣기<small>선택 · 안 넣어도 저장돼요</small></button></div>
-      <div class="ed-tabs" id="edTabs" hidden role="tablist" aria-label="편집">
-        <button type="button" role="tab" data-tab="photo" id="tabPhoto" aria-selected="false">사진</button>
-        <button type="button" role="tab" data-tab="text" aria-selected="true">글자</button>
-        <button type="button" role="tab" data-tab="color" aria-selected="false">색</button>
-        <button type="button" role="tab" data-tab="align" aria-selected="false">정렬</button>
-        <button type="button" role="tab" data-tab="items" aria-selected="false">항목</button>
-        <button type="button" id="adjReset" class="ed-reset" aria-label="편집 초기화">초기화</button>
+    <div class="st-top"><button type="button" class="chip-btn" id="tplReset">템플릿으로 되돌리기</button><span class="sp"></span><button type="button" class="stp" id="undo" aria-label="실행취소">↶</button><button type="button" class="stp" id="redo" aria-label="다시실행">↷</button></div>
+    <div class="st-row" id="tplEd">
+      <div class="st-left" id="sizeCol" hidden><input type="range" id="tSize" min="20" max="300" value="96" aria-label="글자 크기" orient="vertical"></div>
+      <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas><button type="button" class="bg-btn" id="bgBtn">📷 배경 사진</button>
+        <div class="mini" id="miniBar" hidden role="toolbar" aria-label="선택한 요소"><button type="button" data-mb="up" aria-label="앞으로" title="앞으로">↑<small>앞으로</small></button><button type="button" data-mb="down" aria-label="뒤로" title="뒤로">↓<small>뒤로</small></button><button type="button" data-mb="behind" aria-label="인물 뒤로" aria-pressed="false" hidden>👤<small>인물 뒤로</small></button><button type="button" data-mb="dup" aria-label="복제" title="복제">⧉<small>복제</small></button><button type="button" data-mb="del" aria-label="삭제" title="삭제">🗑<small>삭제</small></button></div><div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="behind" id="ctxBehind" role="menuitem" hidden>인물 뒤로</button><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
+      <div class="st-tools" id="tools" role="toolbar" aria-label="추가 도구" aria-orientation="vertical">
+        <button type="button" data-tool="text" aria-label="텍스트 추가"><b>Aa</b><small>텍스트</small></button>
+        <button type="button" data-tool="photo" aria-label="사진 추가"><b>📷</b><small>사진</small></button>
+        <button type="button" data-tool="sticker" aria-label="스티커" aria-pressed="false"><b>★</b><small>스티커</small></button>
+        <button type="button" data-tool="stat" aria-label="기록 블록" aria-pressed="false"><b>⏱</b><small>기록</small></button>
+        <button type="button" data-tool="bg" aria-label="배경" aria-pressed="false"><b>◐</b><small>배경</small></button>
+        <button type="button" data-tool="layers" aria-label="레이어" aria-pressed="false"><b>☰</b><small>레이어</small></button>
       </div>
     </div>
-    <div class="ed" id="adjBar" hidden>
-
-      <div class="ed-panel" data-p="photo" role="tabpanel" hidden>
-        <div class="adj-row"><label for="pzoom" class="lbl sm">확대</label><input type="range" id="pzoom" min="100" max="300" value="100"></div>
-        <div class="ed-btns"><button type="button" class="chip-btn primary-chip" id="photoAdd2" hidden>＋ 사진 넣기</button><button type="button" class="chip-btn" id="photoChange">사진 바꾸기</button><button type="button" class="chip-btn" id="photoRemove">사진 빼기</button></div>
-        <p class="hint">사진 탭에서는 미리보기를 끌면 사진이 움직여요</p>
-      </div>
-      <div class="ed-panel" data-p="text" role="tabpanel">
-        <div class="adj-row"><label for="tsize" class="lbl sm">크기</label><input type="range" id="tsize" min="60" max="130" value="100"><output id="tsizeV">100%</output></div>
-        <div class="adj-row"><label for="tlh" class="lbl sm">줄 간격</label><input type="range" id="tlh" min="0" max="160" value="100"><output id="tlhV">100%</output></div>
-        <div class="fontpick" id="fontPick" role="radiogroup" aria-label="글꼴"></div>
-      </div>
-      <div class="ed-panel" data-p="color" role="tabpanel" hidden>
-      <div class="cpick" role="group" aria-labelledby="colLbl">
-        <div class="cp-top"><span class="lbl sm vh" id="colLbl">글자 색</span>
-          <button type="button" class="qc" data-c="#ffffff" aria-label="흰색" style="--c:#ffffff"></button>
-          <button type="button" class="qc" data-c="#111111" aria-label="검정" style="--c:#111111"></button>
-          <span class="cp-chip" id="cpChip" aria-hidden="true"></span>
-          <input id="cpHex" class="cp-hex" maxlength="7" autocomplete="off" spellcheck="false" aria-label="HEX 색상 코드" value="#FFFFFF"></div>
-        <div class="cp-sv" id="cpSV" role="slider" tabindex="0" aria-label="채도·밝기" aria-valuetext=""><i id="cpSVk"></i></div>
-        <div class="cp-hue" id="cpHue" role="slider" tabindex="0" aria-label="색상" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0"><i id="cpHuek"></i></div>
-      </div>
-      </div>
-      <div class="ed-panel" data-p="align" role="tabpanel" hidden>
-        <div class="seg three" role="radiogroup" aria-label="글자 정렬">
-          <button type="button" role="radio" data-al="left" aria-checked="false">왼쪽</button>
-          <button type="button" role="radio" data-al="center" aria-checked="true">가운데</button>
-          <button type="button" role="radio" data-al="right" aria-checked="false">오른쪽</button></div>
-        <div class="ed-btns"><button type="button" class="chip-btn" id="toCenter">가운데로</button></div>
-        <p class="hint">글자를 끌면 가운데·가장자리에 맞춰 붙어요</p>
-      </div>
-      <div class="ed-panel" data-p="items" role="tabpanel" hidden>
-        <div class="tgl" id="itemTgl"></div>
-      </div>
-    </div>
-    </div>
-    <div class="tpl-list" id="tplList" role="radiogroup" aria-labelledby="hTpl"></div>
+    <input id="photo" type="file" accept="image/*" class="vh" tabindex="-1" aria-hidden="true">
+    <p class="pv-hint" id="pvHint" role="status" aria-live="polite"></p>
+    <div class="panel" id="panel"></div>
+    <span class="lbl sm tl">템플릿</span>
+    <div class="tpl-list" id="tplList" role="radiogroup" aria-label="템플릿"></div>
+    <div class="ed-btns"><button type="button" class="chip-btn" id="saveMyTpl">＋ 내 템플릿 저장</button></div>
+    <div id="barResult" class="actions" hidden><button id="save" class="btn primary">저장</button><button id="share" class="btn secondary">공유</button><button id="again" class="btn ghost-btn">다른 기록 넣기</button></div>
   </section>
-  <details class="deco" id="deco">
-    <summary><span>꾸미기 <em>(선택)</em></span><span class="dsub">사진 배경 · 대회명</span></summary>
-    <div class="deco-in">
-      <p class="dnote">비워 두어도 바로 저장돼요.</p>
-      <div class="dfield"><span class="lbl sm">배경 사진</span>
-        <div class="photo-row"><label class="pick" for="photo">사진 고르기</label><input id="photo" type="file" accept="image/*" class="vh">
-          <img id="preview" alt="선택한 배경 사진" hidden><button type="button" id="photoClear" class="ghost" hidden>사진 빼기</button></div>
-        <p class="hint">사진은 이 기기 안에서만 쓰여요</p></div>
-      <div class="dfield"><label for="race" class="lbl sm">대회명</label><input id="race" autocomplete="off" maxlength="30" placeholder="예: 춘천마라톤"></div>
-    </div>
-  </details>
+  <div class="cpick" id="cpick" role="group" aria-label="색 선택" hidden>
+    <div class="cp-top"><span class="cp-chip" id="cpChip" aria-hidden="true"></span><input id="cpHex" class="cp-hex" maxlength="7" autocomplete="off" spellcheck="false" aria-label="HEX 색상 코드" value="#FFFFFF"></div>
+    <div class="cp-sv" id="cpSV" role="slider" tabindex="0" aria-label="채도·밝기" aria-valuetext=""><i id="cpSVk"></i></div>
+    <div class="cp-hue" id="cpHue" role="slider" tabindex="0" aria-label="색상" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0"><i id="cpHuek"></i></div>
+  </div>
+
 </section>
 </main>
 
-<nav class="bar" id="bar">
-  <div id="barInput"><button id="go" class="btn primary" disabled>내 티어 보기</button></div>
-  <div id="barResult" hidden><button id="save" class="btn primary">이미지로 저장</button><button id="again" class="btn secondary">다른 기록 넣기</button></div>
-</nav>
 <script>
 (function(){
 // generated by build_data.py — do not edit
 const D = {"source": "tier_thresholds_v4_3.csv, running_tier_population_v3.csv, age_curve_consensus.csv, validation_rules.json", "distances": {"5K": 5000, "10K": 10000, "half": 21097.5, "full": 42195}, "tierNames": ["아이언 3", "아이언 2", "아이언 1", "브론즈 3", "브론즈 2", "브론즈 1", "실버 3", "실버 2", "실버 1", "골드 3", "골드 2", "골드 1", "플래티넘 3", "플래티넘 2", "플래티넘 1", "에메랄드 3", "에메랄드 2", "에메랄드 1", "다이아몬드 3", "다이아몬드 2", "다이아몬드 1", "마스터", "그랜드마스터", "챌린저"], "targetTopPct": [96.0, 92.5, 88.0, 82.31, 76.98, 72.0, 64.6, 57.96, 52.0, 44.69, 38.4, 33.0, 26.96, 22.03, 18.0, 13.74, 10.48, 8.0, 5.04, 3.17, 2.0, 0.5, 0.1], "thresholds30s": {"M": {"5K": [2251, 2127, 2018, 1924, 1855, 1789, 1706, 1635, 1578, 1525, 1482, 1441, 1390, 1349, 1313, 1275, 1241, 1203, 1147, 1118, 1090, 1028, 973], "10K": [4341, 4117, 3928, 3766, 3646, 3534, 3395, 3275, 3178, 3087, 3007, 2932, 2838, 2766, 2703, 2629, 2563, 2492, 2378, 2318, 2261, 2125, 2011], "half": [9588, 9105, 8693, 8339, 8077, 7831, 7526, 7261, 7046, 6844, 6668, 6501, 6292, 6132, 5991, 5825, 5678, 5520, 5264, 5129, 5001, 4695, 4440], "full": [19572, 18623, 17813, 17117, 16600, 16114, 15510, 14985, 14559, 14157, 13806, 13472, 13053, 12732, 12450, 12115, 11818, 11498, 10979, 10703, 10442, 9816, 9290]}, "F": {"5K": [2327, 2203, 2106, 2062, 2025, 1982, 1924, 1871, 1827, 1787, 1752, 1716, 1669, 1633, 1589, 1530, 1476, 1420, 1354, 1319, 1276, 1193, 1119], "10K": [4652, 4505, 4367, 4245, 4150, 4053, 3930, 3818, 3727, 3643, 3568, 3494, 3397, 3324, 3258, 3155, 3050, 2941, 2806, 2735, 2645, 2465, 2313], "half": [10130, 9710, 9346, 9035, 8802, 8579, 8299, 8054, 7855, 7675, 7518, 7366, 7170, 7024, 6896, 6745, 6610, 6460, 6209, 6052, 5851, 5447, 5105], "full": [20324, 19346, 18513, 17847, 17453, 17055, 16558, 16106, 15735, 15402, 15101, 14805, 14420, 14130, 13872, 13560, 13278, 12962, 12438, 12171, 11910, 11265, 10683]}}, "popPct": [1, 5, 10, 20, 35, 50, 75, 90], "population": {"M": {"20s_and_under": {"full": [9894, 10893, 11752, 12611, 13681, 14475, 16496, 18228], "half": [4738, 5198, 5659, 6006, 6501, 6830, 7806, 8551], "10K": [2115, 2301, 2511, 2682, 2937, 3105, 3602, 4018], "5K": [1027, 1103, 1203, 1311, 1460, 1573, 1896, 2173]}, "30s": {"full": [10112, 10971, 11768, 12594, 13678, 14426, 16414, 18138], "half": [4885, 5268, 5714, 6056, 6549, 6882, 7859, 8590], "10K": [2180, 2342, 2537, 2709, 2967, 3149, 3655, 4050], "5K": [1059, 1137, 1239, 1341, 1489, 1603, 1928, 2199]}, "40s": {"full": [10623, 11309, 12078, 12795, 13809, 14583, 16526, 18222], "half": [5177, 5484, 5909, 6195, 6650, 6972, 7939, 8660], "10K": [2301, 2463, 2653, 2820, 3026, 3186, 3692, 4079], "5K": [1126, 1207, 1305, 1400, 1530, 1634, 1953, 2221]}, "50s": {"full": [11166, 11911, 12671, 13394, 14396, 15226, 17192, 18949], "half": [5484, 5794, 6227, 6486, 6940, 7281, 8270, 8977], "10K": [2456, 2616, 2817, 3003, 3243, 3398, 3861, 4208], "5K": [1201, 1295, 1398, 1500, 1640, 1745, 2038, 2293]}, "60plus": {"full": [12209, 12981, 13770, 14520, 15666, 16609, 18808, 20645], "half": [5961, 6315, 6766, 7048, 7540, 7846, 8892, 9717], "10K": [2660, 2853, 3051, 3229, 3453, 3596, 4103, 4564], "5K": [1316, 1412, 1529, 1648, 1791, 1893, 2197, 2472]}}, "F": {"20s_and_under": {"full": [11401, 12588, 13263, 14064, 14899, 15655, 17240, 18702], "half": [5849, 6259, 6537, 6953, 7344, 7753, 8468, 9217], "10K": [2617, 2869, 3046, 3259, 3488, 3729, 4071, 4464], "5K": [1276, 1385, 1473, 1582, 1710, 1838, 2061, 2258]}, "30s": {"full": [11572, 12633, 13262, 14026, 14868, 15621, 17199, 18635], "half": [5917, 6319, 6570, 6964, 7368, 7770, 8483, 9214], "10K": [2654, 2910, 3065, 3279, 3506, 3727, 4094, 4482], "5K": [1295, 1410, 1493, 1603, 1724, 1842, 2073, 2276]}, "40s": {"full": [12097, 13067, 13584, 14301, 15121, 15920, 17505, 18916], "half": [6202, 6492, 6723, 7078, 7462, 7869, 8569, 9282], "10K": [2758, 2968, 3103, 3309, 3530, 3746, 4108, 4493], "5K": [1346, 1445, 1510, 1615, 1732, 1847, 2073, 2290]}, "50s": {"full": [13046, 13750, 14250, 14975, 15784, 16662, 18293, 19758], "half": [6556, 6786, 6970, 7327, 7691, 8151, 8862, 9643], "10K": [2903, 3074, 3196, 3391, 3607, 3836, 4216, 4634], "5K": [1419, 1513, 1570, 1663, 1778, 1896, 2137, 2381]}, "60plus": {"full": [14194, 14873, 15377, 16229, 17206, 18292, 20008, 21537], "half": [6991, 7222, 7369, 7756, 8197, 8714, 9517, 10351], "10K": [3092, 3231, 3369, 3564, 3793, 4037, 4459, 4937], "5K": [1520, 1614, 1675, 1773, 1895, 2033, 2324, 2589]}}}, "ageMult": {"M": {"20s_and_under": {"5K": 1.0, "10K": 1.0, "half": 1.0, "full": 1.0}, "30s": {"5K": 1.0, "10K": 1.0, "half": 1.0, "full": 1.0}, "40s": {"5K": 1.0358237258466003, "10K": 1.030461295665472, "half": 1.0191514310115806, "full": 1.0174430895190691}, "50s": {"5K": 1.110182429341282, "10K": 1.1008080289472397, "half": 1.0653617428088857, "full": 1.0653617428088857}, "60plus": {"5K": 1.2157069602816657, "10K": 1.1778350127697348, "half": 1.157557317093092, "full": 1.1627938727360818}}, "F": {"20s_and_under": {"5K": 1.0, "10K": 1.0, "half": 1.0, "full": 1.0021432025114123}, "30s": {"5K": 1.0, "10K": 1.0, "half": 1.0, "full": 1.0}, "40s": {"5K": 1.006746784991831, "10K": 1.008029580652746, "half": 1.0146282383343506, "full": 1.021380036854318}, "50s": {"5K": 1.0416190369911815, "10K": 1.0340431616333372, "half": 1.0505809797551826, "full": 1.0712692528228038}, "60plus": {"5K": 1.121413667512778, "10K": 1.0942079522281583, "half": 1.1217864762670011, "full": 1.161408269898169}}}, "wrCheck": {"M": {"5000": 769, "10000": 1584, "21097.5": 3411, "42195": 7170}, "F": {"5000": 834, "10000": 1726, "21097.5": 3772, "42195": 7796}}, "wrFactor": 0.98, "nearWrFactor": 1.05, "vdotMax": 85};
 
 // generated from running-tier-color/tokens.json
-const TK = {"app": {"bg": "#0F1620", "surface": "#172130", "surface_raised": "#1F2B3B", "text_primary": "#F4F6F8", "text_secondary": "#B8C2CF", "text_tertiary": "#8A97A8", "border": "#2A3748", "border_strong": "#56657A", "accent": "#3DC8F5", "accent_hover": "#6FD8FA", "on_accent": "#0F1620", "success": "#3DD68C", "warning": "#FFB547", "danger": "#FF6B6B", "info": "#5AB8FF", "focus_ring": "#7CC4FF", "share_card_bg": ["#0F1620", "#172338"], "share_card_frame": "#2A3748"}, "tier": {"iron": {"base": "#988C83", "gradient": ["#A49A92", "#8A7F77"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E9ECEF", "dark": "#242C38"}, "tint_text": {"light": "#5C6C84", "dark": "#9B8F87"}, "divisions": {"III": "#8C8179", "II": "#988C83", "I": "#A2988F"}, "glow": {"color": "#988C83", "blur_px": 0, "alpha": 0}, "text": "#9B8F87", "card": {"band": "plain", "ink": "#0F0F10", "ink_min_ratio": 4.51, "stops": ["#A2988F", "#988C83", "#837972"], "background": "linear-gradient(118deg, #A2988F 0%, #988C83 55%, #837972 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#988C83", "glyph": ["circle"]}}, "bronze": {"base": "#B98660", "gradient": ["#C29675", "#A87A57"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F7EDE6", "dark": "#272B35"}, "tint_text": {"light": "#905C38", "dark": "#B98660"}, "divisions": {"III": "#AA7B58", "II": "#B98660", "I": "#C09270"}, "glow": {"color": "#B98660", "blur_px": 0, "alpha": 0}, "text": "#B98660", "card": {"band": "plain", "ink": "#161110", "ink_min_ratio": 4.56, "stops": ["#C09270", "#B98660", "#A07454"], "background": "linear-gradient(118deg, #C09270 0%, #B98660 55%, #A07454 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#B98660", "glyph": ["p", 3, -90, [1]]}}, "silver": {"base": "#AEB6C1", "gradient": ["#BDC4CD", "#A0A7B2"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F4F6F9", "dark": "#26303E"}, "tint_text": {"light": "#656D76", "dark": "#AEB6C1"}, "divisions": {"III": "#A4ABB5", "II": "#AEB6C1", "I": "#BAC1CA"}, "glow": {"color": "#AEB6C1", "blur_px": 0, "alpha": 0}, "text": "#AEB6C1", "card": {"band": "plain", "ink": "#1D2024", "ink_min_ratio": 6.04, "stops": ["#B6BDC7", "#AEB6C1", "#969EA8"], "background": "linear-gradient(118deg, #B6BDC7 0%, #AEB6C1 55%, #969EA8 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#AEB6C1", "glyph": ["p", 4, -45, [0.85]]}}, "gold": {"base": "#D2B56E", "gradient": ["#DBC48B", "#C1A765"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FDF5E2", "dark": "#2A3036"}, "tint_text": {"light": "#85661A", "dark": "#D2B56E"}, "divisions": {"III": "#C5AA67", "II": "#D2B56E", "I": "#D9C185"}, "glow": {"color": "#D2B56E", "blur_px": 0, "alpha": 0}, "text": "#D2B56E", "card": {"band": "plain", "ink": "#221F19", "ink_min_ratio": 6.23, "stops": ["#D6BC7D", "#D2B56E", "#B59D60"], "background": "linear-gradient(118deg, #D6BC7D 0%, #D2B56E 55%, #B59D60 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#D2B56E", "glyph": ["p", 4, -90, [1]]}}, "platinum": {"base": "#A3C4B1", "gradient": ["#BFD6C8", "#A3C4B1", "#94B2A1"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E2F7F5", "dark": "#25313D"}, "tint_text": {"light": "#1C786F", "dark": "#A3C4B1"}, "divisions": {"III": "#99B8A6", "II": "#A3C4B1", "I": "#B3CEBE"}, "glow": {"color": "#A3C4B1", "blur_px": 0, "alpha": 0}, "text": "#A3C4B1", "card": {"band": "mid", "ink": "#1B2122", "ink_min_ratio": 5.37, "stops": ["#B7D1C2", "#A3C4B1", "#809A8C"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #B7D1C2 0%, #A3C4B1 55%, #809A8C 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#A3C4B1", "glyph": ["p", 6, -90, [1]]}}, "emerald": {"base": "#529E82", "gradient": ["#71AF98", "#529E82", "#498D74"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E0F2E8", "dark": "#1D2E38"}, "tint_text": {"light": "#197643", "dark": "#57A186"}, "divisions": {"III": "#4B9178", "II": "#529E82", "I": "#63A88E"}, "glow": {"color": "#529E82", "blur_px": 0, "alpha": 0}, "text": "#57A186", "card": {"band": "mid", "ink": "#101C1C", "ink_min_ratio": 4.72, "stops": ["#78B39E", "#529E82", "#4C9278"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #78B39E 0%, #529E82 55%, #4C9278 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#529E82", "glyph": ["p", 8, -67.5, [1]]}}, "diamond": {"base": "#9DA8E6", "gradient": ["#B4BCEC", "#9DA8E6", "#8D97CF"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E8F3FF", "dark": "#242F42"}, "tint_text": {"light": "#3B6FA8", "dark": "#9DA8E6"}, "divisions": {"III": "#929CD6", "II": "#9DA8E6", "I": "#ABB4EA"}, "glow": {"color": "#9DA8E6", "blur_px": 0, "alpha": 0}, "text": "#9DA8E6", "card": {"band": "mid", "ink": "#1A1E2A", "ink_min_ratio": 4.66, "stops": ["#B3BBEC", "#9DA8E6", "#7C85B6"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #B3BBEC 0%, #9DA8E6 55%, #7C85B6 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#9DA8E6", "glyph": ["pts", [[0, -1], [0.8, -0.2], [0, 1], [-0.8, -0.2]]]}}, "master": {"base": "#A587D4", "gradient": ["#BCA6DF", "#AC91D7", "#A587D4", "#8E74B6"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#EFE6FD", "dark": "#252B40"}, "tint_text": {"light": "#7F47DD", "dark": "#A587D4"}, "divisions": null, "glow": {"color": "#A587D4", "blur_px": 18, "alpha": 0.2}, "text": "#A587D4", "card": {"band": "top", "ink": "#F4F1FA", "ink_min_ratio": 4.89, "stops": ["#625180", "#453A5B", "#2F283F"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #625180 0%, #453A5B 55%, #2F283F 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #A587D470", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 40px rgba(165,135,212,.32)", "glow": "rgba(165,135,212,.32)", "topo_tint": "#A587D4", "glyph": ["p", 8, -90, [1, 0.4]]}}, "grandmaster": {"base": "#CC8094", "gradient": ["#DAA2B1", "#D18B9E", "#CC8094", "#AF6E7F"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F9E3EC", "dark": "#292B3A"}, "tint_text": {"light": "#B53167", "dark": "#CC8094"}, "divisions": null, "glow": {"color": "#CC8094", "blur_px": 26, "alpha": 0.26}, "text": "#CC8094", "card": {"band": "top", "ink": "#F9F0F2", "ink_min_ratio": 4.86, "stops": ["#784D5A", "#553742", "#39262F"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #784D5A 0%, #553742 55%, #39262F 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #CC809470", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 44px rgba(204,128,148,.37)", "glow": "rgba(204,128,148,.37)", "topo_tint": "#CC8094", "glyph": ["p", 12, -90, [1, 0.5]]}}, "challenger": {"base": "#E6DEFA", "gradient": ["#FFFDF8", "#EEE8FA", "#CFC3F2"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FEF9EB", "dark": "#272D44"}, "tint_text": {"light": "#7D6F39", "dark": "#E6DEFA"}, "divisions": null, "glow": {"color": "#E6DEFA", "blur_px": 38, "alpha": 0.34}, "text": "#E6DEFA", "card": {"band": "top", "ink": "#2B2350", "ink_min_ratio": 9.45, "stops": ["#FBF7EE", "#EEE7FA", "#D8CBF5"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #FBF7EE 0%, #EEE7FA 55%, #D8CBF5 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #B39CFA70", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 52px rgba(179,156,250,.47)", "glow": "rgba(179,156,250,.47)", "topo_tint": "#8F72F2", "glyph": ["p", 16, -90, [1, 0.55]]}}}, "subdivision": {"method": "Roman numeral + 3 pips (filled = division strength, I=3 pips) + badge brightness step; III=base mixed 12% black, II=base, I=base mixed 14% white", "tiers": "iron..diamond only"}};
+const TK = {"app": {"bg": "#0F1620", "surface": "#172130", "surface_raised": "#1F2B3B", "text_primary": "#F4F6F8", "text_secondary": "#B8C2CF", "text_tertiary": "#8A97A8", "border": "#2A3748", "border_strong": "#56657A", "accent": "#3DC8F5", "accent_hover": "#6ED6F8", "on_accent": "#0F1620", "success": "#3DD68C", "warning": "#FFB547", "danger": "#FF6B6B", "info": "#5AB8FF", "focus_ring": "#7CC4FF", "share_card_bg": ["#0F1620", "#172338"], "share_card_frame": "#2A3748"}, "tier": {"iron": {"base": "#988C83", "gradient": ["#A49A92", "#8A7F77"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E9ECEF", "dark": "#242C38"}, "tint_text": {"light": "#5C6C84", "dark": "#9B8F87"}, "divisions": {"III": "#8C8179", "II": "#988C83", "I": "#A2988F"}, "glow": {"color": "#988C83", "blur_px": 0, "alpha": 0}, "text": "#9B8F87", "card": {"band": "plain", "ink": "#0F0F10", "ink_min_ratio": 4.51, "stops": ["#A2988F", "#988C83", "#837972"], "background": "linear-gradient(118deg, #A2988F 0%, #988C83 55%, #837972 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#988C83", "glyph": ["circle"]}}, "bronze": {"base": "#B98660", "gradient": ["#C29675", "#A87A57"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F7EDE6", "dark": "#272B35"}, "tint_text": {"light": "#905C38", "dark": "#B98660"}, "divisions": {"III": "#AA7B58", "II": "#B98660", "I": "#C09270"}, "glow": {"color": "#B98660", "blur_px": 0, "alpha": 0}, "text": "#B98660", "card": {"band": "plain", "ink": "#161110", "ink_min_ratio": 4.56, "stops": ["#C09270", "#B98660", "#A07454"], "background": "linear-gradient(118deg, #C09270 0%, #B98660 55%, #A07454 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#B98660", "glyph": ["p", 3, -90, [1]]}}, "silver": {"base": "#AEB6C1", "gradient": ["#BDC4CD", "#A0A7B2"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F4F6F9", "dark": "#26303E"}, "tint_text": {"light": "#656D76", "dark": "#AEB6C1"}, "divisions": {"III": "#A4ABB5", "II": "#AEB6C1", "I": "#BAC1CA"}, "glow": {"color": "#AEB6C1", "blur_px": 0, "alpha": 0}, "text": "#AEB6C1", "card": {"band": "plain", "ink": "#1D2024", "ink_min_ratio": 6.04, "stops": ["#B6BDC7", "#AEB6C1", "#969EA8"], "background": "linear-gradient(118deg, #B6BDC7 0%, #AEB6C1 55%, #969EA8 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#AEB6C1", "glyph": ["p", 4, -45, [0.85]]}}, "gold": {"base": "#D2B56E", "gradient": ["#DBC48B", "#C1A765"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FDF5E2", "dark": "#2A3036"}, "tint_text": {"light": "#85661A", "dark": "#D2B56E"}, "divisions": {"III": "#C5AA67", "II": "#D2B56E", "I": "#D9C185"}, "glow": {"color": "#D2B56E", "blur_px": 0, "alpha": 0}, "text": "#D2B56E", "card": {"band": "plain", "ink": "#221F19", "ink_min_ratio": 6.23, "stops": ["#D6BC7D", "#D2B56E", "#B59D60"], "background": "linear-gradient(118deg, #D6BC7D 0%, #D2B56E 55%, #B59D60 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#D2B56E", "glyph": ["p", 4, -90, [1]]}}, "platinum": {"base": "#A3C4B1", "gradient": ["#BFD6C8", "#A3C4B1", "#94B2A1"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E2F7F5", "dark": "#25313D"}, "tint_text": {"light": "#1C786F", "dark": "#A3C4B1"}, "divisions": {"III": "#99B8A6", "II": "#A3C4B1", "I": "#B3CEBE"}, "glow": {"color": "#A3C4B1", "blur_px": 0, "alpha": 0}, "text": "#A3C4B1", "card": {"band": "mid", "ink": "#1B2122", "ink_min_ratio": 5.37, "stops": ["#B7D1C2", "#A3C4B1", "#809A8C"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #B7D1C2 0%, #A3C4B1 55%, #809A8C 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#A3C4B1", "glyph": ["p", 6, -90, [1]]}}, "emerald": {"base": "#529E82", "gradient": ["#71AF98", "#529E82", "#498D74"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E0F2E8", "dark": "#1D2E38"}, "tint_text": {"light": "#197643", "dark": "#57A186"}, "divisions": {"III": "#4B9178", "II": "#529E82", "I": "#63A88E"}, "glow": {"color": "#529E82", "blur_px": 0, "alpha": 0}, "text": "#57A186", "card": {"band": "mid", "ink": "#101C1C", "ink_min_ratio": 4.72, "stops": ["#78B39E", "#529E82", "#4C9278"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #78B39E 0%, #529E82 55%, #4C9278 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#529E82", "glyph": ["p", 8, -67.5, [1]]}}, "diamond": {"base": "#9DA8E6", "gradient": ["#B4BCEC", "#9DA8E6", "#8D97CF"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E8F3FF", "dark": "#242F42"}, "tint_text": {"light": "#3B6FA8", "dark": "#9DA8E6"}, "divisions": {"III": "#929CD6", "II": "#9DA8E6", "I": "#ABB4EA"}, "glow": {"color": "#9DA8E6", "blur_px": 0, "alpha": 0}, "text": "#9DA8E6", "card": {"band": "mid", "ink": "#1A1E2A", "ink_min_ratio": 4.66, "stops": ["#B3BBEC", "#9DA8E6", "#7C85B6"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #B3BBEC 0%, #9DA8E6 55%, #7C85B6 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#9DA8E6", "glyph": ["pts", [[0, -1], [0.8, -0.2], [0, 1], [-0.8, -0.2]]]}}, "master": {"base": "#A587D4", "gradient": ["#BCA6DF", "#AC91D7", "#A587D4", "#8E74B6"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#EFE6FD", "dark": "#252B40"}, "tint_text": {"light": "#7F47DD", "dark": "#A587D4"}, "divisions": null, "glow": {"color": "#A587D4", "blur_px": 18, "alpha": 0.2}, "text": "#A587D4", "card": {"band": "top", "ink": "#F4F1FA", "ink_min_ratio": 4.89, "stops": ["#625180", "#453A5B", "#2F283F"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #625180 0%, #453A5B 55%, #2F283F 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #A587D470", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 40px rgba(165,135,212,.32)", "glow": "rgba(165,135,212,.32)", "topo_tint": "#A587D4", "glyph": ["p", 8, -90, [1, 0.4]]}}, "grandmaster": {"base": "#CC8094", "gradient": ["#DAA2B1", "#D18B9E", "#CC8094", "#AF6E7F"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F9E3EC", "dark": "#292B3A"}, "tint_text": {"light": "#B53167", "dark": "#CC8094"}, "divisions": null, "glow": {"color": "#CC8094", "blur_px": 26, "alpha": 0.26}, "text": "#CC8094", "card": {"band": "top", "ink": "#F9F0F2", "ink_min_ratio": 4.86, "stops": ["#784D5A", "#553742", "#39262F"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #784D5A 0%, #553742 55%, #39262F 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #CC809470", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 44px rgba(204,128,148,.37)", "glow": "rgba(204,128,148,.37)", "topo_tint": "#CC8094", "glyph": ["p", 12, -90, [1, 0.5]]}}, "challenger": {"base": "#E6DEFA", "gradient": ["#FFFDF8", "#EEE8FA", "#CFC3F2"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FEF9EB", "dark": "#272D44"}, "tint_text": {"light": "#7D6F39", "dark": "#E6DEFA"}, "divisions": null, "glow": {"color": "#E6DEFA", "blur_px": 38, "alpha": 0.34}, "text": "#E6DEFA", "card": {"band": "top", "ink": "#2B2350", "ink_min_ratio": 9.45, "stops": ["#FBF7EE", "#EEE7FA", "#D8CBF5"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #FBF7EE 0%, #EEE7FA 55%, #D8CBF5 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #B39CFA70", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 52px rgba(179,156,250,.47)", "glow": "rgba(179,156,250,.47)", "topo_tint": "#8F72F2", "glyph": ["p", 16, -90, [1, 0.55]]}}}, "subdivision": {"method": "Roman numeral + 3 pips (filled = division strength, I=3 pips) + badge brightness step; III=base mixed 12% black, II=base, I=base mixed 14% white", "tiers": "iron..diamond only"}};
 
 // Running tier calculator (v4.3 logic). Dependency-free ES module.
 
@@ -632,6 +744,9 @@ function calculate({ birthYear, birthdate, sex, event, distanceKm, time, today =
   };
 }
 
+// generated by build_lazy_fonts.py — lazy share-editor fonts (OFL-1.1 / Apache-2.0)
+const LAZY_FONTS = [{"k": "oswald", "n": "Oswald", "cat": "sporty", "files": [["oswald-0.woff2", "200 700"]], "ko": false, "lic": "OFL-1.1", "pw": "200 700"}, {"k": "barlow", "n": "Barlow Condensed", "cat": "sporty", "files": [["barlow-0.woff2", "600"], ["barlow-1.woff2", "800"]], "ko": false, "lic": "OFL-1.1", "pw": "800"}, {"k": "teko", "n": "Teko", "cat": "sporty", "files": [["teko-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "russo", "n": "Russo One", "cat": "sporty", "files": [["russo-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "bungee", "n": "Bungee", "cat": "sporty", "files": [["bungee-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "archivoblack", "n": "Archivo Black", "cat": "sporty", "files": [["archivoblack-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "blackops", "n": "Black Ops One", "cat": "sporty", "files": [["blackops-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "orbitron", "n": "Orbitron", "cat": "sporty", "files": [["orbitron-0.woff2", "400 900"]], "ko": false, "lic": "OFL-1.1", "pw": "400 900"}, {"k": "unbounded", "n": "Unbounded", "cat": "sporty", "files": [["unbounded-0.woff2", "200 900"]], "ko": false, "lic": "OFL-1.1", "pw": "200 900"}, {"k": "marker", "n": "Permanent Marker", "cat": "sporty", "files": [["marker-0.woff2", "400"]], "ko": false, "lic": "Apache-2.0", "pw": "400"}, {"k": "dmserif", "n": "DM Serif Display", "cat": "classic", "files": [["dmserif-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "abril", "n": "Abril Fatface", "cat": "classic", "files": [["abril-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "cormorant", "n": "Cormorant Garamond", "cat": "classic", "files": [["cormorant-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "baskerville", "n": "Libre Baskerville", "cat": "classic", "files": [["baskerville-0.woff2", "400 700"]], "ko": false, "lic": "OFL-1.1", "pw": "400 700"}, {"k": "spacemono", "n": "Space Mono", "cat": "mono", "files": [["spacemono-0.woff2", "400"], ["spacemono-1.woff2", "700"]], "ko": false, "lic": "OFL-1.1", "pw": "700"}, {"k": "plexmono", "n": "IBM Plex Mono", "cat": "mono", "files": [["plexmono-0.woff2", "400"], ["plexmono-1.woff2", "700"]], "ko": false, "lic": "OFL-1.1", "pw": "700"}, {"k": "robotomono", "n": "Roboto Mono", "cat": "mono", "files": [["robotomono-0.woff2", "100 700"]], "ko": false, "lic": "OFL-1.1", "pw": "100 700"}, {"k": "firacode", "n": "Fira Code", "cat": "mono", "files": [["firacode-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "gothica1", "n": "Gothic A1", "cat": "ko", "files": [["gothica1-0.woff2", "700"], ["gothica1-1.woff2", "900"]], "ko": true, "lic": "OFL-1.1", "pw": "900"}, {"k": "dohyeon", "n": "도현 (Do Hyeon)", "cat": "ko", "files": [["dohyeon-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "jua", "n": "주아 (Jua)", "cat": "ko", "files": [["jua-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "gaegu", "n": "개구 (Gaegu)", "cat": "ko", "files": [["gaegu-0.woff2", "400"], ["gaegu-1.woff2", "700"]], "ko": true, "lic": "OFL-1.1", "pw": "700"}, {"k": "gamja", "n": "감자꽃 (Gamja Flower)", "cat": "ko", "files": [["gamja-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "himelody", "n": "하이멜로디 (Hi Melody)", "cat": "ko", "files": [["himelody-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "poorstory", "n": "푸어스토리 (Poor Story)", "cat": "ko", "files": [["poorstory-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "nanumpen", "n": "나눔손글씨 펜 (Nanum Pen Script)", "cat": "ko", "files": [["nanumpen-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "dokdo", "n": "독도 (Dokdo)", "cat": "ko", "files": [["dokdo-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "eastsea", "n": "동해독도 (East Sea Dokdo)", "cat": "ko", "files": [["eastsea-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "kirang", "n": "기랑해랑 (Kirang Haerang)", "cat": "ko", "files": [["kirang-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "diphylleia", "n": "디필레이아 (Diphylleia)", "cat": "ko", "files": [["diphylleia-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}];
+
 // 9:16 story PNG (1080x1920) rendered on canvas. Embedded fonts: "TC Archivo", "TC Pretendard" (subset).
 const W = 1080, H = 1920;
 const SYS_KO = '-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",sans-serif';
@@ -665,6 +780,41 @@ const rr = (c, x, y, w, h, r) => { c.beginPath(); c.roundRect(x, y, w, h, r); };
 function font(c, size, weight, fam, stretch = 'normal') { c.font = `${weight} ${size}px ${fam}`; try { c.fontStretch = stretch; } catch { } }
 function fitText(c, txt, max) { while (c.measureText(txt).width > max && txt.length > 1) txt = txt.slice(0, -2) + '…'; return txt; }
 
+// ---------- font registry: 6 embedded + Pretendard, rest lazy-loaded on pick ----------
+const rng = s => { const [a, b] = String(s).split(' ').map(Number); if (!b) return [a]; const o = []; for (let w = a; w <= b; w += 100) o.push(w); return o; };
+const FONTS = {
+  archivo: { n: 'Archivo', cat: 'sporty', fam: ARC, ws: [300, 400, 500, 600, 700, 800, 900], emb: 1, lic: 'OFL-1.1' },
+  bebas: { n: 'Bebas Neue', cat: 'sporty', fam: `"OV Bebas",${PRE}`, ws: [400], sz: 1.2, emb: 1, lic: 'OFL-1.1' },
+  anton: { n: 'Anton', cat: 'sporty', fam: `"OV Anton",${PRE}`, ws: [400], emb: 1, lic: 'OFL-1.1' },
+  playfair: { n: 'Playfair Display', cat: 'classic', fam: `"OV Playfair",serif`, ws: [800], emb: 1, lic: 'OFL-1.1' },
+  mono: { n: 'JetBrains Mono', cat: 'mono', fam: `"OV Mono",monospace`, ws: [700], sz: .88, emb: 1, lic: 'OFL-1.1' },
+  blackhan: { n: '검은고딕 (Black Han Sans)', cat: 'ko', fam: `"OV BlackHan",${PRE}`, ws: [400], emb: 1, ko: 1, lic: 'OFL-1.1' },
+  pretendard: { n: 'Pretendard', cat: 'ko', fam: PRE, ws: [500, 600, 700], emb: 1, ko: 1, lic: 'OFL-1.1' },
+};
+for (const f of LAZY_FONTS) FONTS[f.k] = { n: f.n, cat: f.cat, fam: `"LZ ${f.k}",${f.ko ? '' : PRE + ','}${SYS_KO}`.replace(',,', ','), ws: [...new Set(f.files.flatMap(x => rng(x[1])))], files: f.files, ko: f.ko, lic: f.lic, pw: f.pw };
+const FONT_CATS = [['sporty', '스포티'], ['classic', '클래식'], ['mono', '모노'], ['ko', '한글'], ['hand', '손글씨']];
+for (const k of ['marker', 'gaegu', 'gamja', 'himelody', 'poorstory', 'nanumpen', 'dokdo', 'eastsea', 'kirang']) if (FONTS[k]) FONTS[k].cat = 'hand';
+const loaded = new Map();
+let FONT_BASE = 'fonts/lazy/';
+function setFontBase(b) { FONT_BASE = b; }
+function loadFont(k) { // full font, only when picked
+  const f = FONTS[k]; if (!f || f.emb) return Promise.resolve(true);
+  if (!loaded.has(k)) loaded.set(k, Promise.all(f.files.map(([file, w]) => { const ff = new FontFace(`LZ ${k}`, `url("${FONT_BASE}${file}")`, { weight: w, display: 'block' }); return ff.load().then(x => (document.fonts.add(x), true)); })).then(() => true).catch(() => { loaded.delete(k); return false; }));
+  return loaded.get(k);
+}
+const pv = new Map();
+function loadPreviewFont(k) { // tiny subset (font name + digits/latin + tier words) for the picker buttons
+  const f = FONTS[k]; if (!f || f.emb) return Promise.resolve(true);
+  if (!pv.has(k)) { const ff = new FontFace(`PV ${k}`, `url("${FONT_BASE}p-${k}.woff2")`, { weight: f.pw || '400' }); pv.set(k, ff.load().then(x => (document.fonts.add(x), true)).catch(() => false)); }
+  return pv.get(k);
+}
+const isFontReady = k => !FONTS[k] || FONTS[k].emb || loaded.has(k);
+const previewFam = k => FONTS[k].emb ? FONTS[k].fam : `"PV ${k}","LZ ${k}",${PRE}`;
+const nearW = (k, w) => { const ws = FONTS[k].ws; return ws.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a, ws[0]); };
+
+
+const W_ = W, H_ = H, ARC_ = ARC, PRE_ = PRE, SYS_KO_ = SYS_KO;
+{ rr, font, alpha };
 function drawCard(c, d, x, y, w, h) {
   const t = TK.tier[d.key], cd = t.card, m = STORY_MAT[d.key], r = w * 0.05, u = w / 340, ink = cd.ink;
   c.save(); // shadow + glow
@@ -706,111 +856,8 @@ function drawCard(c, d, x, y, w, h) {
   c.restore();
 }
 
-// Overlay text group = list of rows laid out top->bottom, then placed/scaled/aligned as one block.
-const OV_FONTS = {
-  archivo: { n: 'Archivo', fam: ARC },
-  bebas: { n: 'Bebas Neue', fam: '"OV Bebas",sans-serif', w: 400, sz: 1.2 },
-  anton: { n: 'Anton', fam: '"OV Anton",sans-serif', w: 400, sz: 1 },
-  playfair: { n: 'Playfair', fam: '"OV Playfair",serif', w: 800, sz: 1 },
-  mono: { n: 'JetBrains Mono', fam: '"OV Mono",monospace', w: 700, sz: .88 },
-  blackhan: { n: '검은고딕', fam: '"OV BlackHan",sans-serif', w: 400, sz: 1, ko: true },
-};
-const SHOW0 = { race: true, date: true, tier: true, tierKo: true, rec: true, pace: true, top: true, vdot: false, logo: true };
-const M = 40; // min margin from canvas edge
-function overlayRows(c, d, opt, a) {
-  const sh = a.show, R = [], lab = t => ({ t, size: 28, w: 600, fam: ARC, st: 'expanded', ls: 7, alpha: .85 });
-  const add = (gap, row) => R.push({ gap: R.length ? gap : 0, ...row });
-  if (sh.race && opt.race) {
-    font(c, 62, 700, SYS_KO);
-    if (c.measureText(opt.race).width <= 900) add(0, { t: opt.race, size: 62, w: 700, fam: SYS_KO });
-    else { const sp = [...opt.race].map((ch, i) => ch === ' ' ? i : -1).filter(i => i > 0), mid = opt.race.length / 2;
-      const k = sp.length ? sp.reduce((x, y) => Math.abs(y - mid) < Math.abs(x - mid) ? y : x) : Math.floor(mid);
-      add(0, { t: opt.race.slice(0, k).trim(), size: 56, w: 700, fam: SYS_KO, max: 900 }); add(12, { t: opt.race.slice(k).trim(), size: 56, w: 700, fam: SYS_KO, max: 900 }); }
-  }
-  if (sh.date) add(22, { t: ymd(opt.date), size: opt.race && sh.race ? 36 : 40, w: 500, fam: ARC, alpha: .9 });
-  if (sh.tier) {
-    add(150, lab('TIER'));
-    let big = d.long ? 84 : 96; const tt = d.word + (d.roman ? '  ' + d.roman : ''); font(c, big, 800, ARC, 'expanded'); while (c.measureText(tt).width > 760 && big > 60) { big -= 2; font(c, big, 800, ARC, 'expanded'); }
-    add(40, { tier: true, size: big, fam: ARC, st: 'expanded', w1: 800, w2: 300 }); add(34, { line: true, size: 5 });
-  }
-  if (sh.tierKo) add(sh.tier ? 28 : 120, { t: d.tierKo, size: 34, w: 600, fam: PRE, alpha: .9 });
-  if (sh.rec) { add(110, lab('RECORD')); add(36, { t: d.recLine.split(' · ')[0], size: 116, w: 700, fam: ARC, max: 900 }); }
-  if (sh.pace) { add(84, lab('PACE')); add(36, { t: d.pace, size: 116, w: 700, fam: ARC, max: 900 }); }
-  if (sh.vdot) { add(84, lab('VDOT')); add(36, { t: d.vdot, size: 116, w: 700, fam: ARC }); }
-  if (sh.top) add(90, { t: d.topLabel, size: 48, w: 700, fam: PRE });
-  if (sh.logo) add(150, { t: 'RUNNING TIER', size: 28, w: 700, fam: ARC, st: 'expanded', ls: 6 });
-  // font choice: remap Latin (Archivo) rows, and Korean rows if the font has Hangul
-  const F = OV_FONTS[a.font] || OV_FONTS.archivo;
-  if (F !== OV_FONTS.archivo) for (const r of R) {
-    if (r.fam === ARC) { r.fam = F.fam; r.st = 'normal'; r.size = Math.round(r.size * F.sz); if (r.tier) { r.w1 = F.w; r.w2 = F.w; } else r.w = F.w; }
-    else if (r.fam === PRE && F.ko) { r.fam = F.fam; r.w = F.w; }
-  }
-  // measure
-  for (const r of R) {
-    if (r.line) { r.wd = 80; continue; }
-    if (r.tier) { font(c, r.size, r.w1, r.fam, r.st); r.ww = c.measureText(d.word).width; font(c, r.size, r.w2, r.fam, r.st); r.rw = d.roman ? c.measureText(d.roman).width + 26 : 0; r.wd = r.ww + r.rw; continue; }
-    let f = r.size; font(c, f, r.w, r.fam, r.st); if (r.max) while (c.measureText(r.t).width > r.max && f > 40) { f -= 2; font(c, f, r.w, r.fam, r.st); }
-    r.size = f; c.letterSpacing = (r.ls || 0) + 'px'; r.wd = c.measureText(r.t).width - (r.ls || 0); c.letterSpacing = '0px';
-  }
-  return R;
-}
-function overlayBox(c, d, opt, a) { // group layout in local units + clamped placement
-  const R = overlayRows(c, d, opt, a); let y = 0;
-  for (const r of R) { y += r.gap * a.lh; r.y = y; y += r.size; }
-  const GW = Math.max(1, ...R.map(r => r.wd)), GH = Math.max(1, y), sx = a.ts, sy = a.ts, bw = GW * sx, bh = GH * sy;
-  let gx = W / 2 + a.tx, gy = H / 2 + a.ty;
-  gx = bw > W - 2 * M ? W / 2 : Math.min(W - M - bw / 2, Math.max(M + bw / 2, gx));
-  gy = bh > H - 2 * M ? H / 2 : Math.min(H - M - bh / 2, Math.max(M + bh / 2, gy));
-  return { R, GW, GH, sx, sy, gx, gy, box: { x: gx - bw / 2, y: gy - bh / 2, w: bw, h: bh } };
-}
-function drawPhotoMode(c, cv, d, opt) {
-  const a = clampAdj(opt.adj, opt.photo);
-  if (opt.photo) coverPhoto(c, opt.photo, a); else tierBg(c, d);
-  const L = overlayBox(c, d, opt, a), accent = accentOf(d);
-  a.tx = L.gx - W / 2; a.ty = L.gy - H / 2; cv.__adj = a; cv.__box = L.box;
-  c.save(); c.translate(L.gx, L.gy); c.scale(L.sx, L.sy); c.translate(-L.GW / 2, -L.GH / 2);
-  c.textBaseline = 'alphabetic'; c.fillStyle = a.col; c.shadowColor = 'transparent';
-  const xAt = w => a.al === 'left' ? 0 : a.al === 'right' ? L.GW - w : (L.GW - w) / 2;
-  for (const r of L.R) {
-    const base = r.y + r.size * .8;
-    if (r.line) { c.fillStyle = accent; c.fillRect(xAt(80), r.y, 80, 5); c.fillStyle = a.col; continue; }
-    c.textAlign = 'left';
-    if (r.tier) { const x0 = xAt(r.wd); font(c, r.size, r.w1, r.fam, r.st); c.fillText(d.word, x0, base); if (d.roman) { font(c, r.size, r.w2, r.fam, r.st); if (r.w2 === r.w1) c.globalAlpha = .7; c.fillText(d.roman, x0 + r.ww + 26, base); c.globalAlpha = 1; } continue; }
-    font(c, r.size, r.w, r.fam, r.st); c.letterSpacing = (r.ls || 0) + 'px'; c.globalAlpha = r.alpha || 1;
-    c.fillText(r.t, xAt(r.wd), base); c.globalAlpha = 1; c.letterSpacing = '0px';
-  }
-  c.restore(); c.textAlign = 'left';
-  return cv;
-}
-const FONTS = ['400 40px "OV Bebas"', '400 40px "OV Anton"', '400 40px "OV Playfair"', '400 40px "OV Mono"', '400 40px "OV BlackHan"', '800 40px "TC Archivo"', '300 40px "TC Archivo"', '600 40px "TC Archivo"', '700 40px "TC Pretendard"', '500 40px "TC Pretendard"', '600 40px "TC Pretendard"'];
-const TEMPLATES = [['card', '카드형'], ['overlay', '사진 오버레이'], ['minimal', '미니멀'], ['receipt', '성적표']];
-async function renderStory(d, opt = {}) {
-  await document.fonts.ready;
-  await Promise.all(FONTS.map(f => document.fonts.load(f, 'A가').catch(() => { })));
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  const c = cv.getContext('2d');
-  c.fillStyle = '#0F1620'; c.fillRect(0, 0, W, H); c.textBaseline = 'alphabetic';
-  const t = opt.template || 'card';
-  if (t === 'overlay') return drawPhotoMode(c, cv, d, opt);
-  if (t === 'minimal') return drawMinimal(c, cv, d, opt);
-  if (t === 'receipt') return drawReceipt(c, cv, d, opt);
-  return drawCardTpl(c, cv, d, opt);
-}
-// adj: { pz: zoom>=1, px, py: photo offset (canvas px), ts: text scale, tx, ty: text offset }
-const ADJ0 = { pz: 1, px: 0, py: 0, ts: 1, tx: 0, ty: 0, col: '#ffffff', al: 'center', lh: 1, font: 'archivo', show: { race: true, date: true, tier: true, tierKo: true, rec: true, pace: true, top: true, vdot: false, logo: true } };
 function lum(hex) { const n = parseInt(String(hex).slice(1), 16); if (isNaN(n)) return 1; const f = v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }; return .2126 * f(n >> 16) + .7152 * f(n >> 8 & 255) + .0722 * f(n & 255); }
-function clampAdj(a, im) {
-  a = { ...ADJ0, ...a };
-  if (!/^#[0-9a-f]{6}$/i.test(a.col)) a.col = '#ffffff';
-  a.pz = Math.min(4, Math.max(1, a.pz)); a.ts = Math.min(1.3, Math.max(.6, a.ts));
-  if (im) { const sc = Math.max(W / im.width, H / im.height) * a.pz, mx = Math.max(0, (im.width * sc - W) / 2), my = Math.max(0, (im.height * sc - H) / 2);
-    a.px = Math.min(mx, Math.max(-mx, a.px)); a.py = Math.min(my, Math.max(-my, a.py)); } else { a.px = 0; a.py = 0; }
-  a.lh = Math.min(1.6, Math.max(0, +a.lh || 0)); delete a.hs; if (!OV_FONTS[a.font]) a.font = 'archivo'; if (!['left', 'center', 'right'].includes(a.al)) a.al = 'center';
-  a.show = { ...ADJ0.show, ...(a.show || {}) };
-  return a;
-}
-function coverPhoto(c, im, a = ADJ0) { const sc = Math.max(W / im.width, H / im.height) * a.pz, iw = im.width * sc, ih = im.height * sc; c.drawImage(im, (W - iw) / 2 + a.px, (H - ih) / 2 + a.py, iw, ih); }
-function tierBg(c, d) { // tasteful tier-tinted dark gradient (no photo)
+function tierBg(c, d) {
   const m = STORY_MAT[d.key], g = c.createLinearGradient(0, 0, W * .4, H);
   g.addColorStop(0, m.s[0]); g.addColorStop(.55, m.s[Math.floor(m.s.length / 2)]); g.addColorStop(1, m.s[m.s.length - 1]);
   c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -820,95 +867,6 @@ function tierBg(c, d) { // tasteful tier-tinted dark gradient (no photo)
 }
 const ymd = (now = new Date()) => `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
 function accentOf(d) { return TK.tier[d.key].text; }
-
-function drawMinimal(c, cv, d, opt) {
-  const X = 96, acc = accentOf(d);
-  c.fillStyle = 'rgba(184,194,207,1)'; font(c, 28, 600, ARC, 'expanded'); c.letterSpacing = '5px'; c.fillText(ymd(opt.date), X, 300); c.letterSpacing = '0px';
-  if (opt.race) { c.fillStyle = '#F4F6F8'; font(c, 44, 700, SYS_KO); c.fillText(fitText(c, opt.race, 880), X, 364); }
-  const [ev, tm] = [d.recLine.split(' ')[0], d.time];
-  c.fillStyle = acc; font(c, 64, 800, ARC, 'expanded'); c.fillText(ev, X, 760);
-  let fs = 300; font(c, fs, 800, ARC, 'condensed'); while (c.measureText(tm).width > 900 && fs > 120) { fs -= 8; font(c, fs, 800, ARC, 'condensed'); }
-  c.fillStyle = '#F4F6F8'; c.fillText(tm, X - 8, 760 + fs * .95);
-  font(c, 56, 600, ARC); c.fillStyle = 'rgba(242,244,247,.75)'; c.fillText(d.pace, X, 760 + fs * .95 + 100);
-  // tier badge
-  const by = Math.round(760 + fs * .95 + 230), label = d.word + (d.roman ? ' ' + d.roman : '');
-  font(c, 30, 800, ARC, 'expanded'); const bw = c.measureText(label).width + 64;
-  const m = STORY_MAT[d.key], g = c.createLinearGradient(X, by, X + bw, by + 64); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s));
-  rr(c, X, by, bw, 64, 32); c.fillStyle = g; c.fill();
-  c.fillStyle = m.ink; c.fillText(label, X + 32, by + 43);
-  c.fillStyle = '#F4F6F8'; font(c, 52, 700, PRE); c.fillText(d.topLabel, X, by + 150);
-  c.fillStyle = 'rgba(138,151,168,.85)'; font(c, 24, 700, ARC, 'expanded'); c.letterSpacing = '6px'; c.fillText('RUNNING TIER', X, 1660); c.letterSpacing = '0px';
-  return cv;
-}
-function drawReceipt(c, cv, d, opt) {
-  tierBg(c, d);
-  const PX = 140, PW = 800, PY = 300, PH = 1320, ink = '#16181c', mute = '#6b7280';
-  c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 50; c.shadowOffsetY = 20;
-  c.beginPath(); c.moveTo(PX, PY); c.lineTo(PX + PW, PY); c.lineTo(PX + PW, PY + PH);
-  for (let x = PX + PW; x > PX; x -= 30) { c.lineTo(x - 15, PY + PH - 16); c.lineTo(x - 30, PY + PH); } c.closePath();
-  c.fillStyle = '#f7f5f0'; c.fill(); c.restore();
-  const L = PX + 60, Rt = PX + PW - 60; let y = PY + 120;
-  c.textAlign = 'center'; c.fillStyle = ink; font(c, 46, 800, ARC, 'expanded'); c.letterSpacing = '6px'; c.fillText('RUNNING TIER', W / 2 + 3, y); c.letterSpacing = '0px';
-  y += 50; font(c, 26, 600, ARC, 'expanded'); c.fillStyle = mute; c.letterSpacing = '4px'; c.fillText('REPORT CARD', W / 2 + 2, y); c.letterSpacing = '0px';
-  y += 46; font(c, 26, 500, ARC); c.fillText(ymd(opt.date), W / 2, y);
-  if (opt.race) { y += 46; c.fillStyle = ink; font(c, 32, 700, SYS_KO); c.fillText(fitText(c, opt.race, PW - 120), W / 2, y); }
-  const dash = yy => { c.fillStyle = '#c9c6bd'; for (let x = L; x < Rt; x += 18) c.fillRect(x, yy, 10, 2); };
-  y += 44; dash(y); c.textAlign = 'left';
-  const row = (k, v, big, ko) => { y += big ? 96 : 86; c.fillStyle = mute; font(c, 30, 600, ARC, 'semi-expanded'); c.fillText(k, L, y); c.textAlign = 'right'; c.fillStyle = ink; font(c, big ? 58 : 46, 700, ko ? PRE : ARC); c.fillText(v, Rt, y); c.textAlign = 'left'; };
-  row('EVENT', d.recLine.split(' ')[0]); row('RECORD', d.time, true); row('PACE', d.pace); row('VDOT', d.vdot);
-  y += 48; dash(y);
-  y += 104; c.fillStyle = mute; font(c, 30, 600, ARC, 'semi-expanded'); c.fillText('TIER', L, y);
-  const m = STORY_MAT[d.key], label = d.word + (d.roman ? ' ' + d.roman : ''); font(c, 36, 800, ARC, 'expanded'); const bw = c.measureText(label).width + 60;
-  const g = c.createLinearGradient(Rt - bw, y - 52, Rt, y + 16); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s));
-  rr(c, Rt - bw, y - 52, bw, 68, 14); c.fillStyle = g; c.fill(); c.fillStyle = m.ink; c.fillText(label, Rt - bw + 30, y - 5);
-  y += 4; row('RANK', d.topLabel, false, true);
-  y += 48; dash(y);
-  y += 82; c.textAlign = 'center'; c.fillStyle = ink; font(c, 34, 700, PRE); c.fillText(d.nextLine, W / 2, y);
-  // barcode
-  y += 64; let bx = W / 2 - 220; const seed = [...(d.time + d.key)].map(ch => ch.charCodeAt(0));
-  for (let i = 0; bx < W / 2 + 220; i++) { const w = 2 + (seed[i % seed.length] * (i + 3)) % 6; c.fillStyle = ink; c.fillRect(bx, y, w, 90); bx += w + 3 + (i * 7 + seed[0]) % 4; }
-  c.textAlign = 'left';
-  return cv;
-}
-function drawCardTpl(c, cv, d, opt) {
-  const m = STORY_MAT[d.key];
-  {
-    const tint = m.glow || 'rgba(255,255,255,.06)';
-    const rg = c.createRadialGradient(W / 2, 700, 0, W / 2, 700, 900); rg.addColorStop(0, tint.replace(/[\d.]+\)$/, '0.22)')); rg.addColorStop(1, 'rgba(15,22,32,0)');
-    c.fillStyle = rg; c.fillRect(0, 0, W, H);
-  }
-  const X = 90, CW = 900;
-  // header
-  c.textBaseline = 'alphabetic';
-  // header block (top safe zone ~250px kept free of text)
-  c.fillStyle = '#3DC8F5'; font(c, 26, 700, ARC, 'expanded'); c.letterSpacing = '5px'; c.fillText('MY RUNNING REPORT', X, 290); c.letterSpacing = '0px';
-  const title = opt.race || d.title;
-  c.fillStyle = '#F4F6F8'; font(c, 68, 700, opt.race ? SYS_KO : PRE); c.fillText(fitText(c, title, CW), X, 372);
-  const now = opt.date || new Date(), p2 = n => String(n).padStart(2, '0');
-  const ds = `${now.getFullYear()}.${p2(now.getMonth() + 1)}.${p2(now.getDate())}` + (opt.race ? `  ·  ${d.title}` : '');
-  c.fillStyle = 'rgba(138,151,168,1)'; font(c, 28, 500, PRE); c.fillText(ds, X, 422);
-  // card
-  const CY = 478, CH = Math.round(CW / 1.586);
-  drawCard(c, d, X, CY, CW, CH);
-  // stats
-  let y = CY + CH + 170;
-  c.fillStyle = 'rgba(184,194,207,1)'; font(c, 34, 500, PRE); c.fillText(d.who, X, y - 70);
-  c.fillStyle = '#F4F6F8'; font(c, 96, 700, PRE); c.fillText(d.headline || d.topLabel, X, y + 30);
-  y += 80;
-  c.fillStyle = 'rgba(255,255,255,.1)'; c.fillRect(X, y, CW, 2); y += 90;
-  const cols = [['기록', d.time], ['페이스', d.pace], ['VDOT', d.vdot]];
-  cols.forEach(([l, v], i) => {
-    const cx = X + i * (CW / 3);
-    c.fillStyle = 'rgba(138,151,168,1)'; font(c, 30, 500, PRE); c.fillText(l, cx, y);
-    c.fillStyle = '#F4F6F8'; font(c, 56, 700, ARC); c.fillText(v, cx, y + 72);
-  });
-  y += 210;
-  // next tier
-  c.fillStyle = '#3DC8F5'; c.beginPath(); c.arc(X + 9, y - 12, 9, 0, 7); c.fill(); font(c, 36, 700, PRE); c.fillText(d.nextLine, X + 34, y);
-  // footer
-  c.fillStyle = 'rgba(138,151,168,.8)'; font(c, 24, 600, ARC, 'expanded'); c.letterSpacing = '4px'; c.textAlign = 'center'; c.fillText('RUNNING TIER', W / 2, H - 150); c.letterSpacing = '0px'; c.textAlign = 'left';
-  return cv;
-}
 async function saveStory(cv, name = 'running-tier.png') {
   const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
   const file = new File([blob], name, { type: 'image/png' });
@@ -920,7 +878,202 @@ async function saveStory(cv, name = 'running-tier.png') {
   setTimeout(() => URL.revokeObjectURL(a.href), 30000); return 'downloaded';
 }
 
-const fresh = () => JSON.parse(JSON.stringify(ADJ0));
+// v3 story editor: document = background + ordered layers, rendered 1:1 to a 1080x1920 canvas (preview == export).
+// ---- stat ("기록 블록") values come only from the calculation result: never editable ----
+const STATS = { rec: ['기록', 'RECORD'], pace: ['페이스', 'PACE'], tier: ['티어', 'TIER'], top: ['상위 %', 'RANK'], vdot: ['VDOT', 'VDOT'], next: ['다음 티어까지', 'NEXT'], date: ['날짜', 'DATE'], race: ['대회명', 'RACE'], event: ['종목', 'EVENT'] };
+const statLabel = (d, k) => k === 'rec' ? d.recLine.split(' ')[0] + ' 기록' : STATS[k][0];
+const statValue = (d, doc, k) => ({ rec: d.time, pace: d.pace, tier: d.word + (d.roman ? ' ' + d.roman : ''), top: d.topLabel, vdot: d.vdot, next: d.nextLine, date: ymd(), race: (doc.race || '').trim() || '대회명을 입력하세요', event: d.recLine.split(' ')[0] })[k];
+const STAT_SIZE0 = { rec: 120, pace: 96, tier: 92, top: 104, vdot: 72, next: 40, date: 40, race: 56, event: 64 };
+const STAT_SIZE = STAT_SIZE0;
+const TOP_MIN_PX = 64; // 상위 % is always shown big
+const STICKERS = [['wordmark', 'hoohaa 워드마크'], ['emblem', '티어 엠블럼'], ['runner', '러너'], ['shoe', '러닝화'], ['dist', '거리 배지'], ['sun', '맑음'], ['date', '날짜 도장'], ['flag', '피니시'], ['sparkle', '반짝'], ['heart', '하트'], ['bolt', '번개'], ['star', '별'], ['rect', '사각형'], ['circle', '원'], ['line', '선']];
+const FILTERS = [['none', '원본'], ['bw', '흑백'], ['warm', '따뜻하게'], ['cool', '차갑게'], ['fade', '빈티지'], ['vivid', '선명하게']];
+const MASKS = [['rect', '사각'], ['round', '둥근'], ['circle', '원형'], ['polaroid', '폴라로이드']];
+const LK = { x: 540, y: 960, s: 1, r: 0, o: 1 };
+let lseq = 0;
+const lid = () => 'L' + Date.now().toString(36) + (lseq++);
+const mk = (type, p) => ({ id: lid(), type, ...LK, ...p });
+// ---- photo filters (pixel ops: same result in every browser, incl. Safari without ctx.filter) ----
+const fcache = new Map();
+function filtered(im, f, key) {
+  if (!f || f === 'none') return im; const ck = key + ':' + f; if (fcache.has(ck)) return fcache.get(ck);
+  const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d'); g.drawImage(im, 0, 0);
+  const id = g.getImageData(0, 0, c.width, c.height), p = id.data;
+  for (let i = 0; i < p.length; i += 4) { let r = p[i], gg = p[i + 1], b = p[i + 2]; const l = .299 * r + .587 * gg + .114 * b;
+    if (f === 'bw') r = gg = b = l;
+    else if (f === 'warm') { r = r * 1.08 + 12; gg = gg * 1.02 + 4; b = b * .88; }
+    else if (f === 'cool') { r = r * .9; gg = gg * 1.0 + 2; b = b * 1.1 + 14; }
+    else if (f === 'fade') { r = l + (r - l) * .6; gg = l + (gg - l) * .6; b = l + (b - l) * .6; r = r * .85 + 30; gg = gg * .85 + 28; b = b * .85 + 22; }
+    else if (f === 'vivid') { r = l + (r - l) * 1.45; gg = l + (gg - l) * 1.45; b = l + (b - l) * 1.45; r = (r - 128) * 1.08 + 128; gg = (gg - 128) * 1.08 + 128; b = (b - 128) * 1.08 + 128; }
+    p[i] = r; p[i + 1] = gg; p[i + 2] = b; }
+  g.putImageData(id, 0, 0); if (fcache.size > 24) fcache.clear(); fcache.set(ck, c); return c;
+}
+const famOf = (k, ko) => k && FONTS[k] ? FONTS[k].fam : ko ? PRE_ : ARC_;
+const wOf = (k, w) => { if (!k || !FONTS[k]) return w; const ws = FONTS[k].ws; return ws.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a, ws[0]); };
+const HAN = /[\uac00-\ud7a3]/;
+const contrast = c => lum(c) > .45 ? '#111111' : '#ffffff';
+// text block: lines measured, local box centred on (0,0)
+function textBlock(c, lines, o) { // o: size, fam, w, ls, lh, al, st
+  const L = lines.map(l => { font(c, l.size || o.size, l.w || o.w, l.fam || o.fam, l.st || o.st || 'normal'); c.letterSpacing = (l.ls ?? o.ls ?? 0) + 'px'; const wd = c.measureText(l.t).width - (l.ls ?? o.ls ?? 0); c.letterSpacing = '0px'; return { ...l, size: l.size || o.size, wd }; });
+  let y = 0; const lh = o.lh ?? 1.15; L.forEach((l, i) => { if (i) y += (L[i - 1].size * .25 + l.size * .8) * lh + (l.gap || 0); else y = l.size * .8; l.base = y; });
+  const w = Math.max(1, ...L.map(l => l.wd)), h = Math.max(1, y + L[L.length - 1].size * .22);
+  return { L, w, h };
+}
+function drawTextBlock(c, B, o, col) {
+  c.textBaseline = 'alphabetic'; c.textAlign = 'left';
+  for (const l of B.L) { const x = -B.w / 2 + (o.al === 'left' ? 0 : o.al === 'right' ? B.w - l.wd : (B.w - l.wd) / 2);
+    font(c, l.size, l.w || o.w, l.fam || o.fam, l.st || o.st || 'normal'); c.letterSpacing = (l.ls ?? o.ls ?? 0) + 'px'; c.fillStyle = l.col || col; c.globalAlpha = (l.alpha ?? 1) * (o.ga ?? 1);
+    c.fillText(l.t, x, l.base - B.h / 2); c.letterSpacing = '0px'; c.globalAlpha = o.ga ?? 1; }
+}
+function boxBehind(c, w, h, style, col, pad, rad) { if (!style || style === 'none') return; rr(c, -w / 2 - pad, -h / 2 - pad * .7, w + pad * 2, h + pad * 1.4, rad); c.fillStyle = style === 'semi' ? 'rgba(0,0,0,.45)' : col; c.fill(); }
+// ---- each layer type: measure() -> {w,h} local, draw(c) centred at 0,0 ----
+function layerGeom(c, L, d, doc, photos) {
+  if (L.col === '@tier') L = { ...L, col: accentOf(d) }; // tier colour follows the current result
+  if (L.type === 'text') {
+    const ko = HAN.test(L.t || ''), fam = famOf(L.font, ko || !L.font), size = L.size || 72;
+    const B = textBlock(c, String(L.t || ' ').split('\n').map(t => ({ t: t || ' ' })), { size, fam, w: wOf(L.font, L.w || 700), ls: L.ls || 0, lh: L.lh ?? 1.15 });
+    const pad = L.box && L.box !== 'none' ? size * .35 : 0;
+    return { w: B.w + pad * 2, h: B.h + pad * 1.4, draw: () => { const col = L.col || '#ffffff'; boxBehind(c, B.w, B.h, L.box, col, pad, size * .28); drawTextBlock(c, B, { al: L.al || 'center', w: wOf(L.font, L.w || 700), fam, ls: L.ls || 0 }, L.box === 'full' ? contrast(col) : col); } };
+  }
+  if (L.type === 'stat') {
+    const v = statValue(d, doc, L.stat), lab = STATS[L.stat][1], base = STAT_SIZE[L.stat], ko = HAN.test(v);
+    const fam = L.font ? famOf(L.font) : ko ? PRE_ : ARC_, w = wOf(L.font, L.w || 700), col = L.col || '#ffffff', acc = accentOf(d), m = STORY_MAT[d.key];
+    if (L.v === 4) { // label-only element (e.g. '5K 기록', '페이스'): derived from the result, styled/moved on its own
+      const lb = L.lab != null && L.lab !== '' ? L.lab : statLabel(d, L.stat), lfam = L.font ? fam : PRE_, lw = L.font ? w : 600;
+      const B = textBlock(c, [{ t: lb, size: base * (L.labK ?? .2) }], { size: base * (L.labK ?? .2), fam: lfam, w: lw, ls: L.ls || 0, lh: L.lh ?? 1 });
+      return { w: B.w, h: B.h, draw: () => drawTextBlock(c, B, { al: L.al || 'left', w: lw, fam: lfam, ls: L.ls || 0 }, col) }; }
+    const vt = [1, 2, 3].includes(L.v) ? L.v : 0;
+    // typeface "look" is independent of the design (layout): switching 라벨+값/값만/알약/런앱 never changes the font
+    const run = !L.font && !ko && (L.look ?? (vt === 3 ? 'run' : 'std')) === 'run';
+    const VW = L.font ? w : run ? 900 : 700, VST = L.font || ko ? 'normal' : run ? 'condensed' : L.stat !== 'next' ? 'semi-expanded' : 'normal', SK = run ? (L.sk ?? -.1) : (L.sk ?? 0);
+    if (vt === 3) { // run-app style: huge value, tiny label underneath
+      const lb = L.lab != null ? L.lab : L.stat === 'rec' ? d.recLine.split(' ')[0] + ' 기록' : STATS[L.stat][0];
+      const vfam = fam, vw = ko && !L.font ? 700 : VW;
+      const B = textBlock(c, [{ t: v, size: base, fam: vfam, w: vw, st: VST }, ...(lb ? [{ t: lb, size: base * (L.labK ?? .2), fam: PRE_, w: 600, alpha: .92, ls: 0, gap: base * .03 }] : [])], { size: base, fam: vfam, w: vw, ls: L.ls ?? (ko ? 0 : -2), lh: L.lh ?? .95 });
+      const sk = ko ? 0 : SK, extra = Math.abs(sk) * B.h;
+      return { w: B.w + extra, h: B.h, draw: () => { c.transform(1, 0, sk, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'left', w: vw, fam: vfam, ls: L.ls ?? (ko ? 0 : -2) }, col); } };
+    }
+    const lines = vt === 0 ? [{ t: L.stat === 'event' ? v : lab, size: Math.max(22, base * .26), fam: ARC_, w: 600, st: 'expanded', ls: 6, alpha: .8 }, { t: v, size: base, gap: base * .05, w: VW, st: VST }] : [{ t: v, size: base, w: VW, st: VST }];
+    if (vt === 0 && L.stat === 'event') lines.shift();
+    const B = textBlock(c, lines, { size: base, fam, w, ls: L.ls || 0, lh: L.lh ?? 1.1, st: !L.font && !ko && L.stat !== 'next' ? 'semi-expanded' : 'normal' });
+    const pad = vt === 2 ? base * .32 : L.box && L.box !== 'none' ? base * .3 : 0;
+    return { w: B.w + pad * 2 + Math.abs(SK) * B.h, h: B.h + pad * 1.4, draw: () => {
+      if (vt === 2) { rr(c, -B.w / 2 - pad, -B.h / 2 - pad * .7, B.w + pad * 2, B.h + pad * 1.4, (B.h + pad * 1.4) / 2); const g = c.createLinearGradient(-B.w / 2, 0, B.w / 2, 0); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s)); c.fillStyle = L.col ? col : g; c.fill(); drawTextBlock(c, B, { al: 'center', w, fam, ls: L.ls || 0, st: 'normal' }, L.col ? contrast(col) : m.ink); return; }
+      boxBehind(c, B.w, B.h, L.box, L.col || acc, pad, base * .25);
+      if (SK) c.transform(1, 0, SK, 1, 0, 0); drawTextBlock(c, B, { al: L.al || 'center', w, fam, ls: L.ls || 0 }, L.box === 'full' ? contrast(L.col || acc) : col); } };
+  }
+  if (L.type === 'card') {
+    if (L.v === 1) { const lab = d.word + (d.roman ? ' ' + d.roman : ''); font(c, 44, 800, ARC_, 'expanded'); const tw = c.measureText(lab).width, w = tw + 120, h = 96, m = STORY_MAT[d.key];
+      return { w, h, draw: () => { rr(c, -w / 2, -h / 2, w, h, h / 2); const g = c.createLinearGradient(-w / 2, 0, w / 2, 0); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s)); c.fillStyle = g; c.fill(); c.fillStyle = m.ink; font(c, 44, 800, ARC_, 'expanded'); c.textBaseline = 'middle'; c.textAlign = 'center'; c.fillText(lab, 0, 3); c.textBaseline = 'alphabetic'; c.textAlign = 'left'; } }; }
+    const w = 900, h = Math.round(900 / 1.586); return { w, h, draw: () => drawCard(c, { ...d, who: '' }, -w / 2, -h / 2, w, h) };
+  }
+  if (L.type === 'photo') {
+    const im = photos[L.pid]; const ar = im ? im.width / im.height : 1, bw = L.bw || (ar >= 1 ? 640 : 640 * ar), bh = L.bh || (ar >= 1 ? 640 / ar : 640);
+    const pol = L.mask === 'polaroid', w = pol ? bw + 48 : bw, h = pol ? bh + 150 : bh;
+    return { w, h, draw: () => {
+      if (pol) { c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 30; c.shadowOffsetY = 12; c.fillStyle = '#fbfaf6'; c.fillRect(-w / 2, -h / 2, w, h); c.restore(); }
+      const ox = -bw / 2, oy = pol ? -h / 2 + 24 : -bh / 2;
+      c.save(); c.beginPath(); if (L.mask === 'circle') c.ellipse(0, oy + bh / 2, bw / 2, bh / 2, 0, 0, 7); else c.roundRect(ox, oy, bw, bh, L.mask === 'round' ? 48 : 0); c.clip();
+      if (im) { const src = filtered(im, L.filter, L.pid), cz = Math.max(1, L.cz || 1), sc = Math.max(bw / im.width, bh / im.height) * cz, iw = im.width * sc, ih = im.height * sc;
+        const mx = (iw - bw) / 2, my = (ih - bh) / 2; c.drawImage(src, ox - mx + (L.cx || 0) * mx, oy - my + (L.cy || 0) * my, iw, ih); }
+      else { c.fillStyle = pol ? '#dcd8cf' : 'rgba(255,255,255,.18)'; c.fillRect(ox, oy, bw, bh); c.fillStyle = pol ? '#6b6a66' : '#ffffff'; c.textAlign = 'center'; font(c, 40, 600, PRE_); c.fillText('사진을 넣어 주세요', 0, oy + bh / 2 + 14); c.textAlign = 'left'; }
+      c.restore(); } };
+  }
+  if (L.type === 'sticker') return sticker(c, L, d);
+  if (L.type === 'shape') {
+    const w = L.w || 400, h = L.h || 400, col = L.col || '#ffffff';
+    return { w, h, draw: () => { c.fillStyle = col;
+      if (L.k === 'paper') { c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 50; c.shadowOffsetY = 20; c.beginPath(); c.moveTo(-w / 2, -h / 2); c.lineTo(w / 2, -h / 2); c.lineTo(w / 2, h / 2); for (let x = w / 2; x > -w / 2; x -= 30) { c.lineTo(x - 15, h / 2 - 16); c.lineTo(x - 30, h / 2); } c.closePath(); c.fill(); c.restore(); }
+      else if (L.k === 'circle') { c.beginPath(); c.ellipse(0, 0, w / 2, h / 2, 0, 0, 7); c.fill(); }
+      else if (L.k === 'dash') { for (let x = -w / 2; x < w / 2; x += 18) c.fillRect(x, -h / 2, 10, h); }
+      else rr(c, -w / 2, -h / 2, w, h, L.rad || 0), c.fill(); } };
+  }
+  return { w: 10, h: 10, draw: () => { } };
+}
+function sticker(c, L, d) {
+  const col = L.col || '#ffffff', m = STORY_MAT[d.key], acc = accentOf(d), k = L.k;
+  const S = (w, h, fn) => ({ w, h, draw: () => { c.save(); c.fillStyle = col; c.strokeStyle = col; c.lineCap = 'round'; c.lineJoin = 'round'; fn(); c.restore(); } });
+  if (k === 'wordmark') return S(440, 120, () => { c.textAlign = 'center'; font(c, 92, 800, ARC_, 'expanded'); c.fillText('hoohaa', 0, 22); font(c, 22, 700, ARC_, 'expanded'); c.letterSpacing = '8px'; c.globalAlpha = .75; c.fillText('RUNNING TIER', 4, 56); c.letterSpacing = '0px'; });
+  if (k === 'emblem') return S(260, 260, () => { const g = c.createLinearGradient(-130, -130, 130, 130); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s)); c.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 2; c.lineTo(Math.cos(a) * 128, Math.sin(a) * 128); } c.closePath(); c.fillStyle = g; c.fill(); c.lineWidth = 6; c.strokeStyle = 'rgba(255,255,255,.55)'; c.stroke(); c.fillStyle = m.ink; c.textAlign = 'center'; font(c, 110, 800, ARC_, 'expanded'); c.fillText(d.word[0], 0, 30); if (d.roman) { font(c, 34, 700, ARC_); c.fillText(d.roman, 0, 82); } });
+  if (k === 'runner') return S(220, 260, () => { c.lineWidth = 22; c.beginPath(); c.arc(30, -95, 24, 0, 7); c.fill(); c.beginPath(); c.moveTo(10, -60); c.lineTo(-15, 20); c.lineTo(35, 70); c.lineTo(20, 120); c.moveTo(-15, 20); c.lineTo(-60, 60); c.lineTo(-95, 55); c.moveTo(5, -45); c.lineTo(-50, -25); c.lineTo(-75, 10); c.moveTo(5, -45); c.lineTo(45, -10); c.lineTo(90, -25); c.stroke(); });
+  if (k === 'shoe') return S(300, 160, () => { c.beginPath(); c.moveTo(-140, 50); c.lineTo(-140, -10); c.quadraticCurveTo(-120, -60, -70, -55); c.lineTo(-20, -20); c.quadraticCurveTo(60, -10, 120, 10); c.quadraticCurveTo(150, 30, 140, 50); c.closePath(); c.fill(); c.fillStyle = acc; c.fillRect(-140, 50, 280, 22); c.strokeStyle = '#0F1620'; c.lineWidth = 6; for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(-70 + i * 28, -40 + i * 10); c.lineTo(-50 + i * 28, -50 + i * 10); c.stroke(); } });
+  if (k === 'dist') { const ev = d.recLine.split(' ')[0]; return S(240, 240, () => { c.beginPath(); c.arc(0, 0, 116, 0, 7); c.lineWidth = 10; c.stroke(); c.textAlign = 'center'; font(c, ev.length > 3 ? 64 : 84, 800, HAN.test(ev) ? PRE_ : ARC_, 'expanded'); c.fillText(ev, 0, 26); font(c, 22, 700, ARC_, 'expanded'); c.letterSpacing = '5px'; c.fillText('FINISHER', 3, 74); c.letterSpacing = '0px'; }); }
+  if (k === 'sun') return S(240, 240, () => { c.beginPath(); c.arc(0, 0, 58, 0, 7); c.fill(); c.lineWidth = 16; for (let i = 0; i < 8; i++) { const a = Math.PI / 4 * i; c.beginPath(); c.moveTo(Math.cos(a) * 84, Math.sin(a) * 84); c.lineTo(Math.cos(a) * 112, Math.sin(a) * 112); c.stroke(); } });
+  if (k === 'date') { const t = ymd(); return S(360, 110, () => { rr(c, -176, -51, 352, 102, 18); c.lineWidth = 6; c.stroke(); c.textAlign = 'center'; font(c, 50, 700, ARC_, 'semi-expanded'); c.fillText(t, 0, 18); }); }
+  if (k === 'flag') return S(360, 120, () => { for (let r = 0; r < 4; r++) for (let i = 0; i < 12; i++) if ((r + i) % 2 === 0) c.fillRect(-180 + i * 30, -60 + r * 30, 30, 30); });
+  if (k === 'sparkle') return S(220, 220, () => { c.beginPath(); for (let i = 0; i < 8; i++) { const a = Math.PI / 4 * i - Math.PI / 2, r = i % 2 ? 26 : 108; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.closePath(); if (L.fill === false) { c.lineWidth = 10; c.stroke(); } else c.fill(); });
+  if (k === 'heart') return S(220, 200, () => { c.beginPath(); c.moveTo(0, 80); c.bezierCurveTo(-140, -10, -80, -110, 0, -45); c.bezierCurveTo(80, -110, 140, -10, 0, 80); c.fill(); });
+  if (k === 'bolt') return S(160, 260, () => { c.beginPath(); c.moveTo(30, -130); c.lineTo(-70, 20); c.lineTo(-5, 20); c.lineTo(-30, 130); c.lineTo(70, -25); c.lineTo(5, -25); c.closePath(); c.fill(); });
+  if (k === 'star') return S(240, 240, () => { c.beginPath(); for (let i = 0; i < 10; i++) { const a = Math.PI / 5 * i - Math.PI / 2, r = i % 2 ? 50 : 118; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.closePath(); c.fill(); });
+  if (k === 'rect') return S(400, 260, () => { rr(c, -200, -130, 400, 260, 28); c.fill(); });
+  if (k === 'circle') return S(280, 280, () => { c.beginPath(); c.arc(0, 0, 140, 0, 7); c.fill(); });
+  if (k === 'line') return S(500, 12, () => { c.fillRect(-250, -6, 500, 12); });
+  return S(10, 10, () => { });
+}
+function bgDraw(c, doc, d, photos) {
+  const b = doc.bg || { type: 'tier' };
+  if (b.type === 'solid') { c.fillStyle = b.c1 || '#0F1620'; c.fillRect(0, 0, W_, H_); }
+  else if (b.type === 'grad') { const g = c.createLinearGradient(0, 0, W_ * .35, H_); g.addColorStop(0, b.c1); g.addColorStop(1, b.c2); c.fillStyle = g; c.fillRect(0, 0, W_, H_); }
+  else if (b.type === 'dark') { c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); const m = STORY_MAT[d.key], tint = m.glow || 'rgba(255,255,255,.06)', rg = c.createRadialGradient(W_ / 2, 700, 0, W_ / 2, 700, 900); rg.addColorStop(0, tint.replace(/[\d.]+\)$/, '0.22)')); rg.addColorStop(1, 'rgba(15,22,32,0)'); c.fillStyle = rg; c.fillRect(0, 0, W_, H_); }
+  else if (b.type === 'photo' && photos[b.pid]) { const im = filtered(photos[b.pid], b.filter, b.pid), sc = Math.max(W_ / im.width, H_ / im.height) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (iw - W_) / 2, my = (ih - H_) / 2;
+    c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); c.drawImage(im, ...bgRect(b, photos[b.pid])); }
+  else if (b.type === 'tone' || b.type === 'photo') { const m = STORY_MAT[d.key], g = c.createLinearGradient(0, 0, W_ * .3, H_); g.addColorStop(0, '#6f7a86'); g.addColorStop(.5, '#3c4652'); g.addColorStop(1, '#1d232b'); c.fillStyle = g; c.fillRect(0, 0, W_, H_);
+    const rg = c.createRadialGradient(W_ * .75, H_ * .28, 0, W_ * .75, H_ * .28, H_ * .6); rg.addColorStop(0, alpha(m.s[0], .28)); rg.addColorStop(1, alpha(m.s[0], 0)); c.fillStyle = rg; c.fillRect(0, 0, W_, H_);
+    const lg = c.createRadialGradient(W_ * .2, H_ * .85, 0, W_ * .2, H_ * .85, H_ * .5); lg.addColorStop(0, 'rgba(255,255,255,.10)'); lg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = lg; c.fillRect(0, 0, W_, H_); }
+  else tierBg(c, d);
+}
+// bg photo geometry (shared by background + subject cut-out so they line up exactly)
+function bgRect(b, im) { const sc = Math.max(W_ / im.width, H_ / im.height) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (iw - W_) / 2, my = (ih - H_) / 2; return [-mx + Math.max(-1, Math.min(1, b.px || 0)) * mx, -my + Math.max(-1, Math.min(1, b.py || 0)) * my, iw, ih]; }
+function subjectLayer(doc, photos) { const b = doc.bg, im = b.type === 'photo' && photos[b.pid], mk2 = im && photos['mask:' + b.pid]; if (!mk2) return null;
+  const t = document.createElement('canvas'); t.width = W_; t.height = H_; const g = t.getContext('2d'), r = bgRect(b, im);
+  g.drawImage(mk2, ...r); g.globalCompositeOperation = 'source-in'; g.drawImage(filtered(im, b.filter, b.pid), ...r); return t; }
+const PRE_FONTS = ['400 40px "OV Bebas"', '400 40px "OV Anton"', '800 40px "OV Playfair"', '700 40px "OV Mono"', '400 40px "OV BlackHan"', '800 40px "TC Archivo"', '300 40px "TC Archivo"', '600 40px "TC Archivo"', '700 40px "TC Pretendard"', '500 40px "TC Pretendard"', '600 40px "TC Pretendard"'];
+// effective transform: 상위 % is clamped so it can never become small or invisible
+function eff(L, g) { if (L.type === 'stat' && L.stat === 'top' && L.v !== 4) { const minS = TOP_MIN_PX / Math.max(1, g.h); return { ...L, s: Math.max(L.s, minS), o: Math.max(L.o ?? 1, .9), hidden: false }; } return L; }
+async function renderDoc(d, doc, photos = {}, cv) {
+  await document.fonts.ready; await Promise.all(PRE_FONTS.map(f => document.fonts.load(f, 'A가').catch(() => { })));
+  await Promise.all([...new Set(doc.layers.map(l => l.font).filter(Boolean))].map(loadFont));
+  cv = cv || document.createElement('canvas'); cv.width = W_; cv.height = H_; const c = cv.getContext('2d');
+  c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; bgDraw(c, doc, d, photos);
+  const boxes = [], subj = doc.layers.some(l => l.behind && !l.hidden) ? subjectLayer(doc, photos) : null;
+  const order = subj ? [...doc.layers.filter(l => l.behind), null, ...doc.layers.filter(l => !l.behind)] : doc.layers;
+  cv.__subject = !!subj;
+  for (const L0 of order) {
+    if (L0 === null) { c.drawImage(subj, 0, 0); continue; }
+    c.save(); const g = layerGeom(c, L0, d, doc, photos), L = { ...eff(L0, g) }; c.restore();
+    if (L.ax === 'left') L.x += g.w * L.s / 2; else if (L.ax === 'right') L.x -= g.w * L.s / 2;
+    boxes.push({ id: L.id, x: L.x, y: L.y, s: L.s, r: L.r, w: g.w, h: g.h, type: L.type, stat: L.stat, v: L.v, hidden: !!L.hidden });
+    if (L.hidden) continue;
+    c.save(); c.translate(L.x, L.y); c.rotate(L.r || 0); c.scale(L.s, L.s); c.globalAlpha = L.o ?? 1; g.draw(); c.restore();
+  }
+  cv.__boxes = boxes; return cv;
+}
+// ---- templates (10+): pre-arranged layer bundles ----
+const TEMPLATES = [['nrc', '인증샷'], ['center', '센터'], ['right', '오른쪽'], ['bottom', '하단'], ['rank', '상위 % 크게'], ['cutout', '투명'], ['black', '블랙'], ['sparkle', '반짝']];
+// run-app "인증샷" style: full-bleed photo, one huge number, 2–3 small stats, tiny wordmark. No boxes, no panels, no shadows.
+function templateDoc(t, d) {
+  const K = (k, x, y, p = {}) => mk('sticker', { k, x, y, ...p });
+  // every stat = two independent elements: the value, and its small label underneath (both derived from the result)
+  const V = (stat, x, y, s, p = {}) => { const { labK = .2, noLab, ...q } = p, base = STAT_SIZE[stat];
+    const val = mk('stat', { stat, v: 1, look: 'run', x, y, s, ax: 'left', al: 'left', lh: .95, ...q });
+    if (noLab) return [val]; const ly = y + base * s * (.5 + labK * .62) + 6;
+    const { o, col, ax = 'left', al = 'left' } = q; return [val, mk('stat', { stat, v: 4, x: ax === 'left' ? x + 4 : ax === 'right' ? x - 4 : x, y: ly, s, ax, al, labK, ...(o != null ? { o } : {}), col: col === '@tier' ? '#ffffff' : col || '#ffffff' })]; };
+  const doc = { tpl: t, bg: { type: 'tone' }, race: '', layers: [] }, A = (...l) => doc.layers.push(...l.flat(3));
+  const WM = (x, y, p = {}) => K('wordmark', x, y, { s: .34, o: .9, ...p });
+  const small = (stat, x, y, p = {}) => V(stat, x, y, .6, { labK: .45, ...p }), BIG = 2.9;
+  // stats: pace + 상위 % side by side, tier on its own line (tier colour)
+  const row = (x, y, ax = 'left', p = {}) => { const dx = ax === 'right' ? -1 : 1, al = ax, a2 = ax === 'center' ? 'center' : ax; return [small('pace', ax === 'center' ? x - 150 : x, y, { ax: a2, al, ...p }), small('top', ax === 'center' ? x + 150 : x + dx * 300, y, { ax: a2, al, ...p }), small('tier', x, y + 150, { ax, al, ...p, col: p.col || '@tier' })]; };
+  if (t === 'nrc') A(V('rec', 90, 470, BIG), row(96, 790), WM(890, 1830));
+  else if (t === 'center') A(row(540, 560, 'center'), V('rec', 540, 960, BIG, { ax: 'center', al: 'center' }), WM(540, 1830));
+  else if (t === 'right') A(V('rec', 990, 520, BIG * .9, { ax: 'right', al: 'right' }), small('pace', 984, 820, { ax: 'right', al: 'right' }), small('top', 984, 970, { ax: 'right', al: 'right' }), small('tier', 984, 1120, { ax: 'right', al: 'right', col: '@tier' }), WM(190, 1830));
+  else if (t === 'bottom') A(row(96, 1200), V('rec', 90, 1560, BIG), WM(890, 1830));
+  else if (t === 'rank') A(V('top', 96, 480, 1.55, { noLab: true }), small('rec', 96, 700), small('pace', 420, 700), small('tier', 96, 850, { col: '@tier' }), WM(890, 1830));
+  else if (t === 'cutout') A(V('rec', 540, 960, BIG * 1.15, { ax: 'center', al: 'center', o: .55 }), row(540, 1300, 'center', { o: .85 }), WM(540, 1830, { o: .7 }));
+  else if (t === 'black') { doc.bg = { type: 'solid', c1: '#e9e5de' }; const k = '#111111'; A(V('rec', 90, 470, BIG, { col: k }), row(96, 790, 'left', { col: k }), WM(890, 1830, { col: k })); }
+  else if (t === 'sparkle') A(K('sparkle', 170, 300, { s: .45, fill: false }), K('sparkle', 930, 600, { s: .3 }), K('star', 880, 1450, { s: .3, col: '#ffd166' }), V('rec', 540, 480, BIG * .95, { ax: 'center', al: 'center' }), row(540, 800, 'center'), WM(540, 1830));
+  return doc;
+}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const p2 = n => String(n).padStart(2, '0');
@@ -1012,163 +1165,327 @@ $('go').addEventListener('click', () => {
   state.last = r; renderResult(r); show('scrResult');
 });
 $('again').addEventListener('click', () => { show('scrInput'); $('tq').focus(); });
-let photoImg = null;
-$('photo').addEventListener('change', e => {
-  const f = e.target.files[0]; if (!f) return;
-  const url = URL.createObjectURL(f), im = new Image();
-  im.onload = () => { photoImg = im; adj = { ...adj, pz: 1, px: 0, py: 0 }; edTab = 'photo'; if (!state.tplPicked) state.tpl = 'overlay'; refreshTpl(); $('preview').src = url; $('preview').hidden = false; $('photoClear').hidden = false; };
-  im.src = url;
-});
-$('photoClear').addEventListener('click', () => { photoImg = null; $('photo').value = ''; $('preview').hidden = true; $('photoClear').hidden = true; if (!state.tplPicked) state.tpl = 'card'; refreshTpl(); });
-// ---------- template picker ----------
-let adj = fresh(), edTab = 'text', guides = null, lastBox = null;
-window.__adj = () => JSON.parse(JSON.stringify(adj)); window.__box = () => lastBox; window.__guides = () => guides;
-const storyOpt = tpl => ({ template: tpl, photo: photoImg, race: $('race').value.trim(), adj });
-$('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" data-t="${k}" class="tpl-btn" aria-checked="false"><canvas width="108" height="192"></canvas><span class="tn">${n}</span>${k === 'overlay' ? '<span class="th" data-hint>사진 추가 가능</span>' : ''}</button>`).join('');
-$('tplList').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.tpl = b.dataset.t; state.tplPicked = true; refreshTpl(true); });
-let tplSeq = 0, raceT = 0;
-$('race').addEventListener('input', () => { clearTimeout(raceT); raceT = setTimeout(refreshTpl, 250); });
-async function refreshTpl(selOnly) {
-  if (!state.story) return; const seq = ++tplSeq;
-  for (const b of $('tplList').querySelectorAll('button')) b.setAttribute('aria-checked', String(b.dataset.t === state.tpl));
-  const h = $('tplList').querySelector('[data-hint]'); if (h) h.hidden = !!photoImg;
-  const big = await renderStory(state.story, storyOpt(state.tpl)); if (seq !== tplSeq) return;
-  paintPreview(big);
-  syncAdjBar();
-  if (selOnly === true) return;
-  for (const b of $('tplList').querySelectorAll('button')) {
-    const cv = await renderStory(state.story, storyOpt(b.dataset.t)); if (seq !== tplSeq) return;
-    const t = b.querySelector('canvas').getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, 108, 192);
-  }
+// ================= share-image editor v3 (story-style free layers) =================
+const clone = o => JSON.parse(JSON.stringify(o));
+const LS = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return null; } };
+const MAX_PHOTOS = 12, PCV = { W: 1080, H: 1920 };
+let doc = null, photos = {}, sel = null, boxes = [], mode = null, libOpen = false, fontCat = 'all', pickMode = false, guides = null, trashHot = false, dragging = false;
+const favs = () => LS('runtier:fontfav') || [], recents = () => LS('runtier:fontrecent') || [];
+window.__doc = () => clone(doc); window.__boxes = () => clone(boxes); window.__sel = () => sel; window.__inkBounds = async id => { const L = getL(id); const cv = await renderDoc(state.story, { ...doc, bg: { type: 'solid', c1: '#000000' }, layers: [L] }, photos); const d = cv.getContext('2d').getImageData(0, 0, 1080, 1920).data; let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1; for (let y = 0; y < 1920; y += 2) for (let x = 0; x < 1080; x += 2) { const i = (y * 1080 + x) * 4; if (d[i] + d[i + 1] + d[i + 2] > 60) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } return { x0, y0, x1, y1 }; };
+window.__story = () => clone(state.story); window.__acc = () => accentOf(state.story); window.__photos = () => Object.keys(photos).filter(k => !k.startsWith('mask:')).length; window.__statTexts = () => doc.layers.filter(l => l.type === 'stat').map(l => statValue(state.story, doc, l.stat));
+// ---- photos stay on the device: IndexedDB only ----
+const idb = (() => { let p; const open = () => p || (p = new Promise((res, rej) => { const r = indexedDB.open('hoohaa', 1); r.onupgradeneeded = () => r.result.createObjectStore('photos'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
+  const tx = (m, f) => open().then(db => new Promise((res, rej) => { const t = db.transaction('photos', m), s = t.objectStore('photos'), q = f(s); t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); }));
+  return { put: (k, v) => tx('readwrite', s => s.put(v, k)).catch(() => { }), get: k => tx('readonly', s => s.get(k)).catch(() => null), del: k => tx('readwrite', s => s.delete(k)).catch(() => { }) }; })();
+const blobToImg = b => new Promise((res, rej) => { const u = URL.createObjectURL(b), im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = u; });
+async function addPhotoFile(f) { // downscale to ≤1600px, keep on device
+  const im = await blobToImg(f), k = Math.min(1, 1600 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+  const pid = 'P' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); photos[pid] = c;
+  c.toBlob(b => b && idb.put(pid, b), 'image/jpeg', .88); return pid; }
+// ---- '인물 뒤로': on-device subject segmentation (MediaPipe, Apache-2.0), lazy-loaded only when used ----
+const SEG = new URL('seg/', location.href).href; let segP = null; const segBusy = new Map();
+const getSeg = () => segP || (segP = (async () => { const m = await import(SEG + 'vision_bundle.mjs'); const fs = await m.FilesetResolver.forVisionTasks(SEG.replace(/\/$/, ''));
+  return m.ImageSegmenter.createFromOptions(fs, { baseOptions: { modelAssetPath: SEG + 'selfie_segmenter.tflite', delegate: 'CPU' }, runningMode: 'IMAGE', outputConfidenceMasks: true, outputCategoryMask: false }); })().catch(e => { segP = null; throw e; }));
+function ensureMask(pid) { if (photos['mask:' + pid]) return Promise.resolve(true); if (segBusy.has(pid)) return segBusy.get(pid);
+  const pr = (async () => { const im = photos[pid]; const seg = await getSeg(); const src = document.createElement('canvas'); src.width = im.width; src.height = im.height; src.getContext('2d').drawImage(im, 0, 0);
+    const r = seg.segment(src), m = r.confidenceMasks[0], a = m.getAsFloat32Array(), w = m.width, h = m.height; const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'), id = g.createImageData(w, h); let on = 0;
+    for (let i = 0; i < a.length; i++) { const v = Math.max(0, Math.min(1, (a[i] - .35) / .3)); id.data[i * 4 + 3] = v * 255; id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 255; if (v > .5) on++; }
+    r.close && r.close(); g.putImageData(id, 0, 0); if (on < a.length * .01) throw new Error('no subject'); photos['mask:' + pid] = c; return true; })().catch(e => { console.warn('segmentation', e); return false; }).finally(() => segBusy.delete(pid));
+  segBusy.set(pid, pr); return pr; }
+window.__mask = () => Object.keys(photos).filter(k => k.startsWith('mask:')).length;
+function personPid() { if (doc.bg.type === 'photo' && photos[doc.bg.pid]) return { bg: true, pid: doc.bg.pid };
+  const ph = doc.layers.filter(l => l.type === 'photo' && l.pid && photos[l.pid] && !l.hidden).sort((a, b) => (b.w || 1) * (b.h || 1) * b.s * b.s - (a.w || 1) * (a.h || 1) * a.s * a.s)[0]; return ph ? { bg: false, pid: ph.pid, L: ph } : null; }
+const canBehind = L => !!L && L.type !== 'photo' && !!personPid();
+async function toggleBehind(L) {
+  if (L.behind) { L.behind = false; changed(true); paintPanel(); return; }
+  const src = personPid(); if (!src) { status('먼저 인물 사진을 넣어 주세요', 3000); return; }
+  if (!src.bg) { doc.bg = { type: 'photo', pid: src.pid, pz: 1, px: 0, py: 0, filter: src.L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== src.L); status('사진을 배경으로 깔고 인물을 찾을게요', 3000); changed(true); }
+  const b = document.querySelector('#miniBar [data-mb=behind]'); if (b) { b.classList.add('loading'); b.querySelector('small').textContent = '찾는 중…'; } status('인물을 찾는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
+  const ok = await ensureMask(doc.bg.pid);
+  if (ok) { L.behind = true; status('인물 뒤로 보냈어요'); } else status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000);
+  document.querySelector('#miniBar [data-mb=behind]')?.classList.remove('loading'); changed(true); paintPanel(); }
+async function restorePhotos() { const ids = new Set([doc.bg.pid, ...doc.layers.map(l => l.pid)].filter(Boolean)); let n = 0;
+  for (const id of ids) if (!photos[id]) { const b = await idb.get(id); if (b) { photos[id] = await blobToImg(b); n++; } } if (n) changed(true);
+  if (doc.bg.type === 'photo' && photos[doc.bg.pid] && doc.layers.some(l => l.behind)) { if (await ensureMask(doc.bg.pid)) changed(true); else { doc.layers.forEach(l => l.behind = false); changed(true); } } }
+// ---- history + autosave ----
+let hist = [], hi = -1, comT = 0;
+function commit() { clearTimeout(comT); if (!doc) return; const s = JSON.stringify(doc); if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 100) hist.shift(); hi = hist.length - 1; } LS('runtier:v3doc', doc); paintTop(); }
+const later = () => { clearTimeout(comT); comT = setTimeout(commit, 300); };
+function undoRedo(dd) { commit(); const n = hi + dd; if (n < 0 || n >= hist.length) return; hi = n; doc = JSON.parse(hist[hi]); if (sel && !getL(sel)) sel = null; LS('runtier:v3doc', doc); changed(true); paintPanel(); }
+$('undo').addEventListener('click', () => undoRedo(-1)); $('redo').addEventListener('click', () => undoRedo(1));
+function paintTop() { $('undo').disabled = hi <= 0; $('redo').disabled = hi >= hist.length - 1; }
+const getL = id => doc.layers.find(l => l.id === id);
+const isTop = L => L && L.type === 'stat' && L.stat === 'top' && L.v !== 4;
+// ---- rendering ----
+let rafQ = 0, lastCv = null;
+// re-derive tier styling for a new result: old docs stored the tier accent as a hex; treat that as '@tier'
+function syncTier() { if (!doc || !state.story) return; const a = accentOf(state.story);
+  if (doc.acc && doc.acc !== a) for (const l of doc.layers) if (l.col && l.col.toLowerCase() === doc.acc.toLowerCase()) l.col = '@tier';
+  doc.acc = a; }
+function changed(now) { syncTier(); const bb = $('bgBtn'); if (bb && doc) bb.hidden = doc.bg.type === 'photo' && !!photos[doc.bg.pid]; if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; $('tplPreview').getContext('2d').drawImage(cv, 0, 0); paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
+async function refreshTpl() { // called from renderResult
+  if (!state.story) return;
+  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : templateDoc('nrc', state.story); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
+  changed(true); paintPanel(); thumbs();
 }
-// ---------- overlay adjust (optional): pan/zoom photo, move/scale text ----------
-// ---- in-app colour picker (HSV) ----
+async function thumbs() {
+  const mine = LS('runtier:mytpl') || [];
+  $('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-t="${k}" aria-checked="${doc.tpl === k}"><canvas width="108" height="192"></canvas><span class="tn">${n}</span></button>`).join('') +
+    mine.map((m, i) => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${i}" aria-checked="false"><canvas width="108" height="192"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
+  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? templateDoc(b.dataset.t, state.story) : mine[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t = b.querySelector('canvas').getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, 108, 192); }
+}
+$('tplList').addEventListener('click', e => { const del = e.target.closest('[data-mdel]'); if (del) { const m = LS('runtier:mytpl') || []; m.splice(+del.dataset.mdel, 1); LS('runtier:mytpl', m); thumbs(); return; }
+  const b = e.target.closest('.tpl-btn'); if (!b) return; const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null;
+  doc = b.dataset.t ? templateDoc(b.dataset.t, state.story) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined }; doc.race = race; if (keepBg) doc.bg = keepBg; sel = null; mode = null;
+  for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); });
+$('tplReset').addEventListener('click', () => { const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; doc = templateDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc', state.story); doc.race = race; if (keepBg) doc.bg = keepBg; sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
+$('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
+// ---- overlay: selection, handles, guides, trash (never part of the exported image) ----
+const corners = b => { const c = Math.cos(b.r || 0), s = Math.sin(b.r || 0), hw = b.w * b.s / 2, hh = b.h * b.s / 2; return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(([x, y]) => [b.x + x * c - y * s, b.y + x * s + y * c]); };
+const HANDLE = 46;
+function paintOvl() {
+  const o = $('ovl'), g = o.getContext('2d'); g.clearRect(0, 0, 1080, 1920);
+  if (guides) { g.strokeStyle = '#FF3DA5'; g.lineWidth = 4; g.setLineDash([18, 12]); for (const x of guides.x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 1920); g.stroke(); } for (const y of guides.y) { g.beginPath(); g.moveTo(0, y); g.lineTo(1080, y); g.stroke(); } g.setLineDash([]); }
+  const b = sel && boxes.find(x => x.id === sel);
+  if (b) { const p = corners(b); g.strokeStyle = '#3DC8F5'; g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]);
+    const [hx, hy] = p[2]; g.fillStyle = '#3DC8F5'; g.beginPath(); g.arc(hx, hy, HANDLE, 0, 7); g.fill(); g.fillStyle = '#0F1620'; g.font = '700 52px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('⤡', hx, hy + 2); }
+  placeMini(b);
+  if (dragging) { g.fillStyle = trashHot ? 'rgba(255,90,95,.95)' : 'rgba(15,22,32,.75)'; g.beginPath(); g.arc(540, 1790, trashHot ? 96 : 80, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 6; g.beginPath(); g.rect(510, 1765, 60, 70); g.moveTo(495, 1765); g.lineTo(585, 1765); g.moveTo(525, 1750); g.lineTo(555, 1750); g.stroke(); }
+}
+// floating contextual mini toolbar, positioned inside the canvas next to the selection (DOM over the overlay → never exported)
+function placeMini(b) { const m = $('miniBar'); if (!m) return; const L = b && getL(b.id);
+  if (!L || dragging || pickMode) { m.hidden = true; return; }
+  m.querySelector('[data-mb=behind]').hidden = !canBehind(L); const bh = m.querySelector('[data-mb=behind]'); bh.setAttribute('aria-pressed', !!L.behind); bh.title = L.behind ? '인물 앞으로' : '인물 뒤로'; bh.setAttribute('aria-label', bh.title); bh.querySelector('small').textContent = bh.title;
+  m.querySelectorAll('[data-mb=dup],[data-mb=del]').forEach(e => e.hidden = isTop(L)); m.hidden = false;
+  const r = $('ovl').getBoundingClientRect(), kx = r.width / 1080, ky = r.height / 1920, c = corners(b), xs = c.map(q => q[0] * kx), ys = c.map(q => q[1] * ky);
+  const bw = m.offsetWidth, bhh = m.offsetHeight, top = Math.min(...ys), bot = Math.max(...ys), cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  let y = top - bhh - 10; if (y < 4) { y = bot + 10; if (y + bhh > r.height - 4) y = top > r.height - bot ? Math.max(4, top - bhh - 4) : Math.min(r.height - bhh - 4, bot + 4); }
+  m.style.left = Math.max(4, Math.min(r.width - bw - 4, cx - bw / 2)) + 'px'; m.style.top = y + 'px'; }
+// iOS Safari: the stage blocks touch defaults for gestures, so act on pointerup directly (click is only a keyboard fallback)
+function tapButtons(el, sel_, run) { let down = null, last = 0;
+  const stop = e => e.stopPropagation();
+  el.addEventListener('pointerdown', e => { stop(e); down = e.target.closest(sel_); });
+  el.addEventListener('touchstart', stop, { passive: true }); el.addEventListener('touchend', stop, { passive: true }); el.addEventListener('mousedown', stop);
+  el.addEventListener('pointerup', e => { stop(e); const b = e.target.closest(sel_); if (b && b === down && !b.hidden) { last = Date.now(); e.preventDefault(); run(b); } down = null; });
+  el.addEventListener('pointercancel', () => { down = null; });
+  el.addEventListener('click', e => { stop(e); const b = e.target.closest(sel_); if (b && Date.now() - last > 700) run(b); }); }
+tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(sel); if (!L) return; if (a === 'behind') toggleBehind(L); else act(a); });
+const toLocal = (b, x, y) => { const c = Math.cos(-(b.r || 0)), s = Math.sin(-(b.r || 0)), dx = x - b.x, dy = y - b.y; return [(dx * c - dy * s) / b.s, (dx * s + dy * c) / b.s]; };
+function hitAt(x, y) { for (let i = boxes.length - 1; i >= 0; i--) { const b = boxes[i]; if (b.hidden) continue; const [lx, ly] = toLocal(b, x, y), pad = Math.max(0, 30 / b.s - 0); if (Math.abs(lx) <= b.w / 2 + pad && Math.abs(ly) <= b.h / 2 + pad) return b; } return null; }
+window.__hitAt = (x, y) => (hitAt(x, y) || {}).id;
+const onHandle = (x, y) => { const b = sel && boxes.find(q => q.id === sel); if (!b) return false; const [hx, hy] = corners(b)[2]; return Math.hypot(x - hx, y - hy) < HANDLE * 1.3; };
+// ---- gestures: tap select · drag move (snap) · pinch scale+rotate · corner handle · long-press menu · drag to trash ----
+{
+  const st = $('stage'), ov = $('ovl'), pts = new Map(); let g0 = null, lp = 0, moved = false;
+  const cv = e => { const r = ov.getBoundingClientRect(); return [(e.clientX - r.left) * 1080 / r.width, (e.clientY - r.top) * 1920 / r.height]; };
+  const ang = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]);
+  const start = () => { const P = [...pts.values()], L = sel && getL(sel); g0 = { P: P.map(p => [...p]), L: L ? clone(L) : null, bg: clone(doc.bg) }; };
+  ov.addEventListener('pointerdown', e => {
+    hideMenu(); const p = cv(e); pts.set(e.pointerId, p); ov.setPointerCapture(e.pointerId); e.preventDefault();
+    if (pickMode) { pickMode = false; const px = $('tplPreview').getContext('2d').getImageData(Math.round(p[0]), Math.round(p[1]), 1, 1).data; setCol('#' + [px[0], px[1], px[2]].map(v => v.toString(16).padStart(2, '0')).join('')); status('색을 가져왔어요'); pts.delete(e.pointerId); return; }
+    if (pts.size === 1) { moved = false; g0 = null;
+      if (onHandle(p[0], p[1])) { start(); g0.handle = true; }
+      else { const h = hitAt(p[0], p[1]); if (h) { const HL = getL(h.id); if (HL && HL.ax) { HL.x = h.x; HL.y = h.y; delete HL.ax; } if (sel !== h.id) { sel = h.id; mode = null; paintPanel(); } } else if (!(doc.bg.type === 'photo' && photos[doc.bg.pid])) { if (sel) { sel = null; paintPanel(); } } start(); g0.hit = !!h; }
+      clearTimeout(lp); lp = setTimeout(() => { if (!moved && sel && g0 && g0.hit) showMenu(p); }, 550);
+      paintOvl(); }
+    else start();
+  });
+  ov.addEventListener('pointermove', e => {
+    if (!pts.has(e.pointerId) || !g0) return; pts.set(e.pointerId, cv(e)); const P = [...pts.values()];
+    if (P.length !== g0.P.length) { start(); return; }
+    const c0 = g0.P.reduce((a, q) => [a[0] + q[0] / g0.P.length, a[1] + q[1] / g0.P.length], [0, 0]), c1 = P.reduce((a, q) => [a[0] + q[0] / P.length, a[1] + q[1] / P.length], [0, 0]);
+    const dx = c1[0] - c0[0], dy = c1[1] - c0[1]; if (!moved && Math.hypot(dx, dy) < 14 && P.length === 1) return; moved = true; clearTimeout(lp);
+    const L = g0.L && getL(g0.L.id);
+    if (g0.handle && L) { const b0 = g0.L, a0 = ang([b0.x, b0.y], g0.P[0]), a1 = ang([b0.x, b0.y], P[0]), d0 = Math.hypot(g0.P[0][0] - b0.x, g0.P[0][1] - b0.y), d1 = Math.hypot(P[0][0] - b0.x, P[0][1] - b0.y);
+      L.s = Math.max(.08, Math.min(8, b0.s * d1 / Math.max(1, d0))); L.r = snapR(b0.r + a1 - a0); }
+    else if (P.length > 1 && L) { const f = Math.hypot(P[0][0] - P[1][0], P[0][1] - P[1][1]) / Math.max(1, Math.hypot(g0.P[0][0] - g0.P[1][0], g0.P[0][1] - g0.P[1][1]));
+      L.s = Math.max(.08, Math.min(8, g0.L.s * f)); L.r = snapR(g0.L.r + ang(P[0], P[1]) - ang(g0.P[0], g0.P[1])); L.x = g0.L.x + dx; L.y = g0.L.y + dy; }
+    else if (L && g0.hit) { dragging = true; let nx = g0.L.x + dx, ny = g0.L.y + dy; const b = boxes.find(q => q.id === L.id) || { w: 0, h: 0, s: 1 }, hw = b.w * L.s / 2, hh = b.h * L.s / 2; const gx = [], gy = [];
+      for (const [t, line] of [[540, 540], [60 + hw, 60], [1020 - hw, 1020]]) if (Math.abs(nx - t) < 18) { nx = t; gx.push(line); break; }
+      for (const [t, line] of [[960, 960], [250 + hh, 250], [1670 - hh, 1670]]) if (Math.abs(ny - t) < 18) { ny = t; gy.push(line); break; }
+      L.x = nx; L.y = ny; guides = { x: gx, y: gy }; trashHot = Math.hypot(P[0][0] - 540, P[0][1] - 1790) < 110; }
+    else if (!g0.hit && doc.bg.type === 'photo' && photos[doc.bg.pid]) { if (P.length > 1) { const f = Math.hypot(P[0][0] - P[1][0], P[0][1] - P[1][1]) / Math.max(1, Math.hypot(g0.P[0][0] - g0.P[1][0], g0.P[0][1] - g0.P[1][1])); doc.bg.pz = Math.max(1, Math.min(4, (g0.bg.pz || 1) * f)); }
+      const im = photos[doc.bg.pid], sc = Math.max(1080 / im.width, 1920 / im.height) * (doc.bg.pz || 1), mx = Math.max(1, (im.width * sc - 1080) / 2), my = Math.max(1, (im.height * sc - 1920) / 2);
+      doc.bg.px = Math.max(-1, Math.min(1, (g0.bg.px || 0) + dx / mx)); doc.bg.py = Math.max(-1, Math.min(1, (g0.bg.py || 0) + dy / my)); }
+    changed();
+  });
+  const up = e => { if (!pts.has(e.pointerId)) return; pts.delete(e.pointerId); clearTimeout(lp);
+    if (!pts.size) { if (dragging && trashHot && sel) delLayer(sel); dragging = false; trashHot = false; guides = null; g0 = null; paintOvl(); if (moved) commit(); if (sel) paintPanel(); } else start(); };
+  ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
+  ov.addEventListener('wheel', e => { const L = sel && getL(sel); if (!L) return; e.preventDefault(); L.s = Math.max(.08, Math.min(8, L.s * Math.exp(-e.deltaY / 500))); changed(); }, { passive: false });
+  // no page scroll / zoom while touching the canvas (iOS needs non-passive handlers)
+  for (const el of [st, $('cpSV'), $('cpHue')]) { const block = e => { if (e.target.closest && e.target.closest('.mini, .bg-btn, .ctx')) return; e.preventDefault(); }; el.addEventListener('touchstart', block, { passive: false }); el.addEventListener('touchmove', block, { passive: false }); }
+}
+const snapR = r => { const t = Math.PI / 2, n = Math.round(r / t); return Math.abs(r - n * t) < .06 ? n * t : r; };
+function showMenu(p) { const bh = $('ctxBehind'), L0 = getL(sel); if (bh) { bh.hidden = !canBehind(L0); bh.textContent = L0 && L0.behind ? '인물 앞으로' : '인물 뒤로'; } const m = $('ctxMenu'), r = $('ovl').getBoundingClientRect(), k = r.width / 1080; m.hidden = false; m.style.left = Math.min(r.width - 200, Math.max(0, p[0] * k - 100)) + 'px'; m.style.top = Math.max(0, p[1] * k - 60) + 'px'; }
+function hideMenu() { $('ctxMenu').hidden = true; }
+tapButtons($('ctxMenu'), '[data-act]', b => { hideMenu(); if (b.dataset.act === 'behind') { const L0 = getL(sel); if (L0) toggleBehind(L0); } else act(b.dataset.act); });
+function delLayer(id) { const L = getL(id); if (!L) return; if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
+function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) return; const L = doc.layers[i];
+  if (a === 'del') return delLayer(sel);
+  if (a === 'dup') { if (isTop(L)) { status('상위 %는 하나만 있어요'); return; } if (L.type === 'photo' && doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; } const n = { ...clone(L), id: lid(), x: L.x + 40, y: L.y + 40 }; doc.layers.splice(i + 1, 0, n); sel = n.id; }
+  if (a === 'up' && i < doc.layers.length - 1) [doc.layers[i], doc.layers[i + 1]] = [doc.layers[i + 1], doc.layers[i]];
+  if (a === 'down' && i > 0) [doc.layers[i], doc.layers[i - 1]] = [doc.layers[i - 1], doc.layers[i]];
+  if (a === 'front') { doc.layers.splice(i, 1); doc.layers.push(L); } if (a === 'back') { doc.layers.splice(i, 1); doc.layers.unshift(L); }
+  changed(true); paintPanel(); }
+// ---- right toolbar ----
+const addLayer = L => { doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); };
+$('tools').addEventListener('click', async e => { const b = e.target.closest('[data-tool]'); if (!b) return; const t = b.dataset.tool; hideMenu();
+  if (t === 'text') { addLayer(mk('text', { t: '텍스트', size: 96, font: null, col: '#ffffff', x: 540, y: 960 })); setTimeout(() => { const ta = $('tText'); if (ta) { ta.focus(); ta.select(); } }, 50); return; }
+  if (t === 'photo') { photoTarget = 'layer'; pickPhoto(); return; }
+  sel = null; mode = mode === t ? null : t; paintPanel(); });
+let photoTarget = 'layer';
+$('bgBtn').addEventListener('click', () => { photoTarget = 'bg'; pickPhoto(); });
+const pickPhoto = () => { status('사진은 이 기기 안에서만 쓰여요', 2200); $('photo').click(); };
+$('photo').addEventListener('change', async e => {
+  const fs = [...e.target.files]; e.target.value = ''; if (!fs.length) return;
+  if (photoTarget === 'bg') { const pid = await addPhotoFile(fs[0]); doc.bg = { type: 'photo', pid, pz: 1, px: 0, py: 0, filter: 'none' }; if (doc.layers.some(l => l.behind)) { status('인물을 찾는 중이에요…', 8000); if (!(await ensureMask(pid))) { doc.layers.forEach(l => l.behind = false); status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000); } else status(''); } changed(true); paintPanel(); return; }
+  if (photoTarget === 'fill') { const L = getL(sel); if (L) { L.pid = await addPhotoFile(fs[0]); L.cz = 1; L.cx = 0; L.cy = 0; changed(true); paintPanel(); } return; }
+  let n = doc.layers.filter(l => l.type === 'photo').length;
+  for (const f of fs) { if (n >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); break; } const pid = await addPhotoFile(f); n++; const L = mk('photo', { pid, mask: 'round', filter: 'none', x: 540 + (n % 3 - 1) * 60, y: 900 + (n % 3) * 40, s: .9 }); doc.layers.push(L); sel = L.id; }
+  mode = null; changed(true); paintPanel();
+});
+let stT = 0; function status(t, ms = 2600) { $('pvHint').textContent = t || '요소를 탭해 선택 · 끌어서 이동 · 두 손가락으로 크기·회전 · 길게 눌러 메뉴'; clearTimeout(stT); if (t) stT = setTimeout(() => status(''), ms); }
+// ---- colour picker (HSV, persistent H/S/V: never re-derive hue when s or v = 0) ----
 const hex2hsv = hex => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
   let h = 0; if (d) h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return { h: h * 60, s: mx ? d / mx : 0, v: mx }; };
 const hsv2hex = ({ h, s, v }) => { const f = k => { const x = (k + h / 60) % 6; return v - v * s * Math.max(0, Math.min(x, 4 - x, 1)); };
   return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join(''); };
-let hsv = hex2hsv('#ffffff');
-function paintPicker() {
-  const c = adj.col; $('cpChip').style.background = c; if (document.activeElement !== $('cpHex')) $('cpHex').value = c.toUpperCase();
-  $('cpSV').style.setProperty('--hue', `hsl(${hsv.h} 100% 50%)`);
-  $('cpSVk').style.left = `${hsv.s * 100}%`; $('cpSVk').style.top = `${(1 - hsv.v) * 100}%`; $('cpSVk').style.background = c;
-  $('cpHuek').style.left = `${hsv.h / 360 * 100}%`; $('cpHue').setAttribute('aria-valuenow', Math.round(hsv.h));
-  $('cpSV').setAttribute('aria-valuetext', `채도 ${Math.round(hsv.s * 100)}%, 밝기 ${Math.round(hsv.v * 100)}%`);
-  for (const q of document.querySelectorAll('.qc')) q.setAttribute('aria-pressed', String(q.dataset.c === c.toLowerCase()));
-}
-function setCol(hex, fromHsv) { adj.col = hex.toLowerCase(); if (!fromHsv) hsv = hex2hsv(adj.col); paintPicker(); adjChanged(); }
-function dragArea(el, fn) {
-  const go = e => { const r = el.getBoundingClientRect(); fn(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))); };
-  el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); go(e); e.preventDefault(); });
-  el.addEventListener('pointermove', e => { if (el.hasPointerCapture(e.pointerId)) go(e); });
-}
+let hsv = { h: 0, s: 0, v: 1 }, hsvCol = '';
+const adoptHex = hex => { const n = hex2hsv(hex); if (n.v === 0) n.s = hsv.s; if (n.s === 0 || n.v === 0) n.h = hsv.h; hsv = n; hsvCol = hex.toLowerCase(); };
+const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { doc.bg = c === '@tier' ? { type: 'tier' } : { type: 'solid', c1: c }; } } : { get: () => (getL(sel) || {}).col || '#ffffff', set: c => { const L = getL(sel); if (L) L.col = c; } };
+function setCol(hex, fromHsv) { if (hex === '@tier') { colTarget().set('@tier'); adoptHex(accentOf(state.story).toLowerCase()); paintPicker(); changed(); return; } hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex); paintPicker(); changed(); }
+function paintPicker() { if (!$('cpick').isConnected || $('cpick').closest('[hidden]')) return; let c = colTarget().get(); if (c === '@tier') c = accentOf(state.story); if (c.toLowerCase() !== hsvCol) adoptHex(c);
+  $('cpChip').style.background = c; if (document.activeElement !== $('cpHex')) $('cpHex').value = c.toUpperCase();
+  $('cpSV').style.setProperty('--hue', `hsl(${hsv.h} 100% 50%)`); $('cpSVk').style.left = `${hsv.s * 100}%`; $('cpSVk').style.top = `${(1 - hsv.v) * 100}%`; $('cpSVk').style.background = c;
+  $('cpHuek').style.left = `${hsv.h / 360 * 100}%`; $('cpHue').setAttribute('aria-valuenow', Math.round(hsv.h)); $('cpSV').setAttribute('aria-valuetext', `채도 ${Math.round(hsv.s * 100)}%, 밝기 ${Math.round(hsv.v * 100)}%`);
+  for (const q of document.querySelectorAll('#panel .qc[data-c]')) q.setAttribute('aria-pressed', String(q.dataset.c === c.toLowerCase())); }
+function dragArea(el, fn) { const go = e => { const r = el.getBoundingClientRect(); fn(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))); };
+  el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); go(e); e.preventDefault(); }); el.addEventListener('pointermove', e => { if (el.hasPointerCapture(e.pointerId)) go(e); }); el.addEventListener('pointerup', () => commit()); }
 dragArea($('cpSV'), (x, y) => { hsv = { ...hsv, s: x, v: 1 - y }; setCol(hsv2hex(hsv), true); });
 dragArea($('cpHue'), x => { hsv = { ...hsv, h: x * 360 }; if (hsv.s < .05) hsv.s = 1; if (hsv.v < .05) hsv.v = 1; setCol(hsv2hex(hsv), true); });
-$('cpSV').addEventListener('keydown', e => { const d = { ArrowLeft: [-.05, 0], ArrowRight: [.05, 0], ArrowUp: [0, .05], ArrowDown: [0, -.05] }[e.key]; if (!d) return; e.preventDefault();
-  hsv = { ...hsv, s: Math.min(1, Math.max(0, hsv.s + d[0])), v: Math.min(1, Math.max(0, hsv.v + d[1])) }; setCol(hsv2hex(hsv), true); });
+$('cpSV').addEventListener('keydown', e => { const d = { ArrowLeft: [-.05, 0], ArrowRight: [.05, 0], ArrowUp: [0, .05], ArrowDown: [0, -.05] }[e.key]; if (!d) return; e.preventDefault(); hsv = { ...hsv, s: Math.min(1, Math.max(0, hsv.s + d[0])), v: Math.min(1, Math.max(0, hsv.v + d[1])) }; setCol(hsv2hex(hsv), true); });
 $('cpHue').addEventListener('keydown', e => { const d = { ArrowLeft: -10, ArrowRight: 10 }[e.key]; if (!d) return; e.preventDefault(); hsv = { ...hsv, h: (hsv.h + d + 360) % 360 }; setCol(hsv2hex(hsv), true); });
 $('cpHex').addEventListener('input', e => { let v = e.target.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{6}$/i.test(v)) setCol(v); });
-$('cpHex').addEventListener('blur', paintPicker);
-for (const q of document.querySelectorAll('.qc')) q.addEventListener('click', () => setCol(q.dataset.c));
-const ITEMS = [['race', '대회명'], ['date', '날짜'], ['tier', '티어'], ['tierKo', '한글 티어명'], ['rec', '기록'], ['pace', '페이스'], ['top', '상위 %'], ['vdot', 'VDOT'], ['logo', 'RUNNING TIER 로고']];
-$('itemTgl').innerHTML = ITEMS.map(([k, n]) => `<button type="button" class="tg" data-k="${k}" aria-pressed="false">${n}</button>`).join('');
-function paintPreview(cv) {
-  const g = $('tplPreview').getContext('2d'); g.drawImage(cv, 0, 0);
-  if (cv.__adj && state.tpl === 'overlay') { const ad = cv.__adj; adj.tx = ad.tx; adj.ty = ad.ty; lastBox = cv.__box; } // keep clamped values
-  if (guides && state.tpl === 'overlay') { g.save(); g.strokeStyle = '#FF3DA5'; g.lineWidth = 4; g.setLineDash([18, 12]);
-    for (const x of guides.x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 1920); g.stroke(); }
-    for (const y of guides.y) { g.beginPath(); g.moveTo(0, y); g.lineTo(1080, y); g.stroke(); } g.restore(); }
+const QC = ['#ffffff', '#111111', '#3dc8f5', '#ff5a5f', '#ffd166', '#c6f432', '#ff8fd8', '#9b8cff', '#f2994a', '#16181c'];
+const chipsHTML = () => `<div class="qcs">${QC.map(c => `<button type="button" class="qc" data-c="${c}" aria-label="색 ${c}" aria-pressed="false" style="--c:${c}"></button>`).join('')}<button type="button" class="qc qt" data-tierc="1">티어 색</button><button type="button" class="qc qt" id="eyedrop">스포이드</button><button type="button" class="qc qt" data-more-col="1" aria-expanded="false">더보기</button></div><div id="cpHost" hidden></div>`;
+// ---- fonts ----
+const fontBtn = (k, cls = 'fq', on = false) => `<button type="button" class="${cls}${on ? ' on' : ''}" data-fk="${k || ''}" aria-pressed="${on}" style="font-family:${(k ? previewFam(k) : 'inherit').replace(/"/g, "'")};${k ? `font-weight:${nearW(k, 700)}` : ''}">${on ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${k ? esc(FONTS[k].n.replace(/ \(.+\)$/, '')) : '기본'}</button>`;
+const sampleOf = L => L.type === 'text' ? (L.t || '').split('\n')[0].slice(0, 16) || 'Aa' : statValue(state.story, doc, L.stat);
+function fontRow(L) { const cur = L.font && FONTS[L.font] ? L.font : null; let ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(k => FONTS[k]).slice(0, 6);
+  if (cur && !ks.includes(cur)) ks = [cur, ...ks.slice(0, 5)]; else if (cur) ks = [cur, ...ks.filter(k => k !== cur)]; ks.forEach(loadPreviewFont);
+  return `<p class="fcur" id="fCur">현재 글꼴: <b>${cur ? esc(FONTS[cur].n) : '기본'}</b></p><div class="fquick">${cur ? '' : fontBtn(null, 'fq', true)}${ks.map(k => fontBtn(k, 'fq', k === cur)).join('')}${cur ? fontBtn(null) : ''}<button type="button" class="fq more" data-flib="1">전체 글꼴 (${Object.keys(FONTS).length}종) →</button></div>`; }
+function libHTML(L) { const q = ($('fSearch') || {}).value || '', fv = favs(), rc = recents(), smp = esc(sampleOf(L));
+  let ks = Object.keys(FONTS); if (fontCat === 'fav') ks = fv.filter(k => FONTS[k]); else if (fontCat === 'recent') ks = rc.filter(k => FONTS[k]); else if (fontCat !== 'all') ks = ks.filter(k => FONTS[k].cat === fontCat);
+  const ql = q.trim().toLowerCase(); if (ql) ks = ks.filter(k => (FONTS[k].n + ' ' + k + ' ' + ((FONT_CATS.find(c => c[0] === FONTS[k].cat) || [])[1] || '')).toLowerCase().includes(ql)); ks.forEach(loadPreviewFont);
+  return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt${L.font === k ? ' on' : ''}" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${L.font === k ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${smp}</b><small>${esc(FONTS[k].n)} · ${FONTS[k].lic}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
+async function pickFont(k) { const L = getL(sel); if (!L) return; const bs = document.querySelectorAll(`[data-fk="${k || ''}"]`); bs.forEach(b => b.classList.add('loading'));
+  const ok = k ? await loadFont(k) : true; bs.forEach(b => b.classList.remove('loading')); if (!ok) { status('글꼴을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
+  if (k) LS('runtier:fontrecent', [k, ...recents().filter(x => x !== k)].slice(0, 8)); L.font = k || null; changed(true); paintPanel(); }
+// ---- bottom panel (one level deep, in page flow) ----
+const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', sticker: '스티커', shape: '도형' };
+const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커' : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
+const seg = (id, opts, cur) => `<div class="seg n${opts.length}" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
+const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row"><label for="${id}" class="lbl sm">${lab}</label><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><output id="${id}V">${val}${unit}</output></div>`;
+let moreCol = false, moreTxt = false;
+function paintPanel() {
+  { const L0 = sel && getL(sel), b = L0 && L0.ax && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; } }
+  const P = $('panel'); $('cpick').hidden = true; document.body.appendChild($('cpick')); const L = sel && getL(sel);
+  for (const b of $('tools').querySelectorAll('[data-tool]')) b.setAttribute('aria-pressed', String(b.dataset.tool === mode && !L));
+  $('sizeCol').hidden = !(L && L.type === 'text'); if (L && L.type === 'text') { $('tSize').value = L.size || 96; }
+  let h = '';
+  if (L) {
+    h += `<div class="sh-head"><h3 id="pName">${esc(lname(L))}</h3><button type="button" class="chip-btn primary-chip" id="pDone">완료</button></div>`;
+    if (libOpen && (L.type === 'text' || L.type === 'stat')) {
+      h += `<input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats">${[['all', '전체'], ['fav', '★ 즐겨찾기'], ['recent', '최근'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div><div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용·웹 임베딩이 허용된 OFL·Apache 라이선스예요</p><button type="button" class="chip-btn" id="fClose">글꼴 목록 닫기</button>`;
+      P.innerHTML = h; bindPanel(L); return; }
+    if (L.type === 'text') h += `<label class="lbl sm" for="tText">내용</label><textarea id="tText" rows="2" maxlength="80">${esc(L.t || '')}</textarea>`;
+    if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 바꿀 수 없어요 · 위치·크기·스타일만 바꿀 수 있어요${isTop(L) ? ' · 상위 %는 항상 크게 보여요' : ''}</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `${L.v === 4 ? '' : `<span class="lbl sm">디자인</span>${seg('pV', [[0, '라벨+값'], [1, '값만'], [2, '알약'], [3, '런앱']], L.v || 0)}`}`;
+    if (L.type === 'card') h += `<span class="lbl sm">디자인</span>${seg('pV', [[0, '카드'], [1, '배지']], L.v || 0)}`;
+    if (L.type === 'text' || L.type === 'stat') h += `<span class="lbl sm">글꼴</span>${fontRow(L)}`;
+    if (L.type !== 'card' && L.type !== 'photo') h += `<span class="lbl sm">색</span>${chipsHTML()}`;
+    if (L.type === 'text' || (L.type === 'stat' && L.v !== 2)) h += `<span class="lbl sm">배경 박스</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '꽉 찬']], L.box || 'none')}`;
+    if (L.type === 'text') h += `<span class="lbl sm">정렬</span>${seg('pAl', [['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']], L.al || 'center')}`;
+    if (L.type === 'text' || L.type === 'stat') h += `<button type="button" class="chip-btn" id="pMoreT" aria-expanded="${moreTxt}">자간·행간 ${moreTxt ? '접기' : '더보기'}</button>` + (moreTxt ? range('pLs', '자간', -10, 60, L.ls || 0, 'px') + range('pLh', '행간', 0, 250, Math.round((L.lh ?? 1.15) * 100), '%') : '');
+    if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}<span class="lbl sm">필터</span>${seg('pFilter', FILTERS, L.filter || 'none')}` + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경으로 쓰기</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
+    if (L.type === 'sticker' || L.type === 'shape') {}
+    h += range('pS', '크기', 8, 400, Math.round(L.s * 100), '%') + range('pR', '회전', -180, 180, Math.round((L.r || 0) * 180 / Math.PI), '°') + (isTop(L) ? '' : range('pO', '불투명도', 5, 100, Math.round((L.o ?? 1) * 100), '%'));
+    h += `<div class="ed-btns acts">${isTop(L) ? '' : '<button type="button" class="chip-btn" data-act="dup">복제</button>'}<button type="button" class="chip-btn" data-act="up">앞으로</button><button type="button" class="chip-btn" data-act="down">뒤로</button>${isTop(L) ? '' : '<button type="button" class="chip-btn danger" data-act="del">삭제</button>'}</div>`;
+  } else if (mode === 'stat') {
+    h += `<div class="sh-head"><h3>기록 블록 추가</h3></div><p class="hint lock">🔒 값은 계산 결과 그대로예요</p><div class="grid2">${Object.entries(STATS).map(([k, [n]]) => `<button type="button" class="pre" data-addstat="${k}"><b>${n}</b><small>${esc(statValue(state.story, doc, k))}</small></button>`).join('')}<button type="button" class="pre" data-addcard="0"><b>티어 카드</b><small>카드</small></button><button type="button" class="pre" data-addcard="1"><b>티어 배지</b><small>${esc(state.story.word)}</small></button></div>`;
+  } else if (mode === 'sticker') {
+    h += `<div class="sh-head"><h3>스티커</h3></div><div class="grid3">${STICKERS.map(([k, n]) => `<button type="button" class="pre stk" data-addstk="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${n}</small></button>`).join('')}</div>`;
+  } else if (mode === 'bg') {
+    const GR = [['#0F1620', '#14324a'], ['#3DC8F5', '#9b8cff'], ['#ff8a5b', '#ffd166'], ['#ffd6e8', '#fff4c2'], ['#0b3d2e', '#3fd68a'], ['#1b1f26', '#5a24a8']];
+    h += `<div class="sh-head"><h3>배경</h3></div><div class="ed-btns"><button type="button" class="chip-btn" data-bg="tier" aria-pressed="${doc.bg.type === 'tier'}">티어 색</button><button type="button" class="chip-btn" data-bg="dark" aria-pressed="${doc.bg.type === 'dark'}">다크</button><button type="button" class="chip-btn primary-chip" id="bgPhoto">📷 사진 배경</button></div>
+      <span class="lbl sm">그라데이션</span><div class="qcs">${GR.map((g, i) => `<button type="button" class="qc grad" data-grad="${i}" aria-label="그라데이션 ${i + 1}" style="background:linear-gradient(135deg,${g[0]},${g[1]})"></button>`).join('')}</div><span class="lbl sm">단색</span>${chipsHTML()}`;
+    if (doc.bg.type === 'photo') h += `<span class="lbl sm">사진 배경 필터</span>${seg('bgFilter', FILTERS, doc.bg.filter || 'none')}` + range('bgZ', '확대', 100, 400, Math.round((doc.bg.pz || 1) * 100), '%') + '<p class="hint">빈 곳을 끌면 배경 사진이 움직여요</p>';
+    P.dataset.grads = JSON.stringify(GR);
+  } else if (mode === 'layers') {
+    h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
+  } else h += `<p class="hint">오른쪽 도구로 텍스트·사진·스티커·기록 블록·배경을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p>`;
+  P.innerHTML = h; bindPanel(L);
+  for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
+  paintSelInfo();
 }
-function syncAdjBar() {
-  if (hsv2hex(hsv) !== adj.col) hsv = hex2hsv(adj.col); paintPicker();
-  const on = state.tpl === 'overlay'; $('adjBar').hidden = !on; $('edTabs').hidden = !on; $('tplPreview').classList.toggle('editable', on); $('tplEd').classList.toggle('editing', on);
-  $('addPhoto').hidden = !(on && !photoImg);
-  $('photoAdd2').hidden = !!photoImg; $('photoChange').hidden = !photoImg; $('photoRemove').hidden = !photoImg; $('pzoom').disabled = !photoImg;
-  for (const t of document.querySelectorAll('.ed-tabs [role=tab]')) t.setAttribute('aria-selected', String(t.dataset.tab === edTab));
-  for (const p of document.querySelectorAll('.ed-panel')) p.hidden = p.dataset.p !== edTab;
-  $('pzoom').value = Math.round(adj.pz * 100);
-  for (const b of document.querySelectorAll('#fontPick [data-f]')) b.setAttribute('aria-checked', String(b.dataset.f === adj.font));
-  for (const [id, v] of [['tsize', adj.ts], ['tlh', adj.lh]]) { $(id).value = Math.round(v * 100); $(id + 'V').textContent = Math.round(v * 100) + '%'; }
-  for (const b of document.querySelectorAll('[data-al]')) b.setAttribute('aria-checked', String(b.dataset.al === adj.al));
-  for (const b of document.querySelectorAll('#itemTgl .tg')) { b.setAttribute('aria-pressed', String(!!adj.show[b.dataset.k])); b.disabled = b.dataset.k === 'race' && !$('race').value.trim(); b.title = b.disabled ? '꾸미기에서 대회명을 넣으면 보여요' : ''; }
+async function renderMini(g, L) { const cv = await renderDoc(state.story, { bg: { type: 'solid', c1: '#1F2B3B' }, layers: [{ ...L, x: 540, y: 960, s: 1 }] }, photos); const b = cv.__boxes[0], sz = Math.max(b.w, b.h) * 1.15; g.drawImage(cv, 540 - sz / 2, 960 - sz / 2, sz, sz, 0, 0, 120, 120); }
+function paintSelInfo() { const L = sel && getL(sel); if (!L) return; for (const [id, v, u] of [['pS', Math.round(L.s * 100), '%'], ['pR', Math.round((L.r || 0) * 180 / Math.PI), '°']]) { const e = $(id); if (e && document.activeElement !== e) { e.value = v; $(id + 'V').textContent = v + u; } } }
+function bindPanel(L) {
+  const P = $('panel'), on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
+  on('pDone', 'click', () => { sel = null; libOpen = false; paintPanel(); paintOvl(); });
+  on('tText', 'input', e => { L.t = e.target.value; changed(); $('pName').textContent = lname(L); });
+  on('raceIn', 'input', e => { doc.race = e.target.value; changed(); });
+  const segOn = (id, f) => { const s = $(id); if (s) s.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { f(b.dataset.v); changed(true); paintPanel(); } }); };
+  segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => doc.bg.filter = v);
+  const rg = (id, f, u = '') => on(id, 'input', e => { f(+e.target.value); $(id + 'V').textContent = e.target.value + u; changed(); });
+  rg('pS', v => L.s = v / 100, '%'); rg('pR', v => L.r = v * Math.PI / 180, '°'); rg('pO', v => L.o = v / 100, '%'); rg('pLs', v => L.ls = v, 'px'); rg('pLh', v => L.lh = v / 100, '%');
+  rg('pCz', v => L.cz = v / 100, '%'); rg('pCx', v => L.cx = v / 100); rg('pCy', v => L.cy = v / 100); rg('bgZ', v => doc.bg.pz = v / 100, '%');
+  on('pMoreT', 'click', () => { moreTxt = !moreTxt; paintPanel(); });
+  on('pFill', 'click', () => { photoTarget = 'fill'; pickPhoto(); }); on('pRefill', 'click', () => { photoTarget = 'fill'; pickPhoto(); });
+  on('pAsBg', 'click', () => { if (!L.pid) return; doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== L); sel = null; changed(true); paintPanel(); });
+  on('bgPhoto', 'click', () => { photoTarget = 'bg'; pickPhoto(); });
+  on('fClose', 'click', () => { libOpen = false; paintPanel(); });
+  on('fSearch', 'input', () => { $('fList').innerHTML = libHTML(L); });
+  on('fCats', 'click', e => { const b = e.target.closest('[data-c]'); if (!b) return; fontCat = b.dataset.c; for (const x of $('fCats').children) x.setAttribute('aria-checked', String(x === b)); $('fList').innerHTML = libHTML(L); });
+  on('eyedrop', 'click', () => { pickMode = true; status('캔버스에서 가져올 색을 탭하세요', 4000); });
+  P.onclick = e => { const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
+    if (d.c && t.classList.contains('qc')) setCol(d.c);
+    if (d.tierc) setCol('@tier');
+    if (d.moreCol) { const host = $('cpHost'); host.hidden = !host.hidden; t.setAttribute('aria-expanded', String(!host.hidden)); if (!host.hidden) { host.appendChild($('cpick')); $('cpick').hidden = false; hsvCol = ''; paintPicker(); } }
+    if (d.flib) { libOpen = true; paintPanel(); }
+    if (d.fk !== undefined && t.closest('#panel')) pickFont(d.fk || null);
+    if (d.star) { const f = favs(); LS('runtier:fontfav', f.includes(d.star) ? f.filter(x => x !== d.star) : [d.star, ...f]); $('fList').innerHTML = libHTML(L); }
+    if (d.act) act(d.act);
+    if (d.addstat) { if (d.addstat === 'top' && doc.layers.some(isTop)) { sel = doc.layers.find(isTop).id; mode = null; paintPanel(); paintOvl(); status('상위 %는 이미 있어요'); return; } addLayer(mk('stat', { stat: d.addstat, v: 0 })); }
+    if (d.addcard) addLayer(mk('card', { v: +d.addcard, s: d.addcard === '0' ? .8 : 1 }));
+    if (d.addstk) addLayer(mk('sticker', { k: d.addstk, col: '#ffffff' }));
+    if (d.bg) { doc.bg = { type: d.bg }; changed(true); paintPanel(); }
+    if (d.grad) { const g = JSON.parse(P.dataset.grads)[+d.grad]; doc.bg = { type: 'grad', c1: g[0], c2: g[1] }; changed(true); paintPanel(); }
+    if (d.pick) { sel = d.pick; mode = null; paintPanel(); paintOvl(); }
+    if (d.vis) { const l = getL(d.vis); l.hidden = !l.hidden; changed(true); paintPanel(); }
+  };
+  for (const r of P.querySelectorAll('input[type=range]')) r.addEventListener('change', () => commit());
+  paintPicker();
 }
-let rafQ = 0, thumbT = 0;
-function adjChanged() {
-  adj = clampAdj(adj, photoImg);
-  if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderStory(state.story, storyOpt('overlay')); paintPreview(cv); syncAdjBar(); });
-  clearTimeout(thumbT); thumbT = setTimeout(async () => { const b = $('tplList').querySelector('[data-t="overlay"] canvas'); if (b) b.getContext('2d').drawImage(await renderStory(state.story, storyOpt('overlay')), 0, 0, 108, 192); }, 300);
-}
-$('edTabs').addEventListener('click', e => { const t = e.target.closest('[role=tab]'); if (!t || t.disabled) return; edTab = t.dataset.tab; syncAdjBar(); fitPanel(); });
-function fitPanel() { const pn = document.querySelector(`.ed-panel[data-p="${edTab}"]`); if (!pn) return; const r = pn.getBoundingClientRect(), bt = $('bar').getBoundingClientRect().top + 24, ht = $('edHead').getBoundingClientRect();
-  if (r.bottom > bt) window.scrollBy({ top: Math.min(r.bottom - bt, r.top - ht.bottom - 4 + (ht.top > 1 ? ht.top : 0)) , behavior: 'instant' }); }
-$('pzoom').addEventListener('input', e => { adj.pz = +e.target.value / 100; adjChanged(); });
-$('tsize').addEventListener('input', e => { adj.ts = +e.target.value / 100; adjChanged(); });
-$('tlh').addEventListener('input', e => { adj.lh = +e.target.value / 100; adjChanged(); });
-$('fontPick').innerHTML = Object.entries(OV_FONTS).map(([k, f]) => `<button type="button" role="radio" data-f="${k}" aria-checked="false" style="font-family:${f.fam.replace(/"/g, "'")};font-weight:${f.w || 800};${k === 'archivo' ? 'font-stretch:118%;' : ''}"><b>${k === 'blackhan' ? '플래티넘' : 'PLATINUM'}</b><small>${f.n}</small></button>`).join('');
-$('fontPick').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; adj.font = b.dataset.f; adjChanged(); });
-for (const b of document.querySelectorAll('[data-al]')) b.addEventListener('click', () => { adj.al = b.dataset.al; adjChanged(); });
-$('toCenter').addEventListener('click', () => { adj.tx = 0; adj.ty = 0; adjChanged(); });
-$('itemTgl').addEventListener('click', e => { const b = e.target.closest('.tg'); if (!b || b.disabled) return; adj.show = { ...adj.show, [b.dataset.k]: !adj.show[b.dataset.k] }; adjChanged(); });
-$('adjReset').addEventListener('click', () => { adj = fresh(); hsv = hex2hsv(adj.col); adjChanged(); paintPicker(); });
-const pickPhoto = () => $('photo').click();
-$('addPhoto').addEventListener('click', pickPhoto); $('photoAdd2').addEventListener('click', pickPhoto); $('photoChange').addEventListener('click', pickPhoto);
-$('photoRemove').addEventListener('click', () => $('photoClear').click());
-// snapping: group centre -> canvas centre; edges -> safe margins
-const SNAP = 26, SAFE_X = 60, SAFE_Y = 250;
-function snapText(tx, ty) {
-  const b = lastBox; if (!b) return { tx, ty, g: null };
-  const w = b.w, h = b.h, gx = 540 + tx, gy = 960 + ty, gX = [], gY = [];
-  const cx = [[540, 540, 540], [SAFE_X + w / 2, SAFE_X, SAFE_X], [1080 - SAFE_X - w / 2, 1080 - SAFE_X, 1080 - SAFE_X], [40 + w / 2, 40, 40], [1040 - w / 2, 1040, 1040]];
-  let nx = gx; for (const [t, line] of cx) if (Math.abs(gx - t) < SNAP) { nx = t; gX.push(line); break; }
-  const cy = [[960, 960], [SAFE_Y + h / 2, SAFE_Y], [1920 - SAFE_Y - h / 2, 1920 - SAFE_Y]];
-  let ny = gy; for (const [t, line] of cy) if (Math.abs(gy - t) < SNAP) { ny = t; gY.push(line); break; }
-  return { tx: nx - 540, ty: ny - 960, g: gX.length || gY.length ? { x: gX, y: gY } : { x: [], y: [] } };
-}
-{
-  const pv = $('tplPreview'), pts = new Map(); let start = null;
-  const k = () => 1080 / pv.getBoundingClientRect().width;
-  const snap = () => ({ adj: JSON.parse(JSON.stringify(adj)), pts: [...pts.values()].map(p => ({ ...p })) });
-  const dist = a => Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
-  const photoMode = () => edTab === 'photo' && photoImg;
-  pv.addEventListener('pointerdown', e => {
-    if (state.tpl !== 'overlay') return;
-    pv.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); start = snap(); e.preventDefault(); });
-  pv.addEventListener('pointermove', e => {
-    if (!pts.has(e.pointerId) || !start) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    const now = [...pts.values()], s0 = start.pts;
-    if (now.length !== s0.length) { start = snap(); return; }
-    const cx = a => a.reduce((s, p) => s + p.x, 0) / a.length, cy = a => a.reduce((s, p) => s + p.y, 0) / a.length;
-    const dx = (cx(now) - cx(s0)) * k(), dy = (cy(now) - cy(s0)) * k(), f = now.length > 1 ? dist(now) / dist(s0) : 1;
-    if (photoMode()) { adj.px = start.adj.px + dx; adj.py = start.adj.py + dy; adj.pz = start.adj.pz * f; guides = null; }
-    else { const s = snapText(start.adj.tx + dx, start.adj.ty + dy); adj.tx = s.tx; adj.ty = s.ty; adj.ts = start.adj.ts * f; guides = s.g; }
-    adjChanged();
-  });
-  const up = e => { pts.delete(e.pointerId); start = pts.size ? snap() : null; if (!pts.size && guides) { guides = null; adjChanged(); } };
-  pv.addEventListener('pointerup', up); pv.addEventListener('pointercancel', up);
-  pv.addEventListener('wheel', e => { if (state.tpl !== 'overlay') return; e.preventDefault(); const f = Math.exp(-e.deltaY / 500); if (photoMode()) adj.pz *= f; else adj.ts *= f; adjChanged(); }, { passive: false });
-  // tap on empty overlay preview (no photo) opens picker
-  $('tplPrev').addEventListener('click', e => { if (state.tpl === 'overlay' && !photoImg && e.target === pv && !moved) pickPhoto(); });
-  let moved = false, downAt = null;
-  pv.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; moved = false; });
-  pv.addEventListener('pointermove', e => { if (downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) moved = true; });
-}
-$('race').addEventListener('input', () => setTimeout(syncAdjBar, 0));
-// stop page scroll while dragging inside editor surfaces (iOS needs non-passive touch handlers)
-for (const el of [$('tplPreview'), $('cpSV'), $('cpHue')]) {
-  const block = e => { if (el.id !== 'tplPreview' || state.tpl === 'overlay') e.preventDefault(); };
-  el.addEventListener('touchstart', block, { passive: false }); el.addEventListener('touchmove', block, { passive: false });
-}
-for (const r of document.querySelectorAll('.ed input[type=range]')) r.addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+$('tSize').addEventListener('input', e => { const L = getL(sel); if (L && L.type === 'text') { L.size = +e.target.value; changed(); } });
+$('tSize').addEventListener('change', () => commit());
+// ---- save / share ----
+async function finalCanvas() { commit(); const cv = await renderDoc(state.story, doc, photos); window.__lastStory = cv; return cv; }
 $('save').addEventListener('click', async () => {
   const b = $('save'); if (b.disabled || !state.story) return; b.disabled = true; const lbl = b.textContent; b.textContent = '저장 중…';
-  try {
-    const cv = await renderStory(state.story, storyOpt(state.tpl));
-    window.__lastStory = cv;
-    const how = await saveStory(cv, `running-tier-${state.story.key}.png`);
-    b.textContent = how === 'cancelled' ? lbl : '저장했어요';
-  } catch (e) { console.error(e); b.textContent = '다시 시도해 주세요'; }
+  try { const cv = await finalCanvas(); const how = await saveStory(cv, `hoohaa-${state.story.key}.png`); b.textContent = how === 'cancelled' ? lbl : '저장했어요'; }
+  catch (e) { console.error(e); b.textContent = '다시 시도해 주세요'; }
   setTimeout(() => { b.textContent = lbl; b.disabled = false; }, 1400);
 });
+$('share').addEventListener('click', async () => {
+  const b = $('share'); if (b.disabled || !state.story) return; b.disabled = true;
+  try { const cv = await finalCanvas(); const blob = await new Promise(r => cv.toBlob(r, 'image/png')), file = new File([blob], `hoohaa-${state.story.key}.png`, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file] }); } catch (e) { if (e.name !== 'AbortError') throw e; } }
+    else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 30000); status('이 브라우저는 바로 공유를 지원하지 않아 이미지로 저장했어요', 3500); }
+  } catch (e) { console.error(e); status('다시 시도해 주세요'); }
+  b.disabled = false;
+});
+status(''); paintTop();
 
 // ---------- tier visuals ----------
 const KEY = { 아이언: 'iron', 브론즈: 'bronze', 실버: 'silver', 골드: 'gold', 플래티넘: 'platinum', 에메랄드: 'emerald', 다이아몬드: 'diamond', 마스터: 'master', 그랜드마스터: 'grandmaster', 챌린저: 'challenger' };
@@ -1251,6 +1568,8 @@ function renderResult(r) {
   });
 }
 restore();
+// landing-page deep link: ?ev=5k|10k|half|full preselects the event
+{ const q = { '5k': '5K', '10k': '10K', half: 'half', full: 'full' }[(new URLSearchParams(location.search).get('ev') || '').toLowerCase()]; if (q) { state.ev = q; applyEv(); validate(); } }
 
 })();
 </script>
