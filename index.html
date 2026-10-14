@@ -1218,7 +1218,7 @@ const hasPE = P => !!(P.rot || P.flip || P.crop || P.adj || P.cut || (P.filter &
 function orient(src, P, crop = true) { // same geometry for photo + mask so they always line up
   const rot = (P.rot || 0) & 3, sw = rot & 1 ? src.height : src.width, sh = rot & 1 ? src.width : src.height, cr = crop && P.crop || { x: 0, y: 0, w: 1, h: 1 };
   const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(sw * cr.w)); c.height = Math.max(1, Math.round(sh * cr.h)); const g = c.getContext('2d');
-  g.translate(-cr.x * sw, -cr.y * sh); g.translate(sw / 2, sh / 2); g.rotate(rot * Math.PI / 2); if (P.flip) g.scale(-1, 1); g.drawImage(src, -src.width / 2, -src.height / 2, src.width, src.height); return c; }
+  g.translate(-cr.x * sw, -cr.y * sh); g.translate(sw / 2, sh / 2); g.rotate(rot * Math.PI / 2); if (P.flip) g.scale(-1, 1); g.drawImage(src, -src.width / 2, -src.height / 2, src.width, src.height); g.setTransform(1, 0, 0, 1, 0, 0); return c; } // reset: later passes (mask destination-in, outline) draw on this context in pixel space
 function adjust(c, a) { if (!a || !(a.br || a.ct || a.sa || a.wa)) return c; const g = c.getContext('2d'), id = g.getImageData(0, 0, c.width, c.height), p = id.data;
   const br = (a.br || 0) * 1.1, ct = 1 + (a.ct || 0) / 110, sa = 1 + (a.sa || 0) / 100, wa = (a.wa || 0) * .32;
   for (let i = 0; i < p.length; i += 4) { let r = p[i] + br, gg = p[i + 1] + br, b = p[i + 2] + br; r = (r - 128) * ct + 128; gg = (gg - 128) * ct + 128; b = (b - 128) * ct + 128;
@@ -1670,13 +1670,29 @@ async function addPhotoFile(f) { // downscale to ≤1600px, keep on device
 const SEG = new URL('seg/', location.href).href; let segP = null; const segBusy = new Map();
 const getSeg = () => segP || (segP = (async () => { const m = await import(SEG + 'vision_bundle.mjs'); const fs = await m.FilesetResolver.forVisionTasks(SEG.replace(/\/$/, ''));
   return m.ImageSegmenter.createFromOptions(fs, { baseOptions: { modelAssetPath: SEG + 'selfie_segmenter.tflite', delegate: 'CPU' }, runningMode: 'IMAGE', outputConfidenceMasks: true, outputCategoryMask: false }); })().catch(e => { segP = null; throw e; }));
+let segErr = ''; // 'load' when the on-device model could not be loaded (offline / blocked), 'none' when no person was found
+async function segRun(seg, cv) { const r = seg.segment(cv), m = r.confidenceMasks[0], a = Float32Array.from(m.getAsFloat32Array()), w = m.width, h = m.height; r.close && r.close(); return { a, w, h }; }
 function ensureMask(pid) { if (photos['mask:' + pid]) return Promise.resolve(true); if (segBusy.has(pid)) return segBusy.get(pid);
-  const pr = (async () => { const im = photos[pid]; const seg = await getSeg(); const src = document.createElement('canvas'); src.width = im.width; src.height = im.height; src.getContext('2d').drawImage(im, 0, 0);
-    const r = seg.segment(src), m = r.confidenceMasks[0], a = m.getAsFloat32Array(), w = m.width, h = m.height; const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'), id = g.createImageData(w, h); let on = 0;
-    for (let i = 0; i < a.length; i++) { const v = Math.max(0, Math.min(1, (a[i] - .35) / .3)); id.data[i * 4 + 3] = v * 255; id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 255; if (v > .5) on++; }
-    r.close && r.close(); g.putImageData(id, 0, 0); if (on < a.length * .01) throw new Error('no subject'); photos['mask:' + pid] = c; return true; })().catch(e => { console.warn('segmentation', e); return false; }).finally(() => segBusy.delete(pid));
+  const pr = (async () => { segErr = ''; const im = photos[pid], t0 = performance.now(); let seg; try { seg = await getSeg(); } catch (e) { segErr = 'load'; throw e; }
+    const W = im.width, H = im.height, src = document.createElement('canvas'); src.width = W; src.height = H; src.getContext('2d').drawImage(im, 0, 0);
+    let { a, w, h } = await segRun(seg, src); const sx = W / w, sy = H / h;
+    // pass 2: re-segment a crop around the person (more model pixels on the subject → cleaner limbs/edges in full-body shots)
+    let x0 = w, y0 = h, x1 = -1, y1 = -1, on = 0; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (a[y * w + x] > .5) { on++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (on < a.length * .01) { segErr = 'none'; throw new Error('no subject'); }
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+    if (bw * bh < w * h * .55) { const mx = bw * .18, my = bh * .12, cx0 = Math.max(0, Math.floor((x0 - mx) * sx)), cy0 = Math.max(0, Math.floor((y0 - my) * sy)), cx1 = Math.min(W, Math.ceil((x1 + 1 + mx) * sx)), cy1 = Math.min(H, Math.ceil((y1 + 1 + my) * sy)), cw = cx1 - cx0, ch = cy1 - cy0;
+      const cc = document.createElement('canvas'); cc.width = cw; cc.height = ch; cc.getContext('2d').drawImage(src, cx0, cy0, cw, ch, 0, 0, cw, ch); const r2 = await segRun(seg, cc);
+      for (let y = Math.floor(cy0 / sy); y < Math.min(h, Math.ceil(cy1 / sy)); y++) for (let x = Math.floor(cx0 / sx); x < Math.min(w, Math.ceil(cx1 / sx)); x++) { const u = Math.min(r2.w - 1, Math.floor((x * sx - cx0) * r2.w / cw)), v = Math.min(r2.h - 1, Math.floor((y * sy - cy0) * r2.h / ch)); if (u >= 0 && v >= 0) a[y * w + x] = Math.max(a[y * w + x] * .35, r2.a[v * r2.w + u]); } }
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'), id = g.createImageData(w, h); on = 0;
+    for (let i = 0; i < a.length; i++) { const v = Math.max(0, Math.min(1, (a[i] - .3) / .4)); id.data[i * 4 + 3] = v * 255; id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 255; if (v > .5) on++; }
+    g.putImageData(id, 0, 0); if (on < a.length * .01) { segErr = 'none'; throw new Error('no subject'); }
+    // feathered edge at photo resolution (never an empty/near-empty mask: checked above)
+    const f = document.createElement('canvas'); f.width = W; f.height = H; const fg = f.getContext('2d'); fg.filter = `blur(${Math.max(1, Math.round(Math.max(W, H) / 900))}px)`; fg.drawImage(c, 0, 0, W, H); fg.filter = 'none';
+    photos['mask:' + pid] = f; window.__segMs = Math.round(performance.now() - t0); return true; })().catch(e => { console.warn('segmentation', e); if (!segErr) segErr = 'fail'; return false; }).finally(() => segBusy.delete(pid));
   segBusy.set(pid, pr); return pr; }
-window.__mask = () => Object.keys(photos).filter(k => k.startsWith('mask:')).length;
+const segFailMsg = keep => segErr === 'load' ? '인물 인식 모델을 불러오지 못했어요 · 인터넷 연결을 확인하고 다시 눌러 주세요' : segErr === 'none' ? `인물을 찾지 못했어요 · ${keep}` : `인물 인식에 실패했어요 · ${keep}`;
+window.__photos = () => Object.keys(photos).filter(k => !k.startsWith('mask:')).length; window.__statTexts = () => doc.layers.filter(l => l.type === 'stat').map(l => statValue(state.story, doc, l.stat, l));
+window.__photoMap = () => photos; window.__mask = () => Object.keys(photos).filter(k => k.startsWith('mask:')).length;
 function personPid() { if (doc.bg.type === 'photo' && photos[doc.bg.pid]) return { bg: true, pid: doc.bg.pid };
   const ph = doc.layers.filter(l => l.type === 'photo' && l.pid && photos[l.pid] && !l.hidden).sort((a, b) => (b.w || 1) * (b.h || 1) * b.s * b.s - (a.w || 1) * (a.h || 1) * a.s * a.s)[0]; return ph ? { bg: false, pid: ph.pid, L: ph } : null; }
 const canBehind = L => !!L && L.type !== 'photo' && !!personPid();
@@ -1686,7 +1702,7 @@ async function toggleBehind(L) {
   if (!src.bg) { doc.bg = { type: 'photo', pid: src.pid, pz: 1, px: 0, py: 0, filter: src.L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== src.L); status('사진을 배경으로 깔고 인물을 찾을게요', 3000); changed(true); }
   const b = document.querySelector('#miniBar [data-mb=behind]'); if (b) { b.classList.add('loading'); b.querySelector('small').textContent = '찾는 중…'; } status('인물을 찾는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
   const ok = await ensureMask(doc.bg.pid);
-  if (ok) { L.behind = true; status('인물 뒤로 보냈어요'); } else status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000);
+  if (ok) { L.behind = true; status('인물 뒤로 보냈어요'); } else status(segFailMsg('글자는 앞에 그대로 둘게요'), 5000);
   document.querySelector('#miniBar [data-mb=behind]')?.classList.remove('loading'); changed(true); paintPanel(); }
 async function restorePhotos() { const ids = new Set([doc.bg.pid, ...doc.layers.map(l => l.pid)].filter(Boolean)); let n = 0;
   for (const id of ids) if (!photos[id]) { const b = await idb.get(id); if (b) { photos[id] = await blobToImg(b); n++; } } if (n) changed(true);
@@ -1997,8 +2013,8 @@ function bindPhotoEd(P) { const on = (id, f) => { const e = $(id); if (e) e.addE
   on('peRot', () => { P.rot = ((P.rot || 0) + 1) & 3; delete P.crop; delete P.bw; delete P.bh; changed(true); paintPanel(); });
   on('peFlip', () => { P.flip = !P.flip; if (P.crop) P.crop = { ...P.crop, x: +(1 - P.crop.x - P.crop.w).toFixed(4) }; changed(true); paintPanel(); });
   on('peCut', async e => { if (P.cut) { P.cut = false; changed(true); paintPanel(); status('원본 사진으로 돌렸어요'); return; }
-    const b = e.currentTarget; b.classList.add('loading'); b.textContent = '인물 찾는 중…'; status('배경을 지우는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
-    const ok = await ensureMask(P.pid); if (ok) { P.cut = true; if (!P.ol) P.ol = { on: false, col: '#ffffff', w: 12, ...(MY().ol || {}), on: false }; status('인물만 남겼어요 · 원본 사진으로 언제든 돌릴 수 있어요'); } else status('이 사진에서는 인물을 찾지 못했어요 · 사진은 그대로 둘게요', 4000);
+    const b = e.currentTarget; b.classList.add('loading'); b.disabled = true; b.setAttribute('aria-busy', 'true'); b.textContent = segP ? '인물 찾는 중…' : '인식 모델 준비 중…'; status((segP ? '배경을 지우는 중이에요…' : '인물 인식 모델을 준비하고 있어요 (처음 한 번만)…') + ' 사진은 기기 밖으로 나가지 않아요', 15000);
+    const ok = await ensureMask(P.pid); if (ok) { P.cut = true; if (!P.ol) P.ol = { on: false, col: '#ffffff', w: 12, ...(MY().ol || {}), on: false }; status('인물만 남겼어요 · 원본 사진으로 언제든 돌릴 수 있어요'); } else status(segFailMsg('사진은 그대로 둘게요'), 5000);
     changed(true); paintPanel(); });
   on('peOl', () => { P.ol = { col: '#ffffff', w: 12, ...(P.ol || {}), on: !(P.ol && P.ol.on) }; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(true); paintPanel(); });
   const olc = $('olCol'); if (olc) { olc.addEventListener('click', e => { const b = e.target.closest('[data-olc]'); if (!b) return; P.ol.col = b.dataset.olc; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(true); paintPanel(); }); $('olColPick').addEventListener('input', e => { P.ol.col = e.target.value; changed(); }); $('olColPick').addEventListener('change', () => { myPut({ ol: { col: P.ol.col, w: P.ol.w } }); commit(); }); }
