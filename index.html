@@ -122,6 +122,10 @@ details.method summary{color:var(--t3);font-size:13px}
 .tpl-btn[aria-checked=true] .tn{color:var(--t1);font-weight:700}
 .tpl-btn .tn{font-size:13px;font-weight:600}
 .tpl-btn .th{font-size:11px;color:var(--t3);line-height:1.2;text-align:center;margin-top:-4px}
+.tc-quote{max-width:440px;margin:12px auto 0;padding:12px 16px;background:#172130;border-radius:12px;border-left:3px solid var(--qc)}
+.tc-quote .ql{display:block;font-size:12px;color:var(--t3);font-weight:500;margin-bottom:4px}
+.tc-quote p{margin:0;font-family:"TC Pretendard","Pretendard",sans-serif;font-size:17px;line-height:1.5;font-weight:600;color:#F4F6F8;word-break:keep-all;overflow-wrap:break-word}
+.lr .lcm{grid-column:1/-1;font-size:13px;font-weight:500;color:var(--t3);white-space:normal;word-break:keep-all;line-height:1.4;padding:2px 0 2px 18px}
 .who-line{margin:12px 2px 0;text-align:center;color:var(--t2);font-size:15px;font-weight:500}
 .who-line b{color:var(--t1);font-weight:700}
 #tplPreview.editable{touch-action:none;cursor:grab}
@@ -639,6 +643,15 @@ const STORY_FX = {"iron": {"sheen": 0, "holo": 0}, "bronze": {"sheen": 0.25, "ho
 const STORY_MAT = Object.fromEntries(Object.entries(STORY_FX).map(([k, fx]) => { const t = TK.tier[k], cd = t.card;
   return [k, { s: cd.stops, ink: cd.ink, text: t.text, band: cd.band, ...fx, glow: cd.glow }]; }));
 // chip glyphs (unit coords) shared by DOM SVG + canvas
+const TIER_COMMENTS = {"iron3": "만사가 귀찮다. 도대체 왜 뛰는 거지? 러닝화는 왜 사는 거야?", "iron2": "1km는 차로 이동해야 하는 거 아니야?", "iron1": "야야 좀 걷자. 숨찬다. 오늘 많이 뛰었잖아?", "bronze3": "그래도 오늘 나왔으니까 2km는 채우고 가자. 뛰는 게 어디냐.", "bronze2": "어? 생각보다 뛸 만한데? 욕심부렸다가 금방 후회한다.", "bronze1": "니가 5km를 뛰었다고? 나도 할 수 있을 것 같은데? 일단 내일 해본다.", "silver3": "5km는 이제 어떻게든 걷지 않고 뛴다. 대신 끝나고 한동안 아무것도 못 한다.", "silver2": "잠깐만. 나 어제보다 빨라졌는데?", "silver1": "슬슬 그냥 뛰는 건 재미없다. 기록을 좀 줄여볼까?", "gold3": "남들은 몇 분 페이스로 뛰나 보기 시작한다. 그리고 내 기록을 다시 본다.", "gold2": "남들 5분대가 느려 보인다. 근데 왜 나는 아직도 힘들지?", "gold1": "러닝 끝나고 기록부터 확인한다. 거리보다 페이스가 신경 쓰인다. 슬슬 사람들이 페이스를 물어본다.", "platinum3": "오늘 기록이 왜 이렇지? 날씨 때문인가? 바람 때문인가? 컨디션 때문인가?", "platinum2": "러닝화를 사면서 용도를 구분하기 시작한다. 이건 데일리, 이건 장거리, 이건 대회용.", "platinum1": "이지런 하려고 나왔는데 욕심부리다가 후반에 퍼져버린다.", "emerald3": "10km 뛰고 들어왔는데 생각보다 멀쩡하다. 이지런 속도를 올려볼까?", "emerald2": "남의 기록을 보면 부럽지가 않다. 저 기록을 위한 훈련법이 궁금하다.", "emerald1": "훈련에도 목적이 있다는 걸 알게 된다. 오늘은 왜 천천히 뛰는지도 설명할 수 있다.", "diamond3": "기록 하나 찍고 끝나는 게 아니다. 심박, 페이스, 케이던스까지 디테일에 신경 쓴다.", "diamond2": "남들이 빠르다고 하는 기록이 슬슬 내 PB가 된다.", "diamond1": "나도 이제 러닝 인플루언서가 될 수 있는 건가? 생각한다.", "master": "너의 질주는 나의 이지런이다.", "grandmaster": "웬만한 대회는 입상 또는 PB 갱신이 목표다. 작은 대회에 나갔더니 아는 사람이 이런 데 왜 나왔냐고 원망한다.", "challenger": "대한민국의 체육계를 들썩이게 할 괴물."};
+const tierComment = (key, roman) => TIER_COMMENTS[key + ({ III: 3, II: 2, I: 1 }[roman] || '')] || '';
+// keep-all wrap: break only at spaces; shrink from size to min to fit 2 lines, else 3 lines at min (never cut mid-word)
+function wrapKo(c, txt, maxW, size, min, w, fam) {
+  const words = txt.split(' '), lines = s => { font(c, s, w, fam); const L = []; let cur = '';
+    for (const wd of words) { const t = cur ? cur + ' ' + wd : wd; if (cur && c.measureText(t).width > maxW) { L.push(cur); cur = wd; } else cur = t; } if (cur) L.push(cur); return L; };
+  for (let s = size; s >= min; s -= 2) { const L = lines(s); if (L.length <= 2) return { size: s, lines: L }; }
+  return { size: min, lines: lines(min) };
+}
 function glyphPts(k) { const g = TK.tier[k].card.glyph; if (g[0] === 'pts') return g[1]; if (g[0] === 'circle') return null;
   const [, n, rot, rr] = g; return Array.from({ length: n }, (_, i) => { const r = rr[i % rr.length], a = (rot + 360 * i / n) * Math.PI / 180; return [r * Math.cos(a), r * Math.sin(a)]; }); }
 function glyphSVG(k) { const p = glyphPts(k), st = 'fill="none" stroke="currentColor" stroke-width=".14" stroke-linejoin="round"';
@@ -709,7 +722,7 @@ const OV_FONTS = {
   mono: { n: 'JetBrains Mono', fam: '"OV Mono",monospace', w: 700, sz: .88 },
   blackhan: { n: '검은고딕', fam: '"OV BlackHan",sans-serif', w: 400, sz: 1, ko: true },
 };
-const SHOW0 = { race: true, date: true, tier: true, tierKo: true, rec: true, pace: true, top: true, vdot: false, logo: true };
+const SHOW0 = { race: true, date: true, tier: true, tierKo: true, cmt: true, rec: true, pace: true, top: true, vdot: false, logo: true };
 const M = 40; // min margin from canvas edge
 function overlayRows(c, d, opt, a) {
   const sh = a.show, R = [], lab = t => ({ t, size: 28, w: 600, fam: ARC, st: 'expanded', ls: 7, alpha: .85 });
@@ -728,6 +741,7 @@ function overlayRows(c, d, opt, a) {
     add(40, { tier: true, size: big, fam: ARC, st: 'expanded', w1: 800, w2: 300 }); add(34, { line: true, size: 5 });
   }
   if (sh.tierKo) add(sh.tier ? 28 : 120, { t: d.tierKo, size: 34, w: 600, fam: PRE, alpha: .9 });
+  if (sh.cmt && d.comment) { const q = wrapKo(c, d.comment, 860, 40, 32, 600, PRE); q.lines.forEach((t, i) => add(i ? 14 : (sh.tier || sh.tierKo ? 40 : 120), { t, size: q.size, w: 600, fam: PRE, alpha: .92 })); }
   if (sh.rec) { add(110, lab('RECORD')); add(36, { t: d.recLine.split(' · ')[0], size: 116, w: 700, fam: ARC, max: 900 }); }
   if (sh.pace) { add(84, lab('PACE')); add(36, { t: d.pace, size: 116, w: 700, fam: ARC, max: 900 }); }
   if (sh.vdot) { add(84, lab('VDOT')); add(36, { t: d.vdot, size: 116, w: 700, fam: ARC }); }
@@ -791,7 +805,7 @@ async function renderStory(d, opt = {}) {
   return drawCardTpl(c, cv, d, opt);
 }
 // adj: { pz: zoom>=1, px, py: photo offset (canvas px), ts: text scale, tx, ty: text offset }
-const ADJ0 = { pz: 1, px: 0, py: 0, ts: 1, tx: 0, ty: 0, col: '#ffffff', al: 'center', lh: 1, font: 'archivo', show: { race: true, date: true, tier: true, tierKo: true, rec: true, pace: true, top: true, vdot: false, logo: true } };
+const ADJ0 = { pz: 1, px: 0, py: 0, ts: 1, tx: 0, ty: 0, col: '#ffffff', al: 'center', lh: 1, font: 'archivo', show: { race: true, date: true, tier: true, tierKo: true, cmt: true, rec: true, pace: true, top: true, vdot: false, logo: true } };
 function lum(hex) { const n = parseInt(String(hex).slice(1), 16); if (isNaN(n)) return 1; const f = v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }; return .2126 * f(n >> 16) + .7152 * f(n >> 8 & 255) + .0722 * f(n & 255); }
 function clampAdj(a, im) {
   a = { ...ADJ0, ...a };
@@ -830,7 +844,10 @@ function drawMinimal(c, cv, d, opt) {
   const m = STORY_MAT[d.key], g = c.createLinearGradient(X, by, X + bw, by + 64); m.s.forEach((s, i) => g.addColorStop(i / (m.s.length - 1), s));
   rr(c, X, by, bw, 64, 32); c.fillStyle = g; c.fill();
   c.fillStyle = m.ink; c.fillText(label, X + 32, by + 43);
-  c.fillStyle = '#F4F6F8'; font(c, 52, 700, PRE); c.fillText(d.topLabel, X, by + 150);
+  let ty = by + 150;
+  if (d.comment) { const q = wrapKo(c, d.comment, 880, 36, 28, 600, PRE), lh = q.size * 1.45; c.fillStyle = 'rgba(244,246,248,.92)'; font(c, q.size, 600, PRE);
+    q.lines.forEach((t, i) => c.fillText(t, X, by + 130 + i * lh)); ty = by + 130 + lh * q.lines.length + 70; }
+  c.fillStyle = '#F4F6F8'; font(c, 52, 700, PRE); c.fillText(d.topLabel, X, Math.min(ty, 1600));
   c.fillStyle = 'rgba(138,151,168,.85)'; font(c, 24, 700, ARC, 'expanded'); c.letterSpacing = '6px'; c.fillText('RUNNING TIER', X, 1660); c.letterSpacing = '0px';
   return cv;
 }
@@ -884,8 +901,12 @@ function drawCardTpl(c, cv, d, opt) {
   // card
   const CY = 478, CH = Math.round(CW / 1.586);
   drawCard(c, d, X, CY, CW, CH);
-  // stats
+  // tier comment quote
   let y = CY + CH + 170;
+  if (d.comment) { const q = wrapKo(c, d.comment, CW - 40, 38, 30, 600, PRE), lh = q.size * 1.45, qy = CY + CH + 70;
+    c.fillStyle = TK.tier[d.key].text; c.fillRect(X, qy - q.size, 5, lh * (q.lines.length - 1) + q.size * 1.25);
+    c.fillStyle = '#F4F6F8'; font(c, q.size, 600, PRE); q.lines.forEach((t, i) => c.fillText(t, X + 32, qy + i * lh));
+    y += Math.round(lh * q.lines.length) + 10; }
   c.fillStyle = 'rgba(184,194,207,1)'; font(c, 34, 500, PRE); c.fillText(d.who, X, y - 70);
   c.fillStyle = '#F4F6F8'; font(c, 96, 700, PRE); c.fillText(d.headline || d.topLabel, X, y + 30);
   y += 80;
@@ -1064,7 +1085,7 @@ $('cpHue').addEventListener('keydown', e => { const d = { ArrowLeft: -10, ArrowR
 $('cpHex').addEventListener('input', e => { let v = e.target.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{6}$/i.test(v)) setCol(v); });
 $('cpHex').addEventListener('blur', paintPicker);
 for (const q of document.querySelectorAll('.qc')) q.addEventListener('click', () => setCol(q.dataset.c));
-const ITEMS = [['race', '대회명'], ['date', '날짜'], ['tier', '티어'], ['tierKo', '한글 티어명'], ['rec', '기록'], ['pace', '페이스'], ['top', '상위 %'], ['vdot', 'VDOT'], ['logo', 'RUNNING TIER 로고']];
+const ITEMS = [['race', '대회명'], ['date', '날짜'], ['tier', '티어'], ['tierKo', '한글 티어명'], ['cmt', '티어 코멘트'], ['rec', '기록'], ['pace', '페이스'], ['top', '상위 %'], ['vdot', 'VDOT'], ['logo', 'RUNNING TIER 로고']];
 $('itemTgl').innerHTML = ITEMS.map(([k, n]) => `<button type="button" class="tg" data-k="${k}" aria-pressed="false">${n}</button>`).join('');
 function paintPreview(cv) {
   const g = $('tplPreview').getContext('2d'); g.drawImage(cv, 0, 0);
@@ -1218,12 +1239,13 @@ function renderResult(r) {
       <div class="tc-name${LONG.has(ts.key) ? ' long' : ''}" aria-hidden="true"><span class="w">${ts.key.toUpperCase()}</span>${ts.roman ? `<span class="n">${ts.roman}</span>` : ''}</div>
       <div class="tc-meta"><span class="rec">${esc(evName)} ${short(r.input.time)} · ${r.pace}</span><span class="rank"><span class="tc-ko" id="tierName">${esc(r.tier)}</span> · <b>${esc(r.topPercentLabel)}</b></span></div>
     </section>
+    <figure class="tc-quote" style="--qc:${TK.tier[ts.key].text}"><span class="ql">이 티어 러너는</span><p id="tierCmt">${esc(tierComment(ts.key, ts.roman))}</p></figure>
     <p class="who-line" id="topPct">${who} <b>${esc(r.topPercentLabel)}</b></p>
     ${prog}
     <section class="card ladder" aria-labelledby="hLad"><h2 id="hLad">전체 티어 <span class="lad-sub">${esc(evName)} · ${esc(who)} 기준</span></h2>
       <div class="lad-head" aria-hidden="true"><span>티어</span><span>기록</span><span>상위</span></div>
       <ol class="lad" id="ladder">${[...r.tierLadder].reverse().map(x => { const k = KEY[x.tier.split(' ')[0]], me = x.index === r.tierIndex, m = STORY_MAT[k];
-        return `<li class="lr${me ? ' me' : ''}" style="--tc:${TK.tier[k].text};--tc2:${TK.tier[k].base};--ta:${accentOf({ key: k })}"${me ? ' id="ladMe" aria-current="true"' : ''}><span class="ln"><i class="dot"></i>${esc(x.tier)}${me ? '<em class="tag">내 티어</em>' : ''}</span><span class="lt">${x.minTime ? short(x.minTime) + ' 이내' : '기록 무관'}${me ? `<small>내 기록 ${short(r.input.time)}</small>` : ''}</span><span class="lp">${x.topPct === 100 ? '전체' : (+x.topPct).toFixed(1) + '%'}</span></li>`; }).join('')}</ol>
+        return `<li class="lr${me ? ' me' : ''}" style="--tc:${TK.tier[k].text};--tc2:${TK.tier[k].base};--ta:${accentOf({ key: k })}"${me ? ' id="ladMe" aria-current="true"' : ''}><span class="ln"><i class="dot"></i>${esc(x.tier)}${me ? '<em class="tag">내 티어</em>' : ''}</span><span class="lt">${x.minTime ? short(x.minTime) + ' 이내' : '기록 무관'}${me ? `<small>내 기록 ${short(r.input.time)}</small>` : ''}</span><span class="lp">${x.topPct === 100 ? '전체' : (+x.topPct).toFixed(1) + '%'}</span>${me ? `<span class="lcm">${esc(tierComment(k, ({ 3: 'III', 2: 'II', 1: 'I' })[x.tier.split(' ')[1]] || ''))}</span>` : ''}</li>`; }).join('')}</ol>
     </section>
     <section class="card vdot"><h2>VDOT <button type="button" class="info" aria-expanded="false" aria-controls="vdInfo" aria-label="VDOT 설명">ⓘ</button></h2>
       <div class="val num">${r.vdot.toFixed(1)}</div>
@@ -1235,7 +1257,7 @@ function renderResult(r) {
     <section class="card"><h2>훈련 페이스</h2>${rows}</section>`;
   state.story = { key: ts.key, tierKo: r.tier, word: ts.key.toUpperCase(), roman: ts.roman, long: LONG.has(ts.key),
     title: `${evName} 성적표`, recLine: `${evName} ${short(r.input.time)} · ${r.pace}`, who: pubWho, topLabel: r.topPercentLabel, headline: r.topPercentLabel, time: short(r.input.time), pace: r.pace, vdot: r.vdot.toFixed(1),
-    nextLine: nx ? `${nx.tier}까지 ${evName} ${nx.gapText} 단축` : '최고 티어 챌린저 달성!' };
+    comment: tierComment(ts.key, ts.roman), nextLine: nx ? `${nx.tier}까지 ${evName} ${nx.gapText} 단축` : '최고 티어 챌린저 달성!' };
   requestAnimationFrame(() => { const l = $('ladder'), me = $('ladMe'); if (l && me) l.scrollTop = me.offsetTop - l.clientHeight / 2 + me.offsetHeight / 2; });
   refreshTpl();
   for (const b of $('resBody').querySelectorAll('.info, .prow')) b.addEventListener('click', () => {
