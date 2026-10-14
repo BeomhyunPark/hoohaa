@@ -28,7 +28,7 @@ html,body{margin:0;background:var(--bg);color:var(--t1)}
 body{font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
 .num,.big,input,.time,.pace,.gap,.pct{font-variant-numeric:tabular-nums}
 main{max-width:430px;margin:0 auto;padding:0 var(--pad) calc(32px + env(safe-area-inset-bottom))}
-.top{padding:24px 0 8px}
+.top{padding:20px 0 8px}
 h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em}
 .sub{margin:0;color:var(--t2);font-size:14px}
 .field{margin:20px 0}
@@ -221,7 +221,7 @@ details.method summary{color:var(--t3);font-size:13px}
 .cp-sv,.cp-hue{overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
 .ed input[type=range]{touch-action:pan-y}
 
-.top h1.logo{margin:0;line-height:0}.top h1.logo svg{height:30px;width:auto;display:block}
+.top h1.logo{margin:0;line-height:0}.top h1.logo svg{height:26px;width:auto;display:block}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* static SEO / info section */
@@ -249,7 +249,7 @@ main{max-width:760px}
 .stp{min-width:44px;min-height:44px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-size:18px;cursor:pointer;flex:none}
 .stp:disabled{opacity:.35;cursor:not-allowed}
 .st-row{display:flex;gap:6px;align-items:flex-start;justify-content:center}
-.st-stage{position:relative;flex:0 0 auto;width:min(calc(100% - 58px),calc((100vh - 200px)*9/16),480px);height:auto;aspect-ratio:9/16;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.st-stage{position:relative;flex:0 0 auto;width:min(calc(100% - 58px),calc((100vh - 200px)*var(--arn,.5625)),480px);height:auto;aspect-ratio:var(--ar,9/16);touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .st-stage canvas,.st-stage #tplPreview{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;aspect-ratio:auto!important;border-radius:12px}
 #tplPreview{background:var(--raised);box-shadow:0 10px 30px -10px rgba(0,0,0,.6);height:100%;max-width:none}
 #ovl{cursor:grab}
@@ -347,6 +347,15 @@ body.fs-open{overflow:hidden}
 .fq.on,.fopt.on{border-color:#3DC8F5!important;background:rgba(61,200,245,.16)!important;box-shadow:0 0 0 1.5px #3DC8F5 inset;color:#F4F6F8}.ck{font-style:normal;color:#3DC8F5;font-family:system-ui,sans-serif;font-weight:800;margin-right:5px}
 .ctsw{margin-bottom:8px}.ctsw [aria-checked="true"]{background:#3DC8F5;color:#0F1620;font-weight:700}
 #resBody>*{max-width:660px;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
+
+.st-fmt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 8px}.st-fmt .seg{flex:1 1 220px}#safeBtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.pe-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.pe-row .chip-btn{min-height:44px}.chip-btn[aria-pressed="true"]{border-color:var(--accent);background:rgba(61,200,245,.14);color:var(--t1)}
+.chip-btn.loading{opacity:.7}.chip-btn.loading::before{content:"";display:inline-block;width:12px;height:12px;margin-right:6px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-1px}@keyframes spin{to{transform:rotate(360deg)}}
+.fchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}.fchips button{min-height:44px;padding:0 12px;border-radius:22px;border:1px solid var(--border);background:transparent;color:var(--t1);font:inherit;font-size:14px}.fchips button[aria-checked="true"]{border-color:var(--accent);background:rgba(61,200,245,.16)}
+.olc{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}.olc .qc{width:44px;height:44px}.olc input[type=color]{width:52px;height:44px;border:0;background:none;padding:0}
+.crop{margin:6px 0}.crop-box{position:relative;touch-action:none;-webkit-user-select:none;user-select:none;margin:0 auto;max-width:100%}.crop-box canvas{display:block;width:100%;height:auto;border-radius:8px}
+.crop-r{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.55);box-sizing:border-box;touch-action:none}.crop-r i{position:absolute;width:28px;height:28px;border:4px solid #fff;box-sizing:border-box}.crop-r i[data-h=nw]{left:-6px;top:-6px;border-right:0;border-bottom:0}.crop-r i[data-h=ne]{right:-6px;top:-6px;border-left:0;border-bottom:0}.crop-r i[data-h=sw]{left:-6px;bottom:-6px;border-right:0;border-top:0}.crop-r i[data-h=se]{right:-6px;bottom:-6px;border-left:0;border-top:0}
+.crop-wrap{overflow:hidden;border-radius:8px}
 
 </style>
 <style>
@@ -468,7 +477,7 @@ body.fs-open{overflow:hidden}
 <main id="app">
 <!-- INPUT -->
 <section id="scrInput" class="screen" aria-labelledby="hIn">
-  <header class="top"><h1 id="hIn" class="logo"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 122" width="470" height="122"><g transform="translate(0,4)"><g transform="translate(40,0) skewX(-14)"><g transform="translate(6,6)"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#3DC8F5"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="174" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M340 40V100" stroke="#3DC8F5" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M412 40V100" stroke="#3DC8F5" stroke-width="16"/></g><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#F4F6F8"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#F4F6F8"/><circle cx="102" cy="70" r="22" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M102 70L113.81258650761974 63.18" stroke="#0F1620" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5.95" fill="#0F1620"/><circle cx="174" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M340 40V100" stroke="#F4F6F8" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M412 40V100" stroke="#F4F6F8" stroke-width="16"/></g></g></svg><span class="sr">hoohaa 러닝 티어</span></h1><p class="sub">기록을 넣으면 내 티어와 훈련 페이스를 알려드려요</p></header>
+  <header class="top"><h1 id="hIn" class="logo"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 122" width="470" height="122"><g transform="translate(0,4)"><g transform="translate(40,0) skewX(-14)"><g transform="translate(6,6)"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#3DC8F5"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="174" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M340 40V100" stroke="#3DC8F5" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M412 40V100" stroke="#3DC8F5" stroke-width="16"/></g><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#F4F6F8"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#F4F6F8"/><circle cx="102" cy="70" r="22" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M102 70L113.81258650761974 63.18" stroke="#0F1620" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5.95" fill="#0F1620"/><circle cx="174" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M340 40V100" stroke="#F4F6F8" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M412 40V100" stroke="#F4F6F8" stroke-width="16"/></g></g></svg><span class="sr">hoohaa 러닝 티어</span></h1></header>
   <div class="field">
     <span class="lbl" id="lEv">종목</span>
     <div class="chips five" role="radiogroup" aria-labelledby="lEv" id="evChips">
@@ -551,6 +560,7 @@ body.fs-open{overflow:hidden}
   <section class="card tpl" aria-labelledby="hTpl">
     <h2 id="hTpl">공유 이미지</h2>
     <div class="st-top"><button type="button" class="chip-btn" id="tplReset">템플릿으로 되돌리기</button><span class="sp"></span><button type="button" class="stp" id="undo" aria-label="실행취소">↶</button><button type="button" class="stp" id="redo" aria-label="다시실행">↷</button></div>
+    <div class="st-fmt"><div class="seg n3" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true">스토리 9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false">피드 4:5</button><button type="button" role="radio" data-v="square" aria-checked="false">1:1</button></div><button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">IG 안전영역</button></div>
     <div class="st-row" id="tplEd">
       <div class="st-left" id="sizeCol" hidden><input type="range" id="tSize" min="20" max="300" value="96" aria-label="글자 크기" orient="vertical"></div>
       <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas><button type="button" class="bg-btn" id="bgBtn">📷 배경 사진</button>
@@ -774,12 +784,15 @@ function calculate({ birthYear, birthdate, sex, event, distanceKm, time, today =
 }
 
 // generated by build_lazy_fonts.py — lazy share-editor fonts (OFL-1.1 / Apache-2.0)
-const LAZY_FONTS = [{"k": "oswald", "n": "Oswald", "cat": "sporty", "files": [["oswald-0.woff2", "200 700"]], "ko": false, "lic": "OFL-1.1", "pw": "200 700"}, {"k": "barlow", "n": "Barlow Condensed", "cat": "sporty", "files": [["barlow-0.woff2", "600"], ["barlow-1.woff2", "800"]], "ko": false, "lic": "OFL-1.1", "pw": "800"}, {"k": "teko", "n": "Teko", "cat": "sporty", "files": [["teko-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "russo", "n": "Russo One", "cat": "sporty", "files": [["russo-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "bungee", "n": "Bungee", "cat": "sporty", "files": [["bungee-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "archivoblack", "n": "Archivo Black", "cat": "sporty", "files": [["archivoblack-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "blackops", "n": "Black Ops One", "cat": "sporty", "files": [["blackops-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "orbitron", "n": "Orbitron", "cat": "sporty", "files": [["orbitron-0.woff2", "400 900"]], "ko": false, "lic": "OFL-1.1", "pw": "400 900"}, {"k": "unbounded", "n": "Unbounded", "cat": "sporty", "files": [["unbounded-0.woff2", "200 900"]], "ko": false, "lic": "OFL-1.1", "pw": "200 900"}, {"k": "marker", "n": "Permanent Marker", "cat": "sporty", "files": [["marker-0.woff2", "400"]], "ko": false, "lic": "Apache-2.0", "pw": "400"}, {"k": "dmserif", "n": "DM Serif Display", "cat": "classic", "files": [["dmserif-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "abril", "n": "Abril Fatface", "cat": "classic", "files": [["abril-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "cormorant", "n": "Cormorant Garamond", "cat": "classic", "files": [["cormorant-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "baskerville", "n": "Libre Baskerville", "cat": "classic", "files": [["baskerville-0.woff2", "400 700"]], "ko": false, "lic": "OFL-1.1", "pw": "400 700"}, {"k": "spacemono", "n": "Space Mono", "cat": "mono", "files": [["spacemono-0.woff2", "400"], ["spacemono-1.woff2", "700"]], "ko": false, "lic": "OFL-1.1", "pw": "700"}, {"k": "plexmono", "n": "IBM Plex Mono", "cat": "mono", "files": [["plexmono-0.woff2", "400"], ["plexmono-1.woff2", "700"]], "ko": false, "lic": "OFL-1.1", "pw": "700"}, {"k": "robotomono", "n": "Roboto Mono", "cat": "mono", "files": [["robotomono-0.woff2", "100 700"]], "ko": false, "lic": "OFL-1.1", "pw": "100 700"}, {"k": "firacode", "n": "Fira Code", "cat": "mono", "files": [["firacode-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "gothica1", "n": "Gothic A1", "cat": "ko", "files": [["gothica1-0.woff2", "700"], ["gothica1-1.woff2", "900"]], "ko": true, "lic": "OFL-1.1", "pw": "900"}, {"k": "dohyeon", "n": "도현 (Do Hyeon)", "cat": "ko", "files": [["dohyeon-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "jua", "n": "주아 (Jua)", "cat": "ko", "files": [["jua-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "gaegu", "n": "개구 (Gaegu)", "cat": "ko", "files": [["gaegu-0.woff2", "400"], ["gaegu-1.woff2", "700"]], "ko": true, "lic": "OFL-1.1", "pw": "700"}, {"k": "gamja", "n": "감자꽃 (Gamja Flower)", "cat": "ko", "files": [["gamja-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "himelody", "n": "하이멜로디 (Hi Melody)", "cat": "ko", "files": [["himelody-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "poorstory", "n": "푸어스토리 (Poor Story)", "cat": "ko", "files": [["poorstory-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "nanumpen", "n": "나눔손글씨 펜 (Nanum Pen Script)", "cat": "ko", "files": [["nanumpen-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "dokdo", "n": "독도 (Dokdo)", "cat": "ko", "files": [["dokdo-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "eastsea", "n": "동해독도 (East Sea Dokdo)", "cat": "ko", "files": [["eastsea-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "kirang", "n": "기랑해랑 (Kirang Haerang)", "cat": "ko", "files": [["kirang-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "diphylleia", "n": "디필레이아 (Diphylleia)", "cat": "ko", "files": [["diphylleia-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}];
+const LAZY_FONTS = [{"k": "oswald", "n": "Oswald", "cat": "sporty", "files": [["oswald-0.woff2", "200 700"]], "ko": false, "lic": "OFL-1.1", "pw": "200 700"}, {"k": "barlow", "n": "Barlow Condensed", "cat": "sporty", "files": [["barlow-0.woff2", "600"], ["barlow-1.woff2", "800"]], "ko": false, "lic": "OFL-1.1", "pw": "800"}, {"k": "teko", "n": "Teko", "cat": "sporty", "files": [["teko-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "russo", "n": "Russo One", "cat": "sporty", "files": [["russo-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "bungee", "n": "Bungee", "cat": "sporty", "files": [["bungee-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "archivoblack", "n": "Archivo Black", "cat": "sporty", "files": [["archivoblack-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "blackops", "n": "Black Ops One", "cat": "sporty", "files": [["blackops-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "orbitron", "n": "Orbitron", "cat": "sporty", "files": [["orbitron-0.woff2", "400 900"]], "ko": false, "lic": "OFL-1.1", "pw": "400 900"}, {"k": "unbounded", "n": "Unbounded", "cat": "sporty", "files": [["unbounded-0.woff2", "200 900"]], "ko": false, "lic": "OFL-1.1", "pw": "200 900"}, {"k": "marker", "n": "Permanent Marker", "cat": "sporty", "files": [["marker-0.woff2", "400"]], "ko": false, "lic": "Apache-2.0", "pw": "400"}, {"k": "dmserif", "n": "DM Serif Display", "cat": "classic", "files": [["dmserif-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "abril", "n": "Abril Fatface", "cat": "classic", "files": [["abril-0.woff2", "400"]], "ko": false, "lic": "OFL-1.1", "pw": "400"}, {"k": "cormorant", "n": "Cormorant Garamond", "cat": "classic", "files": [["cormorant-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "baskerville", "n": "Libre Baskerville", "cat": "classic", "files": [["baskerville-0.woff2", "400 700"]], "ko": false, "lic": "OFL-1.1", "pw": "400 700"}, {"k": "spacemono", "n": "Space Mono", "cat": "mono", "files": [["spacemono-0.woff2", "400"], ["spacemono-1.woff2", "700"]], "ko": false, "lic": "OFL-1.1", "pw": "700"}, {"k": "plexmono", "n": "IBM Plex Mono", "cat": "mono", "files": [["plexmono-0.woff2", "400"], ["plexmono-1.woff2", "700"]], "ko": false, "lic": "OFL-1.1", "pw": "700"}, {"k": "robotomono", "n": "Roboto Mono", "cat": "mono", "files": [["robotomono-0.woff2", "100 700"]], "ko": false, "lic": "OFL-1.1", "pw": "100 700"}, {"k": "firacode", "n": "Fira Code", "cat": "mono", "files": [["firacode-0.woff2", "300 700"]], "ko": false, "lic": "OFL-1.1", "pw": "300 700"}, {"k": "gothica1", "n": "Gothic A1", "cat": "ko", "files": [["gothica1-0.woff2", "700"], ["gothica1-1.woff2", "900"]], "ko": true, "lic": "OFL-1.1", "pw": "900"}, {"k": "dohyeon", "n": "도현 (Do Hyeon)", "cat": "ko", "files": [["dohyeon-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "jua", "n": "주아 (Jua)", "cat": "ko", "files": [["jua-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "gaegu", "n": "개구 (Gaegu)", "cat": "ko", "files": [["gaegu-0.woff2", "400"], ["gaegu-1.woff2", "700"]], "ko": true, "lic": "OFL-1.1", "pw": "700"}, {"k": "gamja", "n": "감자꽃 (Gamja Flower)", "cat": "ko", "files": [["gamja-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "himelody", "n": "하이멜로디 (Hi Melody)", "cat": "ko", "files": [["himelody-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "poorstory", "n": "푸어스토리 (Poor Story)", "cat": "ko", "files": [["poorstory-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "nanumpen", "n": "나눔손글씨 펜 (Nanum Pen Script)", "cat": "ko", "files": [["nanumpen-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "dokdo", "n": "독도 (Dokdo)", "cat": "ko", "files": [["dokdo-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "eastsea", "n": "동해독도 (East Sea Dokdo)", "cat": "ko", "files": [["eastsea-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "kirang", "n": "기랑해랑 (Kirang Haerang)", "cat": "ko", "files": [["kirang-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "diphylleia", "n": "디필레이아 (Diphylleia)", "cat": "ko", "files": [["diphylleia-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}, {"k": "inter", "n": "Inter", "cat": "sporty", "files": [["inter-0.woff2", "700 900"]], "ko": false, "lic": "OFL-1.1", "pw": "700 900"}, {"k": "kodemono", "n": "Kode Mono", "cat": "mono", "files": [["kodemono-0.woff2", "400 700"]], "ko": false, "lic": "OFL-1.1", "pw": "400 700"}, {"k": "pretendardk", "n": "Pretendard (한글 전체)", "cat": "hidden", "files": [["pretendardk-0.woff2", "500 600"], ["pretendardk-1.woff2", "700 900"]], "ko": true, "lic": "OFL-1.1", "pw": "700 900"}, {"k": "blackhank", "n": "Black Han Sans (한글 전체)", "cat": "hidden", "files": [["blackhank-0.woff2", "400"]], "ko": true, "lic": "OFL-1.1", "pw": "400"}];
 
 // 9:16 story PNG (1080x1920) rendered on canvas. Embedded fonts: "TC Archivo", "TC Pretendard" (subset).
 const W = 1080, H = 1920;
 const SYS_KO = '-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",sans-serif';
-const PRE = `"TC Pretendard",${SYS_KO}`;
+const PRE = `"TC Pretendard","LZ pretendardk",${SYS_KO}`;
+// Hangul covered by the embedded subsets; anything else lazy-loads the full (KS X 1001) font so labels/user text never fall back
+const SUB_PRE = new Set('간고골그기까나남내넘다단달대동드랄래랜록론린마말메몬버분브상성스시실아언에여예완요위음이저적정주즈지챌초최축터티페표풀프플하해'), SUB_BH = new Set('골그내넘다드랄래랜론린마메몬버브상스실아언에위이저즈챌터티플');
+function needFull(t, bh) { for (const ch of t) if (ch >= "\uac00" && ch <= "\ud7a3" && !(bh ? SUB_BH : SUB_PRE).has(ch)) return true; return false; }
 const ARC = '"TC Archivo",sans-serif';
 // Tier colours come from TK.tier (single source of truth); only material effects live here.
 function alpha(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; }
@@ -817,10 +830,11 @@ const FONTS = {
   anton: { n: 'Anton', cat: 'sporty', fam: `"OV Anton",${PRE}`, ws: [400], emb: 1, lic: 'OFL-1.1' },
   playfair: { n: 'Playfair Display', cat: 'classic', fam: `"OV Playfair",serif`, ws: [800], emb: 1, lic: 'OFL-1.1' },
   mono: { n: 'JetBrains Mono', cat: 'mono', fam: `"OV Mono",monospace`, ws: [700], sz: .88, emb: 1, lic: 'OFL-1.1' },
-  blackhan: { n: '검은고딕 (Black Han Sans)', cat: 'ko', fam: `"OV BlackHan",${PRE}`, ws: [400], emb: 1, ko: 1, lic: 'OFL-1.1' },
+  blackhan: { n: '검은고딕 (Black Han Sans)', cat: 'ko', fam: `"OV BlackHan","LZ blackhank",${PRE}`, ws: [400], emb: 1, ko: 1, lic: 'OFL-1.1' },
   pretendard: { n: 'Pretendard', cat: 'ko', fam: PRE, ws: [500, 600, 700], emb: 1, ko: 1, lic: 'OFL-1.1' },
 };
 for (const f of LAZY_FONTS) FONTS[f.k] = { n: f.n, cat: f.cat, fam: `"LZ ${f.k}",${f.ko ? '' : PRE + ','}${SYS_KO}`.replace(',,', ','), ws: [...new Set(f.files.flatMap(x => rng(x[1])))], files: f.files, ko: f.ko, lic: f.lic, pw: f.pw };
+const PICKABLE = k => FONTS[k] && FONTS[k].cat !== 'hidden';
 const FONT_CATS = [['sporty', '스포티'], ['classic', '클래식'], ['mono', '모노'], ['ko', '한글'], ['hand', '손글씨']];
 for (const k of ['marker', 'gaegu', 'gamja', 'himelody', 'poorstory', 'nanumpen', 'dokdo', 'eastsea', 'kirang']) if (FONTS[k]) FONTS[k].cat = 'hand';
 const loaded = new Map();
@@ -842,7 +856,9 @@ const previewFam = k => FONTS[k].emb ? FONTS[k].fam : `"PV ${k}","LZ ${k}",${PRE
 const nearW = (k, w) => { const ws = FONTS[k].ws; return ws.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a, ws[0]); };
 
 
-const W_ = W, H_ = H, ARC_ = ARC, PRE_ = PRE, SYS_KO_ = SYS_KO;
+let H_ = H;
+function setH_(h) { H_ = h; }
+const W_ = W, ARC_ = ARC, PRE_ = PRE, SYS_KO_ = SYS_KO;
 { rr, font, alpha };
 function drawCard(c, d, x, y, w, h) {
   const t = TK.tier[d.key], cd = t.card, m = STORY_MAT[d.key], r = w * 0.05, u = w / 340, ink = cd.ink;
@@ -916,7 +932,10 @@ const STAT_SIZE0 = { rec: 120, pace: 96, tier: 92, top: 104, vdot: 72, next: 40,
 const STAT_SIZE = STAT_SIZE0;
 const TOP_MIN_PX = 64; // 상위 % is always shown big
 const STICKERS = [['wordmark', 'hoohaa 워드마크'], ['emblem', '티어 엠블럼'], ['runner', '러너'], ['shoe', '러닝화'], ['dist', '거리 배지'], ['sun', '맑음'], ['date', '날짜 도장'], ['flag', '피니시'], ['sparkle', '반짝'], ['heart', '하트'], ['bolt', '번개'], ['star', '별'], ['rect', '사각형'], ['circle', '원'], ['line', '선']];
-const FILTERS = [['none', '원본'], ['bw', '흑백'], ['warm', '따뜻하게'], ['cool', '차갑게'], ['fade', '빈티지'], ['vivid', '선명하게']];
+const FILTERS = [['none', '원본'], ['vivid', '선명하게'], ['golden', '골든아워'], ['warm', '따뜻하게'], ['morning', '새벽공기'], ['cool', '차갑게'], ['teal', '틸 & 오렌지'], ['film', '필름'], ['fade', '빈티지'], ['bw', '흑백'], ['noir', '누아르']];
+// export formats: 9:16 story (default), 4:5 feed, 1:1
+const FORMATS = [['story', '스토리 9:16', 1920], ['feed', '피드 4:5', 1350], ['square', '정사각 1:1', 1080]];
+const fmtH = f => (FORMATS.find(x => x[0] === f) || FORMATS[0])[2];
 const MASKS = [['rect', '사각'], ['round', '둥근'], ['circle', '원형'], ['polaroid', '폴라로이드']];
 const LK = { x: 540, y: 960, s: 1, r: 0, o: 1 };
 let lseq = 0;
@@ -925,7 +944,7 @@ const mk = (type, p) => ({ id: lid(), type, ...LK, ...p });
 // ---- photo filters (pixel ops: same result in every browser, incl. Safari without ctx.filter) ----
 const fcache = new Map();
 function filtered(im, f, key) {
-  if (!f || f === 'none') return im; const ck = key + ':' + f; if (fcache.has(ck)) return fcache.get(ck);
+  if (!f || f === 'none') return im; const ck = key && key + ':' + f; if (ck && fcache.has(ck)) return fcache.get(ck);
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d'); g.drawImage(im, 0, 0);
   const id = g.getImageData(0, 0, c.width, c.height), p = id.data;
   for (let i = 0; i < p.length; i += 4) { let r = p[i], gg = p[i + 1], b = p[i + 2]; const l = .299 * r + .587 * gg + .114 * b;
@@ -933,10 +952,38 @@ function filtered(im, f, key) {
     else if (f === 'warm') { r = r * 1.08 + 12; gg = gg * 1.02 + 4; b = b * .88; }
     else if (f === 'cool') { r = r * .9; gg = gg * 1.0 + 2; b = b * 1.1 + 14; }
     else if (f === 'fade') { r = l + (r - l) * .6; gg = l + (gg - l) * .6; b = l + (b - l) * .6; r = r * .85 + 30; gg = gg * .85 + 28; b = b * .85 + 22; }
+    else if (f === 'golden') { r = r * 1.1 + 14; gg = gg * 1.03 + 6; b = b * .82; r = l + (r - l) * 1.12; }
+    else if (f === 'morning') { r = r * .92 + 22; gg = gg * .95 + 24; b = b * .98 + 30; const m = (r + gg + b) / 3; r = m + (r - m) * .8; gg = m + (gg - m) * .8; b = m + (b - m) * .8; }
+    else if (f === 'teal') { const t = l / 255; r = r + (t - .5) * 40 + 6; gg = gg + 2; b = b - (t - .5) * 46 + 8; }
+    else if (f === 'film') { r = (r - 128) * .92 + 128 + 10; gg = (gg - 128) * .92 + 128 + 4; b = (b - 128) * .88 + 128 - 6; r = Math.max(r, 22); gg = Math.max(gg, 20); b = Math.max(b, 26); }
+    else if (f === 'noir') { r = gg = b = Math.min(255, Math.max(0, (l - 128) * 1.45 + 120)); }
     else if (f === 'vivid') { r = l + (r - l) * 1.45; gg = l + (gg - l) * 1.45; b = l + (b - l) * 1.45; r = (r - 128) * 1.08 + 128; gg = (gg - 128) * 1.08 + 128; b = (b - 128) * 1.08 + 128; }
     p[i] = r; p[i + 1] = gg; p[i + 2] = b; }
-  g.putImageData(id, 0, 0); if (fcache.size > 24) fcache.clear(); fcache.set(ck, c); return c;
+  g.putImageData(id, 0, 0); if (ck) { if (fcache.size > 24) fcache.clear(); fcache.set(ck, c); } return c;
 }
+// ---- non-destructive photo pipeline: rotate/flip -> crop -> filter + 밝기/대비/채도/따뜻함 -> 배경 지우기 (mask) -> 누끼 테두리 ----
+// P (photo layer or doc.bg): rot 0..3 (×90°), flip, crop {x,y,w,h} (0..1 of the rotated image), filter, adj {br,ct,sa,wa} (-100..100), cut, ol {on,col,w}
+const pcache = new Map();
+const peKey = P => JSON.stringify([P.rot || 0, !!P.flip, P.crop || 0, P.filter || 'none', P.adj || 0, !!P.cut, P.cut && P.ol && P.ol.on ? P.ol : 0]);
+const hasPE = P => !!(P.rot || P.flip || P.crop || P.adj || P.cut || (P.filter && P.filter !== 'none'));
+function orient(src, P, crop = true) { // same geometry for photo + mask so they always line up
+  const rot = (P.rot || 0) & 3, sw = rot & 1 ? src.height : src.width, sh = rot & 1 ? src.width : src.height, cr = crop && P.crop || { x: 0, y: 0, w: 1, h: 1 };
+  const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(sw * cr.w)); c.height = Math.max(1, Math.round(sh * cr.h)); const g = c.getContext('2d');
+  g.translate(-cr.x * sw, -cr.y * sh); g.translate(sw / 2, sh / 2); g.rotate(rot * Math.PI / 2); if (P.flip) g.scale(-1, 1); g.drawImage(src, -src.width / 2, -src.height / 2, src.width, src.height); return c; }
+function adjust(c, a) { if (!a || !(a.br || a.ct || a.sa || a.wa)) return c; const g = c.getContext('2d'), id = g.getImageData(0, 0, c.width, c.height), p = id.data;
+  const br = (a.br || 0) * 1.1, ct = 1 + (a.ct || 0) / 110, sa = 1 + (a.sa || 0) / 100, wa = (a.wa || 0) * .32;
+  for (let i = 0; i < p.length; i += 4) { let r = p[i] + br, gg = p[i + 1] + br, b = p[i + 2] + br; r = (r - 128) * ct + 128; gg = (gg - 128) * ct + 128; b = (b - 128) * ct + 128;
+    const l = .299 * r + .587 * gg + .114 * b; r = l + (r - l) * sa + wa; gg = l + (gg - l) * sa + wa * .25; b = l + (b - l) * sa - wa; p[i] = r; p[i + 1] = gg; p[i + 2] = b; }
+  g.putImageData(id, 0, 0); return c; }
+function photoSrc(photos, pid, P) { const im = photos[pid]; if (!im) return null; if (!hasPE(P)) return im;
+  const mask = P.cut ? photos['mask:' + pid] : null, k = pid + peKey(P) + (mask ? 'm' : ''); if (pcache.has(k)) return pcache.get(k);
+  let c = orient(im, P); c = adjust(filtered(c, P.filter, null), P.adj); if (c === im) { const t = document.createElement('canvas'); t.width = c.width; t.height = c.height; t.getContext('2d').drawImage(c, 0, 0); c = t; }
+  if (mask) { const ms = document.createElement('canvas'); ms.width = im.width; ms.height = im.height; ms.getContext('2d').drawImage(mask, 0, 0, im.width, im.height);
+    const mo = orient(ms, P), g = c.getContext('2d'); g.globalCompositeOperation = 'destination-in'; g.drawImage(mo, 0, 0); g.globalCompositeOperation = 'source-over';
+    if (P.ol && P.ol.on) { const w = Math.max(1, (P.ol.w || 12) * Math.max(c.width, c.height) / 1080), o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const og = o.getContext('2d');
+      for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; og.drawImage(c, Math.cos(a) * w, Math.sin(a) * w); }
+      og.globalCompositeOperation = 'source-in'; og.fillStyle = P.ol.col || '#ffffff'; og.fillRect(0, 0, o.width, o.height); og.globalCompositeOperation = 'source-over'; og.drawImage(c, 0, 0); c = o; } }
+  if (pcache.size > 16) pcache.clear(); pcache.set(k, c); return c; }
 const famOf = (k, ko) => k && FONTS[k] ? FONTS[k].fam : ko ? PRE_ : ARC_;
 const wOf = (k, w) => { if (!k || !FONTS[k]) return w; const ws = FONTS[k].ws; return ws.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a, ws[0]); };
 const HAN = /[\uac00-\ud7a3]/;
@@ -944,15 +991,21 @@ const contrast = c => lum(c) > .45 ? '#111111' : '#ffffff';
 // text block: lines measured, local box centred on (0,0)
 function textBlock(c, lines, o) { // o: size, fam, w, ls, lh, al, st
   const L = lines.map(l => { font(c, l.size || o.size, l.w || o.w, l.fam || o.fam, l.st || o.st || 'normal'); c.letterSpacing = (l.ls ?? o.ls ?? 0) + 'px'; const wd = c.measureText(l.t).width - (l.ls ?? o.ls ?? 0); c.letterSpacing = '0px'; return { ...l, size: l.size || o.size, wd }; });
-  let y = 0; const lh = o.lh ?? 1.15; L.forEach((l, i) => { if (i) y += (L[i - 1].size * .25 + l.size * .8) * lh + (l.gap || 0); else y = l.size * .8; l.base = y; });
+  let y = 0; const lh = o.lh ?? 1.15; L.forEach((l, i) => { if (i) y += (L[i - 1].size * .25 + l.size * .8) * lh + (l.gap || 0); else y = l.size * (HAN.test(l.t) ? .9 : .8); l.base = y; });
   const w = Math.max(1, ...L.map(l => l.wd)), h = Math.max(1, y + L[L.length - 1].size * .22);
   return { L, w, h };
 }
+// text effects of the layer being drawn (all OFF by default): 그림자 fsh, 외곽선 fol {col,w}, 글로우 fgl {col,r}
+let FX = null;
 function drawTextBlock(c, B, o, col) {
-  c.textBaseline = 'alphabetic'; c.textAlign = 'left';
+  c.textBaseline = 'alphabetic'; c.textAlign = 'left'; const fx = FX || {};
   for (const l of B.L) { const x = -B.w / 2 + (o.al === 'left' ? 0 : o.al === 'right' ? B.w - l.wd : (B.w - l.wd) / 2);
     font(c, l.size, l.w || o.w, l.fam || o.fam, l.st || o.st || 'normal'); c.letterSpacing = (l.ls ?? o.ls ?? 0) + 'px'; c.fillStyle = l.col || col; c.globalAlpha = (l.alpha ?? 1) * (o.ga ?? 1);
-    c.fillText(l.t, x, l.base - B.h / 2); c.letterSpacing = '0px'; c.globalAlpha = o.ga ?? 1; }
+    const ty = l.base - B.h / 2, sz = l.size || o.size;
+    if (fx.fgl) { c.save(); c.shadowColor = fx.fgl.col === '@text' || !fx.fgl.col ? (l.col || col) : fx.fgl.col; c.shadowBlur = sz * (fx.fgl.r ?? 30) / 100; for (let k = 0; k < 2; k++) c.fillText(l.t, x, ty); c.restore(); }
+    if (fx.fsh) { c.save(); c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = sz * .14; c.shadowOffsetY = sz * .05; c.fillText(l.t, x, ty); c.restore(); }
+    if (fx.fol && fx.fol.w) { c.save(); c.strokeStyle = fx.fol.col || '#000000'; c.lineWidth = fx.fol.w * 2; c.lineJoin = 'round'; c.miterLimit = 2; c.strokeText(l.t, x, ty); c.restore(); }
+    c.fillText(l.t, x, ty); c.letterSpacing = '0px'; c.globalAlpha = o.ga ?? 1; }
 }
 // text background box: own colour (L.bcol) + opacity (L.bo); without bcol it behaves as before (semi = black 45%, full = text colour)
 function boxBehind(c, w, h, style, col, pad, rad, L = {}) { if (!style || style === 'none') return; rr(c, -w / 2 - pad, -h / 2 - pad * .7, w + pad * 2, h + pad * 1.4, rad);
@@ -1002,14 +1055,14 @@ function layerGeom(c, L, d, doc, photos) {
     const w = 900, h = Math.round(900 / 1.586); return { w, h, draw: () => drawCard(c, { ...d, who: '' }, -w / 2, -h / 2, w, h) };
   }
   if (L.type === 'photo') {
-    const im = photos[L.pid]; const ar = im ? im.width / im.height : 1, bw = L.bw || (ar >= 1 ? 640 : 640 * ar), bh = L.bh || (ar >= 1 ? 640 / ar : 640);
+    const im = photoSrc(photos, L.pid, L); const ar = im ? im.width / im.height : 1, bw = L.bw || (ar >= 1 ? 640 : 640 * ar), bh = L.bh || (ar >= 1 ? 640 / ar : 640);
     const pol = L.mask === 'polaroid', w = pol ? bw + 48 : bw, h = pol ? bh + 150 : bh;
     return { w, h, draw: () => {
       if (pol) { c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 30; c.shadowOffsetY = 12; c.fillStyle = '#fbfaf6'; c.fillRect(-w / 2, -h / 2, w, h); c.restore(); }
       const ox = -bw / 2, oy = pol ? -h / 2 + 24 : -bh / 2;
-      c.save(); c.beginPath(); if (L.mask === 'circle') c.ellipse(0, oy + bh / 2, bw / 2, bh / 2, 0, 0, 7); else c.roundRect(ox, oy, bw, bh, L.mask === 'round' ? 48 : 0); c.clip();
-      if (im) { const src = filtered(im, L.filter, L.pid), cz = Math.max(1, L.cz || 1), sc = Math.max(bw / im.width, bh / im.height) * cz, iw = im.width * sc, ih = im.height * sc;
-        const mx = (iw - bw) / 2, my = (ih - bh) / 2; c.drawImage(src, ox - mx + (L.cx || 0) * mx, oy - my + (L.cy || 0) * my, iw, ih); }
+      c.save(); c.beginPath(); if (L.cut) c.rect(ox - bw, oy - bh, bw * 3, bh * 3); else if (L.mask === 'circle') c.ellipse(0, oy + bh / 2, bw / 2, bh / 2, 0, 0, 7); else c.roundRect(ox, oy, bw, bh, L.mask === 'round' ? 48 : 0); c.clip();
+      if (im) { const src = im, cz = Math.max(1, L.cz || 1), sc = Math.max(bw / im.width, bh / im.height) * cz, iw = im.width * sc, ih = im.height * sc;
+        const mx = (iw - bw) / 2, my = (ih - bh) / 2; if (L.cut) { const dw = bw * cz, dh = bh * cz; c.drawImage(src, ox + (bw - dw) / 2 + (L.cx || 0) * (dw - bw) / 2, oy + (bh - dh) / 2 + (L.cy || 0) * (dh - bh) / 2, dw, dh); } else c.drawImage(src, ox - mx + (L.cx || 0) * mx, oy - my + (L.cy || 0) * my, iw, ih); }
       else { c.fillStyle = pol ? '#dcd8cf' : 'rgba(255,255,255,.18)'; c.fillRect(ox, oy, bw, bh); c.fillStyle = pol ? '#6b6a66' : '#ffffff'; c.textAlign = 'center'; font(c, 40, 600, PRE_); c.fillText('사진을 넣어 주세요', 0, oy + bh / 2 + 14); c.textAlign = 'left'; }
       c.restore(); } };
   }
@@ -1049,18 +1102,18 @@ function bgDraw(c, doc, d, photos) {
   if (b.type === 'solid') { c.fillStyle = b.c1 || '#0F1620'; c.fillRect(0, 0, W_, H_); }
   else if (b.type === 'grad') { const g = c.createLinearGradient(0, 0, W_ * .35, H_); g.addColorStop(0, b.c1); g.addColorStop(1, b.c2); c.fillStyle = g; c.fillRect(0, 0, W_, H_); }
   else if (b.type === 'dark') { c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); const m = STORY_MAT[d.key], tint = m.glow || 'rgba(255,255,255,.06)', rg = c.createRadialGradient(W_ / 2, 700, 0, W_ / 2, 700, 900); rg.addColorStop(0, tint.replace(/[\d.]+\)$/, '0.22)')); rg.addColorStop(1, 'rgba(15,22,32,0)'); c.fillStyle = rg; c.fillRect(0, 0, W_, H_); }
-  else if (b.type === 'photo' && photos[b.pid]) { const im = filtered(photos[b.pid], b.filter, b.pid), sc = Math.max(W_ / im.width, H_ / im.height) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (iw - W_) / 2, my = (ih - H_) / 2;
-    c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); c.drawImage(im, ...bgRect(b, photos[b.pid])); }
+  else if (b.type === 'photo' && photos[b.pid] && !b.cut) { const im = b.filter && !hasPE({ ...b, filter: 0 }) ? filtered(photos[b.pid], b.filter, b.pid) : photoSrc(photos, b.pid, b);
+    c.fillStyle = '#0F1620'; c.fillRect(0, 0, W_, H_); c.drawImage(im, ...bgRect(b, im)); }
   else if (b.type === 'tone' || b.type === 'photo') { const m = STORY_MAT[d.key], g = c.createLinearGradient(0, 0, W_ * .3, H_); g.addColorStop(0, '#6f7a86'); g.addColorStop(.5, '#3c4652'); g.addColorStop(1, '#1d232b'); c.fillStyle = g; c.fillRect(0, 0, W_, H_);
     const rg = c.createRadialGradient(W_ * .75, H_ * .28, 0, W_ * .75, H_ * .28, H_ * .6); rg.addColorStop(0, alpha(m.s[0], .28)); rg.addColorStop(1, alpha(m.s[0], 0)); c.fillStyle = rg; c.fillRect(0, 0, W_, H_);
     const lg = c.createRadialGradient(W_ * .2, H_ * .85, 0, W_ * .2, H_ * .85, H_ * .5); lg.addColorStop(0, 'rgba(255,255,255,.10)'); lg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = lg; c.fillRect(0, 0, W_, H_); }
   else tierBg(c, d);
+  if (b.type === 'photo' && photos[b.pid] && b.cut) { const im = photoSrc(photos, b.pid, b); c.drawImage(im, ...bgRect(b, im)); } // 배경 지우기: only the person, over a plain tone
 }
 // bg photo geometry (shared by background + subject cut-out so they line up exactly)
 function bgRect(b, im) { const sc = Math.max(W_ / im.width, H_ / im.height) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (iw - W_) / 2, my = (ih - H_) / 2; return [-mx + Math.max(-1, Math.min(1, b.px || 0)) * mx, -my + Math.max(-1, Math.min(1, b.py || 0)) * my, iw, ih]; }
 function subjectLayer(doc, photos) { const b = doc.bg, im = b.type === 'photo' && photos[b.pid], mk2 = im && photos['mask:' + b.pid]; if (!mk2) return null;
-  const t = document.createElement('canvas'); t.width = W_; t.height = H_; const g = t.getContext('2d'), r = bgRect(b, im);
-  g.drawImage(mk2, ...r); g.globalCompositeOperation = 'source-in'; g.drawImage(filtered(im, b.filter, b.pid), ...r); return t; }
+  const cut = photoSrc(photos, b.pid, { ...b, cut: true }); return [cut, bgRect(b, cut)]; }
 const PRE_FONTS = ['400 40px "OV Bebas"', '400 40px "OV Anton"', '800 40px "OV Playfair"', '700 40px "OV Mono"', '400 40px "OV BlackHan"', '800 40px "TC Archivo"', '300 40px "TC Archivo"', '600 40px "TC Archivo"', '700 40px "TC Pretendard"', '500 40px "TC Pretendard"', '600 40px "TC Pretendard"'];
 // effective transform: 상위 % is clamped so it can never become small or invisible
 const isTopL = L => L.type === 'stat' && L.stat === 'top' && L.v !== 4;
@@ -1068,13 +1121,15 @@ function eff(L, g) { if (L.type === 'stat' && L.stat === 'top' && L.v !== 4) { c
 async function renderDoc(d, doc, photos = {}, cv) {
   await document.fonts.ready; await Promise.all(PRE_FONTS.map(f => document.fonts.load(f, 'A가').catch(() => { })));
   await Promise.all([...new Set(doc.layers.map(l => l.font).filter(Boolean))].map(loadFont));
-  cv = cv || document.createElement('canvas'); cv.width = W_; cv.height = H_; const c = cv.getContext('2d');
+  { const txt = doc.layers.map(l => l.type === 'text' ? (l.t || '') : l.type === 'stat' ? statValue(d, doc, l.stat) + (l.lab || statLabel(d, l.stat)) + (l.tx || '') : l.f ? Object.values(l.f).join('') : '').join('') + (doc.race || '');
+    const fk = []; if (needFull(txt)) fk.push('pretendardk'); if (doc.layers.some(l => l.font === 'blackhan' || (l.sp && l.sp.f === 'blackhan')) && needFull(txt, true)) fk.push('blackhank'); await Promise.all(fk.map(loadFont)); }
+  setH_(fmtH(doc.fmt)); cv = cv || document.createElement('canvas'); cv.width = W_; cv.height = H_; const c = cv.getContext('2d');
   c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; bgDraw(c, doc, d, photos);
   const boxes = [], subj = doc.layers.some(l => l.behind && !l.hidden) ? subjectLayer(doc, photos) : null;
   const order = subj ? [...doc.layers.filter(l => l.behind), null, ...doc.layers.filter(l => !l.behind)] : doc.layers;
   cv.__subject = !!subj;
   for (const L0 of order) {
-    if (L0 === null) { c.drawImage(subj, 0, 0); continue; }
+    if (L0 === null) { c.drawImage(subj[0], ...subj[1]); continue; }
     c.save(); const g = layerGeom(c, L0, d, doc, photos), L = { ...eff(L0, g) }; c.restore();
     if (L.af && !(L.r)) { // template auto-fit: keep drawn bounds (incl. slant) inside ~6% safe margins until the user resizes it
       const M = 65, MY = 40, aw = L.ax === 'left' ? W_ - M - L.x : L.ax === 'right' ? L.x - M : 2 * Math.min(L.x - M, W_ - M - L.x), ah = 2 * Math.min(L.y - MY, H_ - MY - L.y);
@@ -1082,7 +1137,7 @@ async function renderDoc(d, doc, photos = {}, cv) {
     if (L.ax === 'left') L.x += g.w * L.s / 2; else if (L.ax === 'right') L.x -= g.w * L.s / 2;
     boxes.push({ id: L.id, x: L.x, y: L.y, s: L.s, r: L.r, w: g.w, h: g.h, type: L.type, stat: L.stat, v: L.v, hidden: !!L.hidden });
     if (L.hidden) continue;
-    c.save(); c.translate(L.x, L.y); c.rotate(L.r || 0); c.scale(L.s, L.s); c.globalAlpha = L.o ?? 1; g.draw(); c.restore();
+    c.save(); c.translate(L.x, L.y); c.rotate(L.r || 0); c.scale(L.s, L.s); c.globalAlpha = L.o ?? 1; FX = L.type === 'text' || L.type === 'stat' ? L : null; g.draw(); FX = null; c.restore();
   }
   cv.__boxes = boxes; return cv;
 }
@@ -1208,9 +1263,11 @@ $('again').addEventListener('click', () => { show('scrInput'); $('tq').focus(); 
 const clone = o => JSON.parse(JSON.stringify(o));
 const LS = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return null; } };
 const MAX_PHOTOS = 12, PCV = { W: 1080, H: 1920 };
+const bgImg = () => photoSrc(photos, doc.bg.pid, doc.bg) || photos[doc.bg.pid];
+const FH = () => fmtH(doc && doc.fmt); let safeOn = false, cropSt = null, moreFx = false, moreAdj = false;
 let doc = null, photos = {}, sel = null, boxes = [], mode = null, libOpen = false, fontCat = 'all', pickMode = false, guides = null, trashHot = false, dragging = false;
 const favs = () => LS('runtier:fontfav') || [], recents = () => LS('runtier:fontrecent') || [];
-window.__doc = () => clone(doc); window.__boxes = () => clone(boxes); window.__sel = () => sel; window.__inkBounds = async id => { const L = getL(id); const cv = await renderDoc(state.story, { ...doc, bg: { type: 'solid', c1: '#000000' }, layers: [L] }, photos); const d = cv.getContext('2d').getImageData(0, 0, 1080, 1920).data; let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1; for (let y = 0; y < 1920; y += 2) for (let x = 0; x < 1080; x += 2) { const i = (y * 1080 + x) * 4; if (d[i] + d[i + 1] + d[i + 2] > 60) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } return { x0, y0, x1, y1 }; };
+window.__doc = () => clone(doc); window.__boxes = () => clone(boxes); window.__sel = () => sel; window.__inkBounds = async id => { const L = getL(id); const cv = await renderDoc(state.story, { ...doc, bg: { type: 'solid', c1: '#000000' }, layers: [L] }, photos); const d = cv.getContext('2d').getImageData(0, 0, 1080, FH()).data; let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1; for (let y = 0; y < FH(); y += 2) for (let x = 0; x < 1080; x += 2) { const i = (y * 1080 + x) * 4; if (d[i] + d[i + 1] + d[i + 2] > 60) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } } return { x0, y0, x1, y1 }; };
 window.__story = () => clone(state.story); window.__acc = () => accentOf(state.story); window.__photos = () => Object.keys(photos).filter(k => !k.startsWith('mask:')).length; window.__statTexts = () => doc.layers.filter(l => l.type === 'stat').map(l => statValue(state.story, doc, l.stat));
 // ---- photos stay on the device: IndexedDB only ----
 const idb = (() => { let p; const open = () => p || (p = new Promise((res, rej) => { const r = indexedDB.open('hoohaa', 1); r.onupgradeneeded = () => r.result.createObjectStore('photos'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
@@ -1273,42 +1330,65 @@ let rafQ = 0, lastCv = null;
 function syncTier() { if (!doc || !state.story) return; const a = accentOf(state.story);
   if (doc.acc && doc.acc !== a) for (const l of doc.layers) if (l.col && l.col.toLowerCase() === doc.acc.toLowerCase()) l.col = '@tier';
   doc.acc = a; }
-function changed(now) { syncTier(); const bb = $('bgBtn'); if (bb && doc) bb.hidden = doc.bg.type === 'photo' && !!photos[doc.bg.pid]; if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; $('tplPreview').getContext('2d').drawImage(cv, 0, 0); paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
+function changed(now) { syncTier(); const bb = $('bgBtn'); if (bb && doc) bb.hidden = doc.bg.type === 'photo' && !!photos[doc.bg.pid]; if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; fitStage(); $('tplPreview').getContext('2d').drawImage(cv, 0, 0); if (needClamp) { needClamp = false; if (clampN++ < 5 && clampIn()) { changed(true); return; } clampN = 0; } paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
+// ---- format: 9:16 story · 4:5 feed · 1:1 (preview canvas follows the export aspect) ----
+let needClamp = false, clampN = 0;
+function fitStage() { const h = FH(), pv = $('tplPreview'), o = $('ovl'); if (pv.height !== h) { pv.height = h; o.height = h; } $('stage').style.setProperty('--ar', `1080/${h}`); $('stage').style.setProperty('--arn', String(1080 / h));
+  for (const b of document.querySelectorAll('#fmtSeg [data-v]')) b.setAttribute('aria-checked', String(b.dataset.v === (doc.fmt || 'story'))); $('safeBtn').hidden = (doc.fmt || 'story') !== 'story'; }
+// re-lay out proportionally: positions + sizes follow the height ratio, edge anchors stay at the margins; template blocks re-fit (auto-fit), everything kept inside the safe margins
+function relayout(d, to) { const h0 = fmtH(d.fmt), h1 = fmtH(to); d.fmt = to === 'story' ? undefined : to; if (h0 === h1) return d; const k = h1 / h0;
+  for (const L of d.layers) { L.y = L.y * k; L.s = L.s * k; if (!L.ax) L.x = 540 + (L.x - 540) * Math.max(k, .8); }
+  needClamp = true; clampN = 0; return d; }
+function clampIn() { let mv = false; const H = FH(), M = 40;
+  for (const b of boxes) { const L = getL(b.id); if (!L || b.hidden) continue; const hw = b.w * b.s / 2, hh = b.h * b.s / 2; let dx = 0, dy = 0;
+    if (hw * 2 > 1080 - M * 2 || hh * 2 > H - M * 2) { const f = Math.min((1080 - M * 2) / (hw * 2), (H - M * 2) / (hh * 2)); if (f < 1) { L.s = b.s * f; L.af = false; mv = true; continue; } }
+    if (b.x - hw < M) dx = M - (b.x - hw); else if (b.x + hw > 1080 - M) dx = 1080 - M - (b.x + hw); if (b.y - hh < M) dy = M - (b.y - hh); else if (b.y + hh > H - M) dy = H - M - (b.y + hh);
+    if (dx || dy) { if (L.ax) { L.x = b.x; delete L.ax; } else L.x = b.x; L.y = b.y + dy; L.x += dx; mv = true; } }
+  if (mv) needClamp = true; return mv; }
+window.__fmt = () => ({ fmt: doc.fmt || 'story', h: FH(), cw: $('tplPreview').width, ch: $('tplPreview').height });
+// ---- 내 스타일 기억: last template / format / fonts / colours / outline & text effects, applied to the next record and new sessions ----
+const MY = () => LS('runtier:mystyle') || {}; const myPut = o => { if (MY().off) return; LS('runtier:mystyle', { ...MY(), ...o }); };
+function newDoc(t) { const m = MY(), d = templateDoc(t || m.tpl || 'nrc', state.story);
+  if (!m.off) for (const L of d.layers) { if (L.type === 'stat' && L.v !== 4) { if (m.font !== undefined) L.font = m.font; if (m.col && (!L.col || L.col === '#ffffff')) L.col = m.col; if (m.fx) Object.assign(L, clone(m.fx)); } }
+  if (!m.off && m.ol) d.olPref = m.ol; return relayout(d, m.off ? 'story' : m.fmt || 'story'); }
 async function refreshTpl() { // called from renderResult
   if (!state.story) return;
-  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : templateDoc('nrc', state.story); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
+  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : newDoc(); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
   changed(true); paintPanel(); thumbs();
 }
 async function thumbs() {
   const mine = LS('runtier:mytpl') || [];
-  $('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-t="${k}" aria-checked="${doc.tpl === k}"><canvas width="108" height="192"></canvas><span class="tn">${n}</span></button>`).join('') +
+  $('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-t="${k}" aria-checked="${doc.tpl === k}"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${n}</span></button>`).join('') +
     mine.map((m, i) => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${i}" aria-checked="false"><canvas width="108" height="192"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
-  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? templateDoc(b.dataset.t, state.story) : mine[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t = b.querySelector('canvas').getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, 108, 192); }
+  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? relayout(templateDoc(b.dataset.t, state.story), doc.fmt || 'story') : mine[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
 }
 $('tplList').addEventListener('click', e => { const del = e.target.closest('[data-mdel]'); if (del) { const m = LS('runtier:mytpl') || []; m.splice(+del.dataset.mdel, 1); LS('runtier:mytpl', m); thumbs(); return; }
   const b = e.target.closest('.tpl-btn'); if (!b) return; const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null;
-  doc = b.dataset.t ? templateDoc(b.dataset.t, state.story) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined }; doc.race = race; if (keepBg) doc.bg = keepBg; sel = null; mode = null;
+  const f0 = doc.fmt || 'story'; doc = b.dataset.t ? (myPut({ tpl: b.dataset.t }), newDoc(b.dataset.t)) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined }; if (!b.dataset.t) relayout(doc, f0); else if ((doc.fmt || 'story') !== f0) relayout(doc, f0); doc.race = race; if (keepBg) doc.bg = keepBg; sel = null; mode = null;
   for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); });
-$('tplReset').addEventListener('click', () => { const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; doc = templateDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc', state.story); doc.race = race; if (keepBg) doc.bg = keepBg; sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
+$('tplReset').addEventListener('click', () => { const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc'), f0); doc.race = race; if (keepBg) doc.bg = keepBg; sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
 $('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
+$('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); myPut({ fmt: f }); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.textContent} 형식으로 바꿨어요`); });
+$('safeBtn').addEventListener('click', e => { safeOn = !safeOn; e.currentTarget.setAttribute('aria-pressed', String(safeOn)); paintOvl(); status(safeOn ? '점선 영역은 인스타 스토리 UI에 가려질 수 있어요 (저장 이미지엔 안 나와요)' : '안전영역 가이드를 껐어요', 2600); });
 // ---- overlay: selection, handles, guides, trash (never part of the exported image) ----
 const corners = b => { const c = Math.cos(b.r || 0), s = Math.sin(b.r || 0), hw = b.w * b.s / 2, hh = b.h * b.s / 2; return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(([x, y]) => [b.x + x * c - y * s, b.y + x * s + y * c]); };
 const HANDLE = 46;
 function paintOvl() {
-  const o = $('ovl'), g = o.getContext('2d'); g.clearRect(0, 0, 1080, 1920);
-  if (guides) { g.strokeStyle = '#FF3DA5'; g.lineWidth = 4; g.setLineDash([18, 12]); for (const x of guides.x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 1920); g.stroke(); } for (const y of guides.y) { g.beginPath(); g.moveTo(0, y); g.lineTo(1080, y); g.stroke(); } g.setLineDash([]); }
+  const o = $('ovl'), g = o.getContext('2d'), H = FH(); g.clearRect(0, 0, 1080, H);
+  if (safeOn && H === 1920) { g.save(); g.fillStyle = 'rgba(255,255,255,.10)'; g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 4; g.setLineDash([14, 12]); for (const [y0, y1, t] of [[0, 250, 'IG 상단 UI (프로필·닫기)'], [1920 - 340, 1920, 'IG 하단 UI (답장·공유)']]) { g.fillRect(0, y0, 1080, y1 - y0); g.beginPath(); g.moveTo(0, y0 ? y0 : y1); g.lineTo(1080, y0 ? y0 : y1); g.stroke(); g.fillStyle = 'rgba(255,255,255,.9)'; g.font = '600 34px sans-serif'; g.textAlign = 'center'; g.fillText(t, 540, y0 ? y0 + 64 : y1 - 36); g.fillStyle = 'rgba(255,255,255,.10)'; } g.restore(); }
+  if (guides) { g.strokeStyle = '#FF3DA5'; g.lineWidth = 4; g.setLineDash([18, 12]); for (const x of guides.x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } for (const y of guides.y) { g.beginPath(); g.moveTo(0, y); g.lineTo(1080, y); g.stroke(); } g.setLineDash([]); }
   const b = sel && boxes.find(x => x.id === sel);
   if (b) { const p = corners(b); g.strokeStyle = '#3DC8F5'; g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]);
     const [hx, hy] = p[2]; g.fillStyle = '#3DC8F5'; g.beginPath(); g.arc(hx, hy, HANDLE, 0, 7); g.fill(); g.fillStyle = '#0F1620'; g.font = '700 52px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('⤡', hx, hy + 2); }
   placeMini(b);
-  if (dragging) { g.fillStyle = trashHot ? 'rgba(255,90,95,.95)' : 'rgba(15,22,32,.75)'; g.beginPath(); g.arc(540, 1790, trashHot ? 96 : 80, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 6; g.beginPath(); g.rect(510, 1765, 60, 70); g.moveTo(495, 1765); g.lineTo(585, 1765); g.moveTo(525, 1750); g.lineTo(555, 1750); g.stroke(); }
+  if (dragging) { g.fillStyle = trashHot ? 'rgba(255,90,95,.95)' : 'rgba(15,22,32,.75)'; g.beginPath(); const ty = H - 130; g.arc(540, ty, trashHot ? 96 : 80, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 6; g.beginPath(); g.rect(510, ty - 25, 60, 70); g.moveTo(495, ty - 25); g.lineTo(585, ty - 25); g.moveTo(525, ty - 40); g.lineTo(555, ty - 40); g.stroke(); }
 }
 // floating contextual mini toolbar, positioned inside the canvas next to the selection (DOM over the overlay → never exported)
 function placeMini(b) { const m = $('miniBar'); if (!m) return; const L = b && getL(b.id);
   if (!L || dragging || pickMode) { m.hidden = true; return; }
   m.querySelector('[data-mb=behind]').hidden = !canBehind(L); const bh = m.querySelector('[data-mb=behind]'); bh.setAttribute('aria-pressed', !!L.behind); bh.title = L.behind ? '인물 앞으로' : '인물 뒤로'; bh.setAttribute('aria-label', bh.title); bh.querySelector('small').textContent = bh.title;
   m.querySelectorAll('[data-mb=dup],[data-mb=del]').forEach(e => e.hidden = isTop(L)); m.hidden = false;
-  const r = $('ovl').getBoundingClientRect(), kx = r.width / 1080, ky = r.height / 1920, c = corners(b), xs = c.map(q => q[0] * kx), ys = c.map(q => q[1] * ky);
+  const r = $('ovl').getBoundingClientRect(), kx = r.width / 1080, ky = r.height / FH(), c = corners(b), xs = c.map(q => q[0] * kx), ys = c.map(q => q[1] * ky);
   const bw = m.offsetWidth, bhh = m.offsetHeight, top = Math.min(...ys), bot = Math.max(...ys), cx = (Math.min(...xs) + Math.max(...xs)) / 2;
   let y = top - bhh - 10; if (y < 4) { y = bot + 10; if (y + bhh > r.height - 4) y = top > r.height - bot ? Math.max(4, top - bhh - 4) : Math.min(r.height - bhh - 4, bot + 4); }
   m.style.left = Math.max(4, Math.min(r.width - bw - 4, cx - bw / 2)) + 'px'; m.style.top = y + 'px'; }
@@ -1328,7 +1408,7 @@ const onHandle = (x, y) => { const b = sel && boxes.find(q => q.id === sel); if 
 // ---- gestures: tap select · drag move (snap) · pinch scale+rotate · corner handle · long-press menu · drag to trash ----
 {
   const st = $('stage'), ov = $('ovl'), pts = new Map(); let g0 = null, lp = 0, moved = false;
-  const cv = e => { const r = ov.getBoundingClientRect(); return [(e.clientX - r.left) * 1080 / r.width, (e.clientY - r.top) * 1920 / r.height]; };
+  const cv = e => { const r = ov.getBoundingClientRect(); return [(e.clientX - r.left) * 1080 / r.width, (e.clientY - r.top) * FH() / r.height]; };
   const ang = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]);
   const start = () => { const P = [...pts.values()], L = sel && getL(sel); if (L && P.length > 1) pinS(L); g0 = { P: P.map(p => [...p]), L: L ? clone(L) : null, bg: clone(doc.bg) }; };
   ov.addEventListener('pointerdown', e => {
@@ -1353,10 +1433,10 @@ const onHandle = (x, y) => { const b = sel && boxes.find(q => q.id === sel); if 
       L.s = Math.max(.08, Math.min(8, g0.L.s * f)); L.r = snapR(g0.L.r + ang(P[0], P[1]) - ang(g0.P[0], g0.P[1])); L.x = g0.L.x + dx; L.y = g0.L.y + dy; }
     else if (L && g0.hit) { dragging = true; let nx = g0.L.x + dx, ny = g0.L.y + dy; const b = boxes.find(q => q.id === L.id) || { w: 0, h: 0, s: 1 }, hw = b.w * L.s / 2, hh = b.h * L.s / 2; const gx = [], gy = [];
       for (const [t, line] of [[540, 540], [60 + hw, 60], [1020 - hw, 1020]]) if (Math.abs(nx - t) < 18) { nx = t; gx.push(line); break; }
-      for (const [t, line] of [[960, 960], [250 + hh, 250], [1670 - hh, 1670]]) if (Math.abs(ny - t) < 18) { ny = t; gy.push(line); break; }
-      L.x = nx; L.y = ny; guides = { x: gx, y: gy }; trashHot = Math.hypot(P[0][0] - 540, P[0][1] - 1790) < 110; }
+      const HH = FH(), sz = HH === 1920 ? [250, 1670] : [60, HH - 60]; for (const [t, line] of [[HH / 2, HH / 2], [sz[0] + hh, sz[0]], [sz[1] - hh, sz[1]]]) if (Math.abs(ny - t) < 18) { ny = t; gy.push(line); break; }
+      L.x = nx; L.y = ny; guides = { x: gx, y: gy }; trashHot = Math.hypot(P[0][0] - 540, P[0][1] - (HH - 130)) < 110; }
     else if (!g0.hit && doc.bg.type === 'photo' && photos[doc.bg.pid]) { if (P.length > 1) { const f = Math.hypot(P[0][0] - P[1][0], P[0][1] - P[1][1]) / Math.max(1, Math.hypot(g0.P[0][0] - g0.P[1][0], g0.P[0][1] - g0.P[1][1])); doc.bg.pz = Math.max(1, Math.min(4, (g0.bg.pz || 1) * f)); }
-      const im = photos[doc.bg.pid], sc = Math.max(1080 / im.width, 1920 / im.height) * (doc.bg.pz || 1), mx = Math.max(1, (im.width * sc - 1080) / 2), my = Math.max(1, (im.height * sc - 1920) / 2);
+      const im = bgImg(), HB = FH(), sc = Math.max(1080 / im.width, HB / im.height) * (doc.bg.pz || 1), mx = Math.max(1, (im.width * sc - 1080) / 2), my = Math.max(1, (im.height * sc - HB) / 2);
       doc.bg.px = Math.max(-1, Math.min(1, (g0.bg.px || 0) + dx / mx)); doc.bg.py = Math.max(-1, Math.min(1, (g0.bg.py || 0) + dy / my)); }
     changed();
   });
@@ -1368,7 +1448,7 @@ const onHandle = (x, y) => { const b = sel && boxes.find(q => q.id === sel); if 
   for (const el of [st, $('cpSV'), $('cpHue')]) { const block = e => { if (e.target.closest && e.target.closest('.mini, .bg-btn, .ctx')) return; e.preventDefault(); }; el.addEventListener('touchstart', block, { passive: false }); el.addEventListener('touchmove', block, { passive: false }); }
 }
 const snapR = r => { const t = Math.PI / 2, n = Math.round(r / t); return Math.abs(r - n * t) < .06 ? n * t : r; };
-function showMenu(p) { const bh = $('ctxBehind'), L0 = getL(sel); if (bh) { bh.hidden = !canBehind(L0); bh.textContent = L0 && L0.behind ? '인물 앞으로' : '인물 뒤로'; } const m = $('ctxMenu'), r = $('ovl').getBoundingClientRect(), k = r.width / 1080; m.hidden = false; m.style.left = Math.min(r.width - 200, Math.max(0, p[0] * k - 100)) + 'px'; m.style.top = Math.max(0, p[1] * k - 60) + 'px'; }
+function showMenu(p) { const bh = $('ctxBehind'), L0 = getL(sel); if (bh) { bh.hidden = !canBehind(L0); bh.textContent = L0 && L0.behind ? '인물 앞으로' : '인물 뒤로'; } const m = $('ctxMenu'), r = $('ovl').getBoundingClientRect(), k = r.width / 1080, ky = r.height / FH(); m.hidden = false; m.style.left = Math.min(r.width - 200, Math.max(0, p[0] * k - 100)) + 'px'; m.style.top = Math.max(0, p[1] * ky - 60) + 'px'; }
 function hideMenu() { $('ctxMenu').hidden = true; }
 tapButtons($('ctxMenu'), '[data-act]', b => { hideMenu(); if (b.dataset.act === 'behind') { const L0 = getL(sel); if (L0) toggleBehind(L0); } else act(b.dataset.act); });
 function delLayer(id) { const L = getL(id); if (!L) return; if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
@@ -1407,7 +1487,7 @@ const adoptHex = hex => { const n = hex2hsv(hex); if (n.v === 0) n.s = hsv.s; if
 const hasBg = L => L.v === 2 || (L.box && L.box !== 'none');
 const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { doc.bg = c === '@tier' ? { type: 'tier' } : { type: 'solid', c1: c }; } } : (colMode === 'bg' && getL(sel) && ['text', 'stat'].includes(getL(sel).type)) ? { get: () => { const L = getL(sel); return L.bcol || (L.box === 'semi' ? '#000000' : L.col || '#ffffff'); }, set: c => { const L = getL(sel); if (!L) return; const first = !L.bcol; L.bcol = c; if (L.v !== 2 && (!L.box || L.box === 'none')) { L.box = 'full'; if (L.col == null) L.col = '#ffffff'; } if (first || !document.querySelector('#pBo')) setTimeout(paintPanel, 0); } }
   : { get: () => (getL(sel) || {}).col || '#ffffff', set: c => { const L = getL(sel); if (L) L.col = c; } };
-function setCol(hex, fromHsv) { if (hex === '@tier') { colTarget().set('@tier'); adoptHex(accentOf(state.story).toLowerCase()); paintPicker(); changed(); return; } hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex); paintPicker(); changed(); }
+function setCol(hex, fromHsv) { if (hex === '@tier') { colTarget().set('@tier'); adoptHex(accentOf(state.story).toLowerCase()); paintPicker(); changed(); return; } hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex); { const L = getL(sel); if (L && L.type === 'stat' && L.v !== 4 && colMode !== 'bg' && mode !== 'bg') myPut({ col: hex }); } paintPicker(); changed(); }
 function paintPicker() { if (!$('cpick').isConnected || $('cpick').closest('[hidden]')) return; let c = colTarget().get(); if (c === '@tier') c = accentOf(state.story); if (c.toLowerCase() !== hsvCol) adoptHex(c);
   $('cpChip').style.background = c; if (document.activeElement !== $('cpHex')) $('cpHex').value = c.toUpperCase();
   $('cpSV').style.setProperty('--hue', `hsl(${hsv.h} 100% 50%)`); $('cpSVk').style.left = `${hsv.s * 100}%`; $('cpSVk').style.top = `${(1 - hsv.v) * 100}%`; $('cpSVk').style.background = c;
@@ -1426,18 +1506,18 @@ const chipsHTML = () => `<div class="qcs one"><button type="button" class="qc" d
 // ---- fonts ----
 const fontBtn = (k, cls = 'fq', on = false) => `<button type="button" class="${cls}${on ? ' on' : ''}" aria-label="글꼴 ${k ? esc(FONTS[k].n) : '기본'}${on ? ' (선택됨)' : ''}" data-fk="${k || ''}" aria-pressed="${on}" style="font-family:${(k ? previewFam(k) : 'inherit').replace(/"/g, "'")};${k ? `font-weight:${nearW(k, 700)}` : ''}">${on ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${k ? esc(FONTS[k].n.replace(/ \(.+\)$/, '')) : '기본'}</button>`;
 const sampleOf = L => L.type === 'text' ? (L.t || '').split('\n')[0].slice(0, 16) || 'Aa' : statValue(state.story, doc, L.stat);
-function fontRow(L) { const cur = L.font && FONTS[L.font] ? L.font : null; let ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(k => FONTS[k]).slice(0, 8);
+function fontRow(L) { const cur = L.font && FONTS[L.font] ? L.font : null; let ks = [...new Set([...recents(), ...favs(), 'bebas', 'anton', 'playfair', 'mono', 'blackhan', 'jua'])].filter(PICKABLE).slice(0, 8);
   if (cur && !ks.includes(cur)) ks = [cur, ...ks.slice(0, 7)]; else if (cur) ks = [cur, ...ks.filter(k => k !== cur)]; ks.forEach(loadPreviewFont);
   return `<p class="fcur" id="fCur">현재 글꼴: <b>${cur ? esc(FONTS[cur].n) : '기본'}</b></p><div class="fquick">${cur ? '' : fontBtn(null, 'fq', true)}${ks.map(k => fontBtn(k, 'fq', k === cur)).join('')}${cur ? fontBtn(null) : ''}<button type="button" class="fq more" data-flib="1" aria-haspopup="dialog">전체 ${Object.keys(FONTS).length} ›</button></div>`; }
 function libHTML(L) { const q = ($('fSearch') || {}).value || '', fv = favs(), rc = recents(), smp = esc(sampleOf(L));
-  let ks = Object.keys(FONTS); if (fontCat === 'fav') ks = fv.filter(k => FONTS[k]); else if (fontCat === 'recent') ks = rc.filter(k => FONTS[k]); else if (fontCat !== 'all') ks = ks.filter(k => FONTS[k].cat === fontCat);
+  let ks = Object.keys(FONTS).filter(PICKABLE); if (fontCat === 'fav') ks = fv.filter(k => FONTS[k]); else if (fontCat === 'recent') ks = rc.filter(k => FONTS[k]); else if (fontCat !== 'all') ks = ks.filter(k => FONTS[k].cat === fontCat);
   ks.sort((a, b) => (FONTS[b].ko ? 1 : 0) - (FONTS[a].ko ? 1 : 0)); const ql = q.trim().toLowerCase(); if (ql) ks = ks.filter(k => (FONTS[k].n + ' ' + k + ' ' + ((FONT_CATS.find(c => c[0] === FONTS[k].cat) || [])[1] || '')).toLowerCase().includes(ql)); ks.forEach(loadPreviewFont);
   return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt${L.font === k ? ' on' : ''}" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${L.font === k ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${smp}</b><small>${FONTS[k].ko ? '<em class="kob">한글</em>' : ''}${esc(FONTS[k].n)}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
 async function pickFont(k) { const L = getL(sel); if (!L) return; const bs = document.querySelectorAll(`[data-fk="${k || ''}"]`); bs.forEach(b => b.classList.add('loading'));
   const ok = k ? await loadFont(k) : true; bs.forEach(b => b.classList.remove('loading')); if (!ok) { status('글꼴을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
-  if (k) LS('runtier:fontrecent', [k, ...recents().filter(x => x !== k)].slice(0, 8)); L.font = k || null; changed(true); paintPanel(); }
+  if (k) LS('runtier:fontrecent', [k, ...recents().filter(x => x !== k)].slice(0, 8)); L.font = k || null; if (L.type === 'stat' && L.v !== 4) myPut({ font: L.font }); changed(true); paintPanel(); }
 // ---- font bottom sheet: tap applies live, sheet stays open until 완료 ----
-function fontSheetHTML(L) { return `<div class="fs-card" role="dialog" aria-modal="true" aria-labelledby="fsT"><div class="sh-head"><h3 id="fsT">글꼴 ${Object.keys(FONTS).length}</h3><button type="button" class="chip-btn primary-chip" id="fsDone">완료</button></div>
+function fontSheetHTML(L) { return `<div class="fs-card" role="dialog" aria-modal="true" aria-labelledby="fsT"><div class="sh-head"><h3 id="fsT">글꼴 ${Object.keys(FONTS).filter(PICKABLE).length}</h3><button type="button" class="chip-btn primary-chip" id="fsDone">완료</button></div>
   <input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats" role="radiogroup" aria-label="글꼴 분류">${[['all', '전체'], ['recent', '최근'], ['fav', '★'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div>
   <div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용이 허용된 OFL·Apache 라이선스예요</p></div>`; }
 function openFontSheet() { const L = getL(sel); if (!L) return; let sh = $('fSheet'); if (!sh) { sh = document.createElement('div'); sh.id = 'fSheet'; sh.className = 'fsheet'; document.body.appendChild(sh);
@@ -1458,18 +1538,78 @@ const segT = (id, opts, cur) => `<div class="seg segt n${opts.length}" id="${id}
 // slider row: −/+ fine steps, tap value to type a number
 const range = (id, lab, min, max, val, unit = '') => `<div class="adj-row rgx"><label for="${id}" class="lbl sm">${lab}</label><div class="trk"><button type="button" class="stp" data-stp="${id}" data-d="-1" aria-label="${lab} 줄이기">−</button><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"><button type="button" class="stp" data-stp="${id}" data-d="1" aria-label="${lab} 늘리기">+</button></div><button type="button" class="rv" data-rv="${id}" data-u="${unit}" aria-label="${lab} 값 직접 입력"><output id="${id}V">${val}${unit}</output></button></div>`;
 let moreCol = false, moreTxt = false, colMode = 'fg';
+// ---- v4 photo tools (shared by photo layers and the background photo) ----
+const OLC = ['#ffffff', '#111111', '#3dc8f5', '#b9ecff', '#ffd166', '#ff8fd8', '#ff5a5f'];
+const colRow = (id, cur, tier = false) => `<div class="olc" id="${id}">${tier ? `<button type="button" class="qc" data-olc="@tier" aria-label="티어 색" aria-pressed="${cur === '@tier'}" style="--c:${accentOf(state.story)}"></button>` : ''}${OLC.map(c => `<button type="button" class="qc" data-olc="${c}" aria-label="${c}" aria-pressed="${(cur || '').toLowerCase() === c}" style="--c:${c}"></button>`).join('')}<input type="color" id="${id}Pick" value="${/^#[0-9a-f]{6}$/i.test(cur || '') ? cur : '#ffffff'}" aria-label="색 직접 고르기"></div>`;
+const fchips = (id, opts, cur) => `<div class="fchips" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
+const ADJ = [['br', '밝기'], ['ct', '대비'], ['sa', '채도'], ['wa', '따뜻함']];
+function photoEdHTML(P) { const a = P.adj || {}, ol = P.ol || {};
+  return `<div class="pe-row"><button type="button" class="chip-btn" id="peCrop" aria-pressed="${!!P.crop}">✂ 자르기</button><button type="button" class="chip-btn" id="peRot" aria-label="90도 회전">↻ 90°</button><button type="button" class="chip-btn" id="peFlip" aria-pressed="${!!P.flip}">⇋ 좌우 반전</button><button type="button" class="chip-btn" id="peCut" aria-pressed="${!!P.cut}">${P.cut ? '↺ 원본 사진' : '✦ 배경 지우기'}</button></div>`
+    + (P.cut ? `<div class="pe-row"><button type="button" class="chip-btn" id="peOl" aria-pressed="${!!ol.on}">누끼 테두리 ${ol.on ? '켜짐' : '꺼짐'}</button></div>` + (ol.on ? `<span class="lbl sm">테두리 색</span>${colRow('olCol', ol.col || '#ffffff')}` + range('olW', '테두리 두께', 2, 40, ol.w || 12, 'px') : '') : '')
+    + `<span class="lbl sm">필터</span>${fchips('peFilter', FILTERS, P.filter || 'none')}`
+    + `<button type="button" class="acc" id="peMore" aria-expanded="${moreAdj}" aria-controls="peAdj"><span>밝기·대비·채도·따뜻함</span><i aria-hidden="true">${moreAdj ? '▴' : '▾'}</i></button><div id="peAdj" class="acc-body"${moreAdj ? '' : ' hidden'}>${ADJ.map(([k, n]) => range('pa_' + k, n, -100, 100, a[k] || 0)).join('')}<button type="button" class="chip-btn" id="peAdjReset">조정 초기화</button></div>`; }
+const CROPS = [['free', '자유'], ['9:16', '9:16'], ['4:5', '4:5'], ['1:1', '1:1'], ['3:4', '3:4']];
+function cropHTML() { return `<div class="sh-head"><h3>사진 자르기</h3></div>${fchips('crRatio', CROPS, cropSt.r)}<div class="crop"><div class="crop-box" id="crBox"><div class="crop-wrap"><canvas id="crCv"></canvas></div><div class="crop-r" id="crR"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div></div><p class="hint">모서리를 끌어 크기를, 안쪽을 끌어 위치를 바꿔요 · 원본은 그대로 남아 언제든 다시 자를 수 있어요</p><div class="ed-btns"><button type="button" class="chip-btn" id="crReset">전체</button><button type="button" class="chip-btn" id="crCancel">취소</button><button type="button" class="chip-btn primary-chip" id="crApply">적용</button></div>`; }
+function bindCrop() { const P = cropSt.P, im = photos[cropSt.pid], src = orient(im, P, false), cv = $('crCv'), k = Math.min(1, 900 / Math.max(src.width, src.height)); cv.width = Math.round(src.width * k); cv.height = Math.round(src.height * k); cv.getContext('2d').drawImage(src, 0, 0, cv.width, cv.height);
+  const box = $('crBox'); box.style.maxWidth = `min(100%, calc(46vh * ${src.width / src.height}))`; const ar = () => { const r = cropSt.r; if (r === 'free') return 0; const [a, b] = r.split(':').map(Number); return (a / b) * src.height / src.width; }; // ratio in normalized units (w/h)
+  const paint = () => { const c = cropSt.c, R = $('crR'); Object.assign(R.style, { left: c.x * 100 + '%', top: c.y * 100 + '%', width: c.w * 100 + '%', height: c.h * 100 + '%' }); };
+  const fit = () => { const q = ar(); if (!q) return; let { x, y, w, h } = cropSt.c, cx = x + w / 2, cy = y + h / 2; if (w / h > q) w = h * q; else h = w / q; if (w > 1) { w = 1; h = w / q; } if (h > 1) { h = 1; w = h * q; } x = Math.max(0, Math.min(1 - w, cx - w / 2)); y = Math.max(0, Math.min(1 - h, cy - h / 2)); cropSt.c = { x, y, w, h }; };
+  fit(); paint(); let g = null;
+  box.addEventListener('pointerdown', e => { const r = box.getBoundingClientRect(), hh = e.target.dataset.h || (e.target.id === 'crR' ? 'move' : null); if (!hh) return; e.preventDefault(); try { box.setPointerCapture(e.pointerId); } catch { } g = { hh, x: e.clientX, y: e.clientY, c: { ...cropSt.c }, W: r.width, H: r.height }; });
+  box.addEventListener('pointermove', e => { if (!g) return; const dx = (e.clientX - g.x) / g.W, dy = (e.clientY - g.y) / g.H, c0 = g.c, MIN = .08; let { x, y, w, h } = c0;
+    if (g.hh === 'move') { x = Math.max(0, Math.min(1 - w, x + dx)); y = Math.max(0, Math.min(1 - h, y + dy)); }
+    else { let x1 = x + w, y1 = y + h; if (g.hh.includes('w')) x = Math.min(x1 - MIN, Math.max(0, x + dx)); else x1 = Math.max(x + MIN, Math.min(1, x1 + dx)); if (g.hh.includes('n')) y = Math.min(y1 - MIN, Math.max(0, y + dy)); else y1 = Math.max(y + MIN, Math.min(1, y1 + dy)); w = x1 - x; h = y1 - y;
+      const q = ar(); if (q) { if (w / h > q) w = h * q; else h = w / q; if (g.hh.includes('w')) x = x1 - w; if (g.hh.includes('n')) y = y1 - h; } }
+    cropSt.c = { x, y, w, h }; paint(); });
+  const end = () => { g = null; }; box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
+  box.addEventListener('touchstart', e => e.preventDefault(), { passive: false }); box.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  $('crRatio').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; cropSt.r = b.dataset.v; for (const x of $('crRatio').children) x.setAttribute('aria-checked', String(x === b)); if (cropSt.r !== 'free') { cropSt.c = { x: 0, y: 0, w: 1, h: 1 }; fit(); } paint(); });
+  $('crReset').addEventListener('click', () => { cropSt.c = { x: 0, y: 0, w: 1, h: 1 }; cropSt.r = 'free'; paintPanel(); });
+  $('crCancel').addEventListener('click', () => { cropSt = null; paintPanel(); });
+  $('crApply').addEventListener('click', () => { const c = cropSt.c, full = c.x < .002 && c.y < .002 && c.w > .996 && c.h > .996; if (full) delete P.crop; else P.crop = { x: +c.x.toFixed(4), y: +c.y.toFixed(4), w: +c.w.toFixed(4), h: +c.h.toFixed(4) }; P.cr = cropSt.r; delete P.bw; delete P.bh; cropSt = null; changed(true); paintPanel(); status(full ? '자르기를 풀었어요' : '잘랐어요 · 다시 자르기로 언제든 바꿀 수 있어요'); }); }
+function bindPhotoEd(P) { const on = (id, f) => { const e = $(id); if (e) e.addEventListener('click', f); };
+  on('peCrop', () => { if (!photos[P.pid]) return; cropSt = { P, pid: P.pid, r: P.cr || 'free', c: P.crop ? { ...P.crop } : { x: 0, y: 0, w: 1, h: 1 } }; paintPanel(); });
+  on('peRot', () => { P.rot = ((P.rot || 0) + 1) & 3; delete P.crop; delete P.bw; delete P.bh; changed(true); paintPanel(); });
+  on('peFlip', () => { P.flip = !P.flip; if (P.crop) P.crop = { ...P.crop, x: +(1 - P.crop.x - P.crop.w).toFixed(4) }; changed(true); paintPanel(); });
+  on('peCut', async e => { if (P.cut) { P.cut = false; changed(true); paintPanel(); status('원본 사진으로 돌렸어요'); return; }
+    const b = e.currentTarget; b.classList.add('loading'); b.textContent = '인물 찾는 중…'; status('배경을 지우는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
+    const ok = await ensureMask(P.pid); if (ok) { P.cut = true; if (!P.ol) P.ol = { on: false, col: '#ffffff', w: 12, ...(MY().ol || {}), on: false }; status('인물만 남겼어요 · 원본 사진으로 언제든 돌릴 수 있어요'); } else status('이 사진에서는 인물을 찾지 못했어요 · 사진은 그대로 둘게요', 4000);
+    changed(true); paintPanel(); });
+  on('peOl', () => { P.ol = { col: '#ffffff', w: 12, ...(P.ol || {}), on: !(P.ol && P.ol.on) }; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(true); paintPanel(); });
+  const olc = $('olCol'); if (olc) { olc.addEventListener('click', e => { const b = e.target.closest('[data-olc]'); if (!b) return; P.ol.col = b.dataset.olc; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(true); paintPanel(); }); $('olColPick').addEventListener('input', e => { P.ol.col = e.target.value; changed(); }); $('olColPick').addEventListener('change', () => { myPut({ ol: { col: P.ol.col, w: P.ol.w } }); commit(); }); }
+  const w = $('olW'); if (w) w.addEventListener('input', e => { P.ol.w = +e.target.value; $('olWV').textContent = e.target.value + 'px'; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(); });
+  const f = $('peFilter'); if (f) f.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; P.filter = b.dataset.v; changed(true); paintPanel(); });
+  on('peMore', e => { moreAdj = !moreAdj; const b = e.currentTarget; b.setAttribute('aria-expanded', moreAdj); b.querySelector('i').textContent = moreAdj ? '▴' : '▾'; $('peAdj').hidden = !moreAdj; });
+  for (const [k] of ADJ) { const r = $('pa_' + k); if (r) r.addEventListener('input', e => { P.adj = { ...(P.adj || {}), [k]: +e.target.value }; if (!Object.values(P.adj).some(Boolean)) delete P.adj; $('pa_' + k + 'V').textContent = e.target.value; changed(); }); }
+  on('peAdjReset', () => { delete P.adj; changed(true); paintPanel(); }); }
+// ---- text effects (all off by default): 그림자 · 외곽선 · 글로우 ----
+function fxHTML(L) { return `<button type="button" class="acc" id="pMoreFx" aria-expanded="${moreFx}" aria-controls="pFxAcc"><span>효과 (그림자·외곽선·글로우)</span><i aria-hidden="true">${moreFx ? '▴' : '▾'}</i></button><div id="pFxAcc" class="acc-body"${moreFx ? '' : ' hidden'}><div class="pe-row"><button type="button" class="chip-btn" id="fxSh" aria-pressed="${!!L.fsh}">그림자</button><button type="button" class="chip-btn" id="fxOl" aria-pressed="${!!L.fol}">외곽선</button><button type="button" class="chip-btn" id="fxGl" aria-pressed="${!!L.fgl}">글로우</button></div>`
+  + (L.fol ? `<span class="lbl sm">외곽선 색</span>${colRow('folCol', L.fol.col, true)}${range('folW', '외곽선 두께', 1, 30, L.fol.w || 6, 'px')}` : '')
+  + (L.fgl ? `<span class="lbl sm">글로우 색</span>${colRow('fglCol', L.fgl.col || '#3dc8f5', true)}${range('fglR', '글로우 세기', 5, 100, L.fgl.r ?? 30, '%')}` : '') + `</div>`; }
+const fxSave = L => { if (L.type === 'stat' && L.v !== 4) myPut({ fx: { fsh: L.fsh || undefined, fol: L.fol || undefined, fgl: L.fgl || undefined } }); };
+function bindFx(L) { const on = (id, f) => { const e = $(id); if (e) e.addEventListener('click', f); };
+  on('pMoreFx', e => { moreFx = !moreFx; const b = e.currentTarget; b.setAttribute('aria-expanded', moreFx); b.querySelector('i').textContent = moreFx ? '▴' : '▾'; $('pFxAcc').hidden = !moreFx; });
+  on('fxSh', () => { if (L.fsh) delete L.fsh; else L.fsh = 1; fxSave(L); changed(true); paintPanel(); });
+  on('fxOl', () => { if (L.fol) delete L.fol; else L.fol = { col: '#111111', w: 6 }; fxSave(L); changed(true); paintPanel(); });
+  on('fxGl', () => { if (L.fgl) delete L.fgl; else L.fgl = { col: '#3dc8f5', r: 30 }; fxSave(L); changed(true); paintPanel(); });
+  for (const [id, key] of [['folCol', 'fol'], ['fglCol', 'fgl']]) { const e = $(id); if (!e) continue; e.addEventListener('click', ev => { const b = ev.target.closest('[data-olc]'); if (!b) return; L[key].col = b.dataset.olc; fxSave(L); changed(true); paintPanel(); }); $(id + 'Pick').addEventListener('input', ev => { L[key].col = ev.target.value; changed(); }); $(id + 'Pick').addEventListener('change', () => { fxSave(L); commit(); }); }
+  for (const [id, key, f, u] of [['folW', 'fol', 'w', 'px'], ['fglR', 'fgl', 'r', '%']]) { const e = $(id); if (e) e.addEventListener('input', ev => { L[key][f] = +ev.target.value; $(id + 'V').textContent = ev.target.value + u; fxSave(L); changed(); }); } }
+// ---- user-input stickers: plain text layers (editable, styleable like any text) ----
+const WX = ['☀️', '⛅', '☁️', '🌧️', '❄️', '🌬️', '🌙'];
+const INSTK = { weather: ['날씨', { t: '☀️ 18°C', size: 72, font: null, w: 700 }], place: ['코스·장소', { t: '📍 한강 반포', size: 60, font: null, w: 600 }], bib: ['배번', { t: '1234', size: 150, font: 'anton', col: '#111111', box: 'full', bcol: '#ffffff', bo: 1, ls: 4 }], memo: ['메모 (손글씨)', { t: '오늘도 완주!', size: 96, font: 'nanumpen', w: 400 }] };
 function paintPanel() {
   { const L0 = sel && getL(sel), b = L0 && L0.ax && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; } }
   const P = $('panel'); $('cpick').hidden = true; document.body.appendChild($('cpick')); const L = sel && getL(sel);
   for (const b of $('tools').querySelectorAll('[data-tool]')) b.setAttribute('aria-pressed', String(b.dataset.tool === mode && !L));
   $('sizeCol').hidden = !(L && L.type === 'text'); if (L && L.type === 'text') { $('tSize').value = L.size || 96; }
   let h = '';
+  if (cropSt && photos[cropSt.pid]) { P.innerHTML = cropHTML(); bindCrop(); return; } cropSt = null;
   if (L) {
     h += `<div class="sh-head"><h3 id="pName">${esc(lname(L))}</h3><button type="button" class="chip-btn primary-chip" id="pDone">완료</button></div>`;
     if (libOpen && (L.type === 'text' || L.type === 'stat')) {
       h += `<input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats">${[['all', '전체'], ['fav', '★ 즐겨찾기'], ['recent', '최근'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div><div class="flist" id="fList">${libHTML(L)}</div><p class="hint">모든 글꼴은 상업적 사용·웹 임베딩이 허용된 OFL·Apache 라이선스예요</p><button type="button" class="chip-btn" id="fClose">글꼴 목록 닫기</button>`;
       P.innerHTML = h; bindPanel(L); return; }
-    if (L.type === 'text') h += `<label class="lbl sm" for="tText">내용</label><textarea id="tText" rows="2" maxlength="80">${esc(L.t || '')}</textarea>`;
+    if (L.type === 'text') h += `<label class="lbl sm" for="tText">${L.k === 'weather' ? '날씨 · 기온' : L.k === 'bib' ? '배번' : L.k === 'place' ? '코스·장소' : '내용'}</label><textarea id="tText" rows="2" maxlength="80"${L.k === 'bib' ? ' inputmode="numeric"' : ''}>${esc(L.t || '')}</textarea>` + (L.k === 'weather' ? `<div class="fchips" id="wxIcons" aria-label="날씨 아이콘">${WX.map(i => `<button type="button" data-wx="${i}" aria-label="${i}">${i}</button>`).join('')}</div>` : '');
     if (L.type === 'stat') h += `<p class="hint lock">🔒 기록 값은 고정돼요</p>` + (L.stat === 'race' ? `<label class="lbl sm" for="raceIn">대회명</label><input id="raceIn" maxlength="30" autocomplete="off" placeholder="예: 춘천마라톤" value="${esc(doc.race || '')}">` : '') + `${L.v === 4 ? '' : `<span class="lbl sm">표시 스타일</span>${segT('pV', [[0, '기본'], [1, '숫자만'], [2, '배지'], [3, '러닝앱']], L.v || 0)}`}`;
     if (L.type === 'card') h += `<span class="lbl sm">디자인</span>${seg('pV', [[0, '카드'], [1, '배지']], L.v || 0)}`;
     if (L.type === 'text' || L.type === 'stat') h += `<span class="lbl sm">글꼴</span>${fontRow(L)}`;
@@ -1479,23 +1619,23 @@ function paintPanel() {
       + (tb && colMode === 'bg' && hasBg(L) ? range('pBo', '배경 불투명도', 0, 100, Math.round((L.bo ?? (L.v !== 2 && L.box === 'semi' ? .45 : 1)) * 100), '%') : '');
     if (!tb && L.type === 'text') h += `<span class="lbl sm">배경 박스</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '채움']], L.box || 'none')}`;
     if (L.type === 'text') h += `<span class="lbl sm">정렬</span>${seg('pAl', [['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']], L.al || 'center')}`;
-    if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}<span class="lbl sm">필터</span>${seg('pFilter', FILTERS, L.filter || 'none')}` + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경으로 쓰기</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
+    if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}` + (L.pid && photos[L.pid] ? photoEdHTML(L) : '') + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경으로 쓰기</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
     if (L.type === 'sticker' || L.type === 'shape') {}
-    h += range('pS', '크기', 8, 400, Math.round(((boxes.find(q => q.id === L.id) || {}).s ?? L.s) * 100), '%') + (L.type === 'text' || L.type === 'stat' ? `<button type="button" class="acc" id="pMoreT" aria-expanded="${moreTxt}" aria-controls="pTxtAcc"><span>자간·행간</span><i aria-hidden="true">${moreTxt ? '▴' : '▾'}</i></button><div id="pTxtAcc" class="acc-body"${moreTxt ? '' : ' hidden'}>${range('pLs', '자간', -10, 60, L.ls || 0, 'px') + range('pLh', '행간', 0, 250, Math.round((L.lh ?? 1.15) * 100), '%')}</div>` : '') + range('pR', '회전', -180, 180, Math.round((L.r || 0) * 180 / Math.PI), '°') + (isTop(L) ? '' : range('pO', '불투명도', 5, 100, Math.round((L.o ?? 1) * 100), '%'));
+    h += range('pS', '크기', 8, 400, Math.round(((boxes.find(q => q.id === L.id) || {}).s ?? L.s) * 100), '%') + (L.type === 'text' || L.type === 'stat' ? `<button type="button" class="acc" id="pMoreT" aria-expanded="${moreTxt}" aria-controls="pTxtAcc"><span>자간·행간</span><i aria-hidden="true">${moreTxt ? '▴' : '▾'}</i></button><div id="pTxtAcc" class="acc-body"${moreTxt ? '' : ' hidden'}>${range('pLs', '자간', -10, 60, L.ls || 0, 'px') + range('pLh', '행간', 0, 250, Math.round((L.lh ?? 1.15) * 100), '%')}</div>` + fxHTML(L) : '') + range('pR', '회전', -180, 180, Math.round((L.r || 0) * 180 / Math.PI), '°') + (isTop(L) ? '' : range('pO', '불투명도', 5, 100, Math.round((L.o ?? 1) * 100), '%'));
     // block actions (앞으로/뒤로/인물 뒤로/복제/삭제) live in the on-canvas mini toolbar (#miniBar) for every block type
   } else if (mode === 'stat') {
     h += `<div class="sh-head"><h3>기록 블록 추가</h3></div><p class="hint lock">🔒 값은 계산 결과 그대로예요</p><div class="grid2">${Object.entries(STATS).map(([k, [n]]) => `<button type="button" class="pre" data-addstat="${k}"><b>${n}</b><small>${esc(statValue(state.story, doc, k))}</small></button>`).join('')}<button type="button" class="pre" data-addcard="0"><b>티어 카드</b><small>카드</small></button><button type="button" class="pre" data-addcard="1"><b>티어 배지</b><small>${esc(state.story.word)}</small></button></div>`;
   } else if (mode === 'sticker') {
-    h += `<div class="sh-head"><h3>스티커</h3></div><div class="grid3">${STICKERS.map(([k, n]) => `<button type="button" class="pre stk" data-addstk="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${n}</small></button>`).join('')}</div>`;
+    h += `<div class="sh-head"><h3>스티커</h3></div><div class="grid3">${STICKERS.map(([k, n]) => `<button type="button" class="pre stk" data-addstk="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${n}</small></button>`).join('')}</div><span class="lbl sm">직접 입력 스티커</span><div class="grid2">${Object.entries(INSTK).map(([k, [n, p]]) => `<button type="button" class="pre" data-addin="${k}"><b>${n}</b><small>${esc(p.t)}</small></button>`).join('')}</div>`;
   } else if (mode === 'bg') {
     const GR = [['#0F1620', '#14324a'], ['#3DC8F5', '#9b8cff'], ['#ff8a5b', '#ffd166'], ['#ffd6e8', '#fff4c2'], ['#0b3d2e', '#3fd68a'], ['#1b1f26', '#5a24a8']];
     h += `<div class="sh-head"><h3>배경</h3></div><div class="ed-btns"><button type="button" class="chip-btn" data-bg="tier" aria-pressed="${doc.bg.type === 'tier'}">티어 색</button><button type="button" class="chip-btn" data-bg="dark" aria-pressed="${doc.bg.type === 'dark'}">다크</button><button type="button" class="chip-btn primary-chip" id="bgPhoto">📷 사진 배경</button></div>
       <span class="lbl sm">그라데이션</span><div class="qcs">${GR.map((g, i) => `<button type="button" class="qc grad" data-grad="${i}" aria-label="그라데이션 ${i + 1}" style="background:linear-gradient(135deg,${g[0]},${g[1]})"></button>`).join('')}</div><span class="lbl sm">단색</span>${chipsHTML()}`;
-    if (doc.bg.type === 'photo') h += `<span class="lbl sm">사진 배경 필터</span>${seg('bgFilter', FILTERS, doc.bg.filter || 'none')}` + range('bgZ', '확대', 100, 400, Math.round((doc.bg.pz || 1) * 100), '%') + '<p class="hint">빈 곳을 끌면 배경 사진이 움직여요</p>';
+    if (doc.bg.type === 'photo') h += (photos[doc.bg.pid] ? `<span class="lbl sm">배경 사진</span>` + photoEdHTML(doc.bg) : '') + range('bgZ', '확대', 100, 400, Math.round((doc.bg.pz || 1) * 100), '%') + '<p class="hint">빈 곳을 끌면 배경 사진이 움직여요</p>';
     P.dataset.grads = JSON.stringify(GR);
   } else if (mode === 'layers') {
     h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
-  } else h += `<p class="hint">오른쪽 도구로 텍스트·사진·스티커·기록 블록·배경을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p>`;
+  } else h += `<p class="hint">오른쪽 도구로 텍스트·사진·스티커·기록 블록·배경을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p><div class="ed-btns"><button type="button" class="chip-btn" id="myOff" aria-pressed="${!MY().off}">내 스타일 기억 ${MY().off ? '꺼짐' : '켜짐'}</button><button type="button" class="chip-btn" id="myReset">내 스타일 초기화</button></div><p class="hint">마지막에 쓴 템플릿·형식·글꼴·색·테두리를 다음 기록에도 자동으로 써요</p>`;
   P.innerHTML = h; bindPanel(L);
   for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
   paintSelInfo();
@@ -1523,6 +1663,11 @@ function bindPanel(L) {
   on('pFill', 'click', () => { photoTarget = 'fill'; pickPhoto(); }); on('pRefill', 'click', () => { photoTarget = 'fill'; pickPhoto(); });
   on('pAsBg', 'click', () => { if (!L.pid) return; doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== L); sel = null; changed(true); paintPanel(); });
   on('bgPhoto', 'click', () => { photoTarget = 'bg'; pickPhoto(); });
+  if (L && L.type === 'photo') bindPhotoEd(L); else if (!L && mode === 'bg' && doc.bg.type === 'photo') bindPhotoEd(doc.bg);
+  if (L && (L.type === 'text' || L.type === 'stat')) bindFx(L);
+  on('wxIcons', 'click', e => { const b = e.target.closest('[data-wx]'); if (!b) return; L.t = b.dataset.wx + ' ' + String(L.t || '').replace(/^\S*\p{Extended_Pictographic}\S*\s*/u, ''); changed(true); paintPanel(); });
+  on('myReset', 'click', () => { localStorage.removeItem('runtier:mystyle'); status('내 스타일을 지웠어요 · 다음 기록은 기본 설정으로 시작해요', 3000); paintPanel(); });
+  on('myOff', 'click', () => { const m = MY(); if (m.off) LS('runtier:mystyle', {}); else LS('runtier:mystyle', { off: true }); paintPanel(); });
   on('fClose', 'click', () => { libOpen = false; paintPanel(); });
   on('fSearch', 'input', () => { $('fList').innerHTML = libHTML(L); });
   on('fCats', 'click', e => { const b = e.target.closest('[data-c]'); if (!b) return; fontCat = b.dataset.c; for (const x of $('fCats').children) x.setAttribute('aria-checked', String(x === b)); $('fList').innerHTML = libHTML(L); });
@@ -1538,6 +1683,7 @@ function bindPanel(L) {
     if (d.addstat) { if (d.addstat === 'top' && doc.layers.some(isTop)) { sel = doc.layers.find(isTop).id; mode = null; paintPanel(); paintOvl(); status('상위 %는 이미 있어요'); return; } addLayer(mk('stat', { stat: d.addstat, v: 0 })); }
     if (d.addcard) addLayer(mk('card', { v: +d.addcard, s: d.addcard === '0' ? .8 : 1 }));
     if (d.addstk) addLayer(mk('sticker', { k: d.addstk, col: '#ffffff' }));
+    if (d.addin) { const [, p0] = INSTK[d.addin]; addLayer(mk('text', { k: d.addin, col: '#ffffff', al: 'center', x: 540, y: FH() * ({ weather: .3, place: .62, bib: .45, memo: .74 }[d.addin] || .5), ...clone(p0) })); setTimeout(() => { const ta = $('tText'); if (ta) { ta.focus(); ta.select(); } }, 50); }
     if (d.bg) { doc.bg = { type: d.bg }; changed(true); paintPanel(); }
     if (d.grad) { const g = JSON.parse(P.dataset.grads)[+d.grad]; doc.bg = { type: 'grad', c1: g[0], c2: g[1] }; changed(true); paintPanel(); }
     if (d.pick) { sel = d.pick; mode = null; paintPanel(); paintOvl(); }
@@ -1549,6 +1695,8 @@ function bindPanel(L) {
 $('tSize').addEventListener('input', e => { const L = getL(sel); if (L && L.type === 'text') { L.size = +e.target.value; changed(); } });
 $('tSize').addEventListener('change', () => commit());
 // ---- save / share ----
+const pxSig = cv => { const t = document.createElement('canvas'); t.width = 54; t.height = Math.round(54 * cv.height / cv.width); const g = t.getContext('2d'); g.drawImage(cv, 0, 0, t.width, t.height); const d = g.getImageData(0, 0, t.width, t.height).data; let a = []; for (let i = 0; i < d.length; i += 4) a.push((d[i] + d[i + 1] + d[i + 2]) / 3 | 0); return { w: cv.width, h: cv.height, a }; };
+window.__exportSig = async () => pxSig(await finalCanvas()); window.__previewSig = () => pxSig($('tplPreview'));
 async function finalCanvas() { commit(); const cv = await renderDoc(state.story, doc, photos); window.__lastStory = cv; return cv; }
 $('save').addEventListener('click', async () => {
   const b = $('save'); if (b.disabled || !state.story) return; b.disabled = true; const lbl = b.textContent; b.textContent = '저장 중…';
