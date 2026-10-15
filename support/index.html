@@ -1,5 +1,6 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>try{if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)document.documentElement.classList.add("standalone")}catch(e){}</script>
 <title>고객지원 · hoohaa</title>
 <meta name="description" content="hoohaa 기록 입력, 나이·거리 범위, 오프라인, 데이터 삭제를 안내해요.">
 <link rel="canonical" href="https://hoohaa.run/support/">
@@ -13,9 +14,13 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 h1{color:var(--t1);font-size:26px;line-height:1.35;margin:0 0 10px;letter-spacing:-.4px}h2{color:var(--t1);font-size:19px;margin:32px 0 10px}
 p{margin:0 0 12px}strong{color:var(--a2);font-weight:600}a{color:var(--a)}
 .cta{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:14px;background:var(--a);color:#0F1620;font-weight:800;font-size:17px;text-decoration:none;margin:22px 0}
+.app-only{display:none!important}
+@media (display-mode:standalone){.web-only{display:none!important}.app-only{display:unset!important}}
+html.standalone .web-only{display:none!important}
+html.standalone .app-only{display:unset!important}
 footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:13px;color:var(--t3)}</style>
 </head><body><div class="w">
-<header><a class="lg" href="../" aria-label="hoohaa 홈"><img src="../icons/wordmark.svg" alt=""></a></header>
+<header><a class="lg web-only" href="../" aria-label="hoohaa 홈"><img src="../icons/wordmark.svg" alt=""></a><a class="lg app-only" href="../app/" aria-label="hoohaa 앱"><img src="../icons/wordmark.svg" alt=""></a></header>
 <main>
 <h1>고객지원</h1>
 <p>종목, 기록, 성별, 출생연도를 넣고 <strong>내 티어 보기</strong>를 누르면 티어와 상위 %, 예상 기록, 훈련 페이스가 나와요.</p>
@@ -39,6 +44,6 @@ footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:
 <h2>문의</h2>
 <p>오류와 제안은 <a href="https://github.com/BeomhyunPark/hoohaa/issues">GitHub 이슈</a>로 보내 주세요.</p>
 </main>
-<footer><a href="../">hoohaa.run</a> · <a href="../app/">앱</a> · <a href="../privacy/">개인정보</a></footer>
+<footer><span class="web-only"><a href="../">hoohaa.run</a> · </span><a href="../app/">앱</a> · <a href="../privacy/">개인정보</a></footer>
 </div>
 </body></html>
