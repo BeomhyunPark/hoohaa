@@ -31,34 +31,19 @@ O까지 진행한 뒤 실제 동작을 확인한다. P부터 R은 스토어에 �
 
 ## B. 건강 데이터가 들어오는 길
 
-[features/health-import.md](features/health-import.md)에서 먼저 정한다. 이 내용이 정해지기 전에는 폰 앱의 건강 데이터 접근 권한을 만들지 않는다.
+[features/health-import.md](features/health-import.md)에 이미 정한 것. 건강 앱에 쌓인 기록을 폰이 자동으로 읽는다. 그 운동에 들어 있는 항목은 빠짐없이 가져온다. 사진, GPX, FIT를 사용자가 올리지 않는다. 그래서 새 앱은 폰 앱이다. 아이폰은 애플 건강, 안드로이드는 헬스 커넥트다. 같은 운동을 두 번 저장하지 않는다.
 
-같은 운동을 두 번 저장하지 않는 것은 이미 정했다. 아직 정할 것은 그 규칙을 어떤 항목으로 적는지다.
+체감 피로 1~10은 사용자에게 한 번 묻는다. 같은 자리에서 메모를 쓸 수 있고, 필수는 아니다. 예시는 어디가 아픈지다. 건강 앱 기록과 이 값은 JSON으로 넘기고, Jev는 정해 둔 보기 안에서만 고른다.
 
-정할 내용:
-
-- 어떤 건강 앱의 데이터를 가져올 것인지
-- 건강 앱 저장소에서 직접 읽을 것인지, 공유로 받은 사진·GPX·FIT 파일을 쓸 것인지
-- 거리·시간·심박·경로 외에 어떤 데이터를 받을 것인지
-- 사용자가 직접 기록을 넣을 수 있게 할 것인지. 체감 피로와 메모를 한 번 묻는 안이 있다
-- 경로를 화면에서 어떻게 쓸 것인지
-- 운동 기록을 어느 서버에 저장할 것인지
-- 가져온 곳과 그곳의 기록 번호, 가져온 시각을 어떤 항목 이름으로 적을 것인지
-- 두 기록이 같은 운동인지 판단하는 기준
+건강 데이터 권한은 C와 D를 정한 뒤에 만든다. 경로를 화면에 넣는 방식은 M, 기록을 둘 서버는 E에서 정한다. 항목 이름과 같은 운동으로 보는 기준은 그때 코드에 적는다.
 
 ## C. 판단에 쓰기 전에 정할 것
 
-이미 정한 규칙. 컨디션, 목표, 내일 훈련, 러너 유형은 서로의 결과를 받지 않는다. 같은 운동 기록을 각각 따로 판단한다. [engine.md](engine.md), [features/tomorrow.md](features/tomorrow.md)
+이미 정한 규칙. 컨디션, 목표, 내일 훈련, 러너 유형은 서로의 결과를 받지 않는다. 같은 운동 기록을 각각 따로 판단한다. 최근 기록은 14일을 본다. 오늘의 컨디션에는 그 14일 기록과 체감 피로, 메모를 JSON으로 넣는다. Jev에 보내는 글은 영어다. 화면 문장은 한국어다. 운동이 끝난 뒤의 네 판단은 Jev 호출 한 번으로 묻는다. [engine.md](engine.md), [features/condition.md](features/condition.md), [features/tomorrow.md](features/tomorrow.md)
 
 아직 정할 내용:
-
-- 오늘의 컨디션에 쓸 값이 운동 기록의 어떤 항목인지. [features/condition.md](features/condition.md)
-- 최근 운동 기록을 며칠까지 쓸지. 예를 들면 최근 7일 또는 최근 14일
-- Jev에 어떤 언어로 넣을지. 화면에 보이는 문장은 한국어 해요체다. [engine.md](engine.md), [features/copy.md](features/copy.md)
-- 텍스트 판단에 쓸 모델을 `jev-1.13.0`으로 고정할지. 아직 제안이다. 정하면 [engine.md](engine.md)에 결정으로 적는다
-- 운동이 끝난 뒤의 여러 판단을 Jev 호출 한 번으로 처리할지. 아직 제안이다
-- 목표 달성을 choice로 물을지 score로 물을지. [features/goal.md](features/goal.md)
-- 러너 유형의 전체 목록, 각 유형을 가르는 기록의 정의, 칭호를 주기 전에 필요한 기록 수. [features/runner-type.md](features/runner-type.md)
+- 텍스트 판단에 쓸 모델을 `jev-1.13.0`으로 고정할지. 아직 제안이다. [engine.md](engine.md)
+- 칭호를 붙이기 전에 필요한 기록 수. 유형 이름은 후반 뒷심형, 초반 폭주형, 꾸준형으로 정했다. [features/runner-type.md](features/runner-type.md)
 - 내일 훈련에서 강한 메뉴가 무엇인지. [features/tomorrow.md](features/tomorrow.md)
 
 ## D. 문장
