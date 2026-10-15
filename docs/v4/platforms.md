@@ -41,7 +41,7 @@
 ## 제안 — 순서
 
 1. 웹은 고치지 않는다. hoohaa.run은 계산과 공유 카드로 남긴다.
-2. 폰마다 달라지는 것부터 정한다. 건강 앱 저장소를 직접 읽으면 폰 앱이어야 하고, 공유 시트면 웹도 받을 수 있다. [features/health-import.md](features/health-import.md)를 본다.
+2. 건강 앱 저장소를 자동으로 읽는다. 이 읽기는 폰 앱에서만 된다. [features/health-import.md](features/health-import.md)를 본다.
 3. 폰을 먼저 만든다. iPhone과 Android는 기능 문서를 같이 쓰고, 건강 앱 연결만 폰마다 따로 만든다. 스토어 제출, 개발자 계정, 패키지 이름은 그 기능이 된 뒤의 일이다.
 4. 워치는 나중에 만든다. 오늘의 판단이나, 달리는 중 페이스와 심박을 보여 준다. Jev는 워치가 직접 부르지 않는다. 폰이나 서버가 이미 판단한 결과를 받는다. 이유는 [features/live-pace.md](features/live-pace.md)와 같다. 달리는 중 페이스는 나중에 한다.
 
