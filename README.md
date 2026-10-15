@@ -86,20 +86,23 @@
 
 ## 개인정보와 데이터
 
-- 서버가 없어요. 기록과 사진은 **어디로도 전송되지 않아요**.
-- 다음 방문을 위해 브라우저 안에만 저장돼요.
-  - `localStorage`: 마지막 입력값(`runtier:last`), 편집 중인 공유 이미지(`runtier:v3doc`), 내 템플릿, 글꼴 즐겨찾기·최근 목록
-  - `IndexedDB`(`hoohaa`): 공유 이미지에 넣은 사진
+- 계정과 서버가 없어요. 계산은 브라우저 안에서 끝나요.
+- 다음 방문을 위해 이 기기에만 저장돼요. [개인정보](privacy/) 페이지에서 지울 수 있어요.
+  - `localStorage`의 `runtier:` 키: 마지막 입력값, 편집 중인 공유 이미지, 내 템플릿, 내 스타일, 글꼴 즐겨찾기·최근 목록
+  - `IndexedDB`(`hoohaa` / `photos`): 공유 이미지에 넣은 사진 (긴 변 1600px 이하)
 - 공유 이미지에는 나이와 성별이 표시되지 않아요.
-- 인물 분리는 기기 안에서만 처리돼요.
-- 외부 요청은 웹폰트(Google Fonts의 Inter)를 불러올 때만 있어요.
+- 인물 분리는 기기 안에서만 처리돼요. 모델은 처음 ‘인물 뒤로’를 쓸 때 받아 와요.
+- 날씨 스티커를 직접 누를 때만 위도·경도(소수 셋째 자리)와 날짜·시각, 또는 입력한 장소 이름이 Open-Meteo로 나가요. 그 값은 저장하지 않아요.
 
 ## 기술
 
-- 프레임워크도, 빌드 과정도 없는 정적 사이트예요. 앱은 `index.html` 하나에 HTML·CSS·JS와 티어 데이터가 모두 들어 있어요.
+- 프레임워크와 배포용 빌드가 없는 정적 사이트예요. 브라우저 ES 모듈이 소스 그대로 올라가요.
+- 계산은 `src/engine/` 한곳에 있어요. 홈과 계산기 페이지가 같은 모듈을 써요.
+- `/`는 웹 홈(계산기 + 안내 글)이고, `/app/`는 설치용 진입점이에요. 매니페스트 `start_url`은 `/app/`예요.
+- 공유 이미지의 스티커·템플릿은 결과를 열 때 불러와요. 카드 장식 CSS도 그때 적용해요.
 - Canvas로 공유 이미지를 그리고, Web Share API로 공유해요.
 - 인물 분리: MediaPipe Tasks Vision + selfie_segmenter (Apache-2.0, `seg/`)
-- PWA 매니페스트(`manifest.webmanifest`)와 아이콘 포함
+- 서비스 워커(`sw.js`)는 앱 셸, 엔진, 아이콘, 카드 스타일을 캐시해요. 안내 글 전체는 캐시하지 않아요.
 
 ## 로컬에서 실행하기
 
@@ -107,7 +110,8 @@
 git clone https://github.com/BeomhyunPark/hoohaa.git
 cd hoohaa
 python3 -m http.server 8000
-# http://localhost:8000 접속
+# http://localhost:8000/       웹 홈
+# http://localhost:8000/app/   앱 진입점
 ```
 
 `seg/`의 모듈과 wasm 파일은 `file://`로는 불러오지 못할 수 있으니, 로컬 서버로 여는 걸 추천해요.
@@ -122,15 +126,19 @@ python3 -m http.server 8000
 
 ```
 hoohaa/
-├── index.html              # 앱 본체 (계산기 + 결과 + 공유 이미지 편집기)
-├── 5k/ 10k/ half/ full/    # 종목·목표 기록별 안내 페이지 (예: full/sub3/)
-├── age/ men/ women/        # 나이대·성별 안내 페이지
+├── index.html              # 웹 홈. 계산기 + 안내 글
+├── app/index.html          # 설치·스토어용 진입점. 안내 글 없음
+├── privacy/ support/       # 개인정보, 고객지원
+├── src/engine/             # 티어 계산. DOM·네트워크·저장소 없음
+├── src/app/boot.js         # 입력 화면
+├── src/editor/             # 공유 편집기. 결과 이후에 로드
+├── src/storage/ src/net/   # 기기 저장, Open-Meteo
+├── src/styles/             # 앱 레이아웃, 티어 카드
+├── sw.js  manifest.webmanifest
+├── 5k/ 10k/ half/ full/    # 종목·목표 기록별 안내 페이지
+├── age/ men/ women/ guide/ tier-guide/
 ├── pace/ pace-calculator/ predictor/ splits/ vdot/ vo2max/
-├── guide/ tier-guide/      # 가이드 페이지
-├── seg/                    # MediaPipe 인물 분리 (모델, wasm, Apache-2.0 라이선스)
-├── fonts/                  # 공유 편집기용 글꼴
-├── icons/                  # 앱 아이콘, 심볼, 워드마크
-├── og.png  favicon.*  manifest.webmanifest
+├── seg/  fonts/  icons/
 ├── sitemap.xml  robots.txt  CNAME  .nojekyll
-└── naver*.html             # 네이버 사이트 인증
+└── naver*.html
 ```
