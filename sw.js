@@ -1,4 +1,4 @@
-const CACHE = 'hoohaa-shell-1';
+const CACHE = 'hoohaa-shell-2';
 const SHELL = [
   '/app/',
   '/app/index.html',
@@ -6,6 +6,7 @@ const SHELL = [
   '/favicon.ico',
   '/favicon.svg',
   '/icons/apple-touch-icon.png',
+  '/icons/icon-32.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
@@ -14,13 +15,16 @@ const SHELL = [
   '/src/engine/tier.js',
   '/src/engine/data.js',
   '/src/storage/device.js',
-  '/src/net/weather.js',
-  '/src/editor/editor.js',
-  '/src/editor/assets.js',
   '/src/styles/app.css',
-  '/src/styles/card.css',
   '/privacy/',
   '/support/',
+];
+// Fetched when the result editor opens. Cached after that use, not on install.
+const ON_USE = [
+  '/src/editor/editor.js',
+  '/src/editor/assets.js',
+  '/src/net/weather.js',
+  '/src/styles/card.css',
 ];
 
 self.addEventListener('install', (event) => {
@@ -50,7 +54,7 @@ function shouldHandle(req) {
   if (req.mode === 'navigate') {
     return path === '/app/' || path.startsWith('/app/') || path === '/privacy/' || path === '/support/';
   }
-  return SHELL.includes(path);
+  return SHELL.includes(path) || ON_USE.includes(path);
 }
 
 async function networkFirst(req) {
