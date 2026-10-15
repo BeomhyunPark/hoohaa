@@ -1,0 +1,61 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>개인정보 처리방침 · hoohaa</title>
+<meta name="description" content="hoohaa는 기록을 서버에 저장하지 않아요. 입력과 사진은 이 기기에만 남고, 직접 지울 수 있어요.">
+<link rel="canonical" href="https://hoohaa.run/privacy/">
+<meta name="color-scheme" content="dark"><meta name="theme-color" content="#0F1620">
+<link rel="icon" href="../favicon.ico" sizes="32x32"><link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png"><link rel="manifest" href="../manifest.webmanifest">
+<style>:root{--bg:#0F1620;--s:#151E2A;--b:#26313F;--t1:#F2F4F7;--t2:#B3BAC5;--t3:#8790A0;--a:#3DC8F5;--a2:#B9ECFF}
+*{box-sizing:border-box}html{background:var(--bg);color-scheme:dark}body{margin:0;font:15px/1.7 -apple-system,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",system-ui,sans-serif;color:var(--t2);word-break:keep-all}
+.w{max-width:760px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}header a.lg{line-height:0}header img{height:26px;width:auto;display:block}
+h1{color:var(--t1);font-size:26px;line-height:1.35;margin:0 0 10px;letter-spacing:-.4px}h2{color:var(--t1);font-size:19px;margin:32px 0 10px}
+p{margin:0 0 12px}strong{color:var(--a2);font-weight:600}a{color:var(--a)}
+ul{margin:0 0 12px;padding-left:1.2em}li{margin:0 0 8px}
+button.wipe{min-height:52px;border:0;border-radius:14px;background:var(--a);color:#0F1620;font:inherit;font-weight:800;font-size:16px;padding:0 18px;cursor:pointer}
+.note{font-size:13px;color:var(--t3)}
+footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:13px;color:var(--t3)}</style>
+</head><body><div class="w">
+<header><a class="lg" href="../" aria-label="hoohaa 홈"><img src="../icons/wordmark.svg" alt=""></a></header>
+<main>
+<h1>개인정보 처리방침</h1>
+<p class="note">시행 2026-10-15</p>
+<p>hoohaa는 로그인 없이 쓰는 러닝 티어 계산기예요. 티어, 예상 기록, 훈련 페이스, 공유 이미지는 이 브라우저 안에서 계산해요. 계정을 만들지 않고, 광고나 이용 분석을 붙이지 않아요.</p>
+
+<h2>이 기기에 남는 것</h2>
+<p>다음 방문을 위해 이 브라우저에만 저장해요. hoohaa 서버로 보내지 않아요.</p>
+<ul>
+<li>마지막 입력. 종목, 거리, 기록 숫자, 성별, 출생연도 (<code>runtier:last</code>)</li>
+<li>편집 중인 공유 이미지 (<code>runtier:v3doc</code>)</li>
+<li>내가 저장한 템플릿, 최대 6개 (<code>runtier:mytpl</code>)</li>
+<li>내 스타일 (<code>runtier:mystyle</code>)</li>
+<li>글꼴 즐겨찾기와 최근 글꼴 (<code>runtier:fontfav</code>, <code>runtier:fontrecent</code>)</li>
+<li>공유 이미지에 넣은 사진. 긴 변 1600px 이하의 JPEG로 이 브라우저의 IndexedDB(<code>hoohaa</code> / <code>photos</code>)에만 보관</li>
+</ul>
+<p>공유 이미지에는 나이와 성별을 넣지 않아요. 인물과 배경을 나누는 작업도 기기 안에서만 해요.</p>
+
+<h2>기기를 떠나는 경우</h2>
+<p>날씨 스티커에서 <strong>직접 누를 때만</strong> Open-Meteo로 요청이 나가요. 현재 위치를 누르면 위도·경도를 소수 셋째 자리(약 100m)까지, 기록 날짜와 시각과 함께 보내요. 장소 이름을 검색하면 그 이름이 나가요. 이 값은 hoohaa가 저장하지 않아요. 그 버튼을 누르기 전에는 날씨 요청이 없어요.</p>
+<p>인물 분리를 처음 쓸 때는 분리 모델을 받아 와요. 사진은 그 요청에 실리지 않아요.</p>
+
+<h2>데이터 지우기</h2>
+<p>아래 버튼은 이 브라우저에 저장된 입력, 편집 내용, 템플릿, 앱 안의 사진을 지우고 페이지를 새로고침해요. 사진 앱에 이미 저장한 이미지는 지워지지 않아요.</p>
+<p><button type="button" class="wipe" id="wipe">이 기기의 데이터 지우기</button></p>
+
+<h2>나이</h2>
+<p>hoohaa는 만 14세 미만을 대상으로 홍보하지 않아요. 계산은 10~100세를 받으며, 출생연도는 이 기기에만 남아요.</p>
+
+<h2>권한</h2>
+<p>사진을 고르면, 고른 파일만 공유 이미지에 써요. 위치는 날씨 스티커에서 현재 위치를 눌렀을 때만 물어요. 둘 다 그 순간 외에는 쓰지 않아요.</p>
+
+<h2>문의</h2>
+<p>개인정보와 데이터 삭제는 <a href="https://github.com/BeomhyunPark/hoohaa/issues">GitHub 이슈</a>로 보내 주세요. 사용 방법은 <a href="../support/">고객지원</a>에 있어요.</p>
+</main>
+<footer><a href="../">hoohaa.run</a> · <a href="../app/">앱</a> · <a href="../support/">고객지원</a></footer>
+</div>
+<script type="module">
+import { wipeDevice } from '../src/storage/device.js';
+document.getElementById('wipe').addEventListener('click', () => wipeDevice());
+</script>
+</body></html>

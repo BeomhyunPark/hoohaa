@@ -1,0 +1,107 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>hoohaa · 내 러닝 티어</title>
+<meta name="description" content="기록 하나로 러닝 티어, 상위 %, 예상 기록, 훈련 페이스를 확인해요. 계산은 이 기기 안에서 끝나요.">
+<link rel="canonical" href="https://hoohaa.run/app/">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0F1620">
+<meta name="robots" content="noindex">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="hoohaa">
+<script>try{if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)document.documentElement.classList.add("standalone")}catch(e){}</script>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website"><meta property="og:site_name" content="hoohaa">
+<meta property="og:title" content="hoohaa · 내 러닝 티어는?"><meta property="og:description" content="후하후하, 내 PB는 무슨 티어?">
+<meta property="og:url" content="https://hoohaa.run/app/">
+<meta property="og:image" content="https://hoohaa.run/og.png?v=1">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="hoohaa 로고와 문구 '후하후하, 내 PB는 무슨 티어?'"><meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="hoohaa · 내 러닝 티어는?"><meta name="twitter:description" content="후하후하, 내 PB는 무슨 티어?">
+<meta name="twitter:image" content="https://hoohaa.run/og.png?v=1">
+<link rel="stylesheet" href="/src/styles/app.css">
+<link rel="stylesheet" href="/src/styles/card.css" media="not all" id="cardCss">
+</head><body>
+<main id="app">
+<!-- INPUT -->
+<section id="scrInput" class="screen" aria-labelledby="hIn">
+  <header class="top"><h1 id="hIn" class="logo"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 122" width="470" height="122"><g transform="translate(0,4)"><g transform="translate(40,0) skewX(-14)"><g transform="translate(6,6)"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#3DC8F5"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="174" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M340 40V100" stroke="#3DC8F5" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M412 40V100" stroke="#3DC8F5" stroke-width="16"/></g><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#F4F6F8"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#F4F6F8"/><circle cx="102" cy="70" r="22" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M102 70L113.81258650761974 63.18" stroke="#0F1620" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5.95" fill="#0F1620"/><circle cx="174" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M340 40V100" stroke="#F4F6F8" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M412 40V100" stroke="#F4F6F8" stroke-width="16"/></g></g></svg><span class="sr">hoohaa 러닝 티어</span></h1></header>
+  <div class="field">
+    <span class="lbl" id="lEv">종목</span>
+    <div class="chips five" role="radiogroup" aria-labelledby="lEv" id="evChips">
+      <button type="button" role="radio" data-v="5K">5K</button>
+      <button type="button" role="radio" data-v="10K">10K</button>
+      <button type="button" role="radio" data-v="half">하프</button>
+      <button type="button" role="radio" data-v="full">풀</button>
+      <button type="button" role="radio" data-v="custom">직접</button>
+    </div>
+    <div id="kmWrap" class="sub-field" hidden>
+      <label for="km" class="lbl sm">거리</label>
+      <div class="suffix"><input id="km" inputmode="decimal" autocomplete="off" placeholder="예: 15"><span>km</span></div>
+    </div>
+  </div>
+  <div class="field">
+    <label for="tq" class="lbl">기록</label>
+    <input id="tq" class="big" inputmode="numeric" autocomplete="off" placeholder="25:00">
+    <p class="hint" id="tqHint">숫자만 입력하세요 · 2327 → 0:23:27</p>
+  </div>
+  <div class="field">
+    <span class="lbl" id="lSex">성별</span>
+    <div class="chips two" role="radiogroup" aria-labelledby="lSex" id="sexChips">
+      <button type="button" role="radio" data-v="M">남성</button>
+      <button type="button" role="radio" data-v="F">여성</button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="by" class="lbl">출생연도</label>
+    <input id="by" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="예: 1995">
+    <p class="hint">나이 = 올해 − 출생연도로 계산해요</p>
+  </div>
+  <p id="err" class="err" role="alert"></p>
+  <div id="barInput" class="actions"><button id="go" class="btn primary" disabled>내 티어 보기</button></div>
+</section>
+
+<!-- RESULT -->
+<section id="scrResult" class="screen" hidden aria-label="결과">
+  <div id="resBody"></div>
+  <section class="card tpl" aria-labelledby="hTpl">
+    <h2 id="hTpl">공유 이미지</h2>
+    <div class="st-top"><button type="button" class="chip-btn" id="tplReset">템플릿으로 되돌리기</button><span class="sp"></span><button type="button" class="stp" id="undo" aria-label="실행취소">↶</button><button type="button" class="stp" id="redo" aria-label="다시실행">↷</button></div>
+    <div class="st-fmt"><div class="seg n3" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true">스토리 9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false">피드 4:5</button><button type="button" role="radio" data-v="square" aria-checked="false">1:1</button></div><button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">IG 안전영역</button></div>
+    <div class="st-row" id="tplEd">
+      <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas><button type="button" class="bg-btn" id="bgBtn">📷 배경 사진</button>
+        <div class="mini" id="miniBar" hidden role="toolbar" aria-label="선택한 요소"><button type="button" data-mb="up" aria-label="앞으로" title="앞으로">↑<small>앞으로</small></button><button type="button" data-mb="down" aria-label="뒤로" title="뒤로">↓<small>뒤로</small></button><button type="button" data-mb="behind" aria-label="인물 뒤로" aria-pressed="false" hidden>👤<small>인물 뒤로</small></button><button type="button" data-mb="asbg" aria-label="배경으로" title="배경으로" hidden>🖼<small>배경으로</small></button><button type="button" data-mb="dup" aria-label="복제" title="복제">⧉<small>복제</small></button><button type="button" data-mb="del" aria-label="삭제" title="삭제">🗑<small>삭제</small></button></div><div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="behind" id="ctxBehind" role="menuitem" hidden>인물 뒤로</button><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
+      <div class="st-tools" id="tools" role="toolbar" aria-label="추가 도구" aria-orientation="vertical">
+        <button type="button" data-tool="text" aria-label="텍스트 추가"><b>Aa</b><small>텍스트</small></button>
+        <button type="button" data-tool="photo" aria-label="사진 추가"><b>📷</b><small>사진</small></button>
+        <button type="button" data-tool="sticker" aria-label="스티커" aria-pressed="false"><b>★</b><small>스티커</small></button>
+        <button type="button" data-tool="stat" aria-label="기록 블록" aria-pressed="false"><b>⏱</b><small>기록</small></button>
+        <button type="button" data-tool="bg" aria-label="배경" aria-pressed="false"><b>◐</b><small>배경</small></button>
+        <button type="button" data-tool="layers" aria-label="레이어" aria-pressed="false"><b>☰</b><small>레이어</small></button>
+      </div>
+    </div>
+    <input id="photo" type="file" accept="image/*" class="vh" tabindex="-1" aria-hidden="true">
+    <p class="pv-hint" id="pvHint" role="status" aria-live="polite"></p>
+    <div class="panel" id="panel"></div>
+    <span class="lbl sm tl">템플릿</span>
+    <div class="tpl-list" id="tplList" role="radiogroup" aria-label="템플릿"></div>
+    <div class="ed-btns"><button type="button" class="chip-btn" id="saveMyTpl">＋ 내 템플릿 저장</button></div>
+    <div id="barResult" class="actions" hidden><button id="save" class="btn primary">저장</button><button id="share" class="btn secondary">공유</button><button id="again" class="btn ghost-btn">다른 기록 넣기</button></div>
+  </section>
+  <div class="cpick" id="cpick" role="group" aria-label="색 선택" hidden>
+    <div class="cp-top"><span class="cp-chip" id="cpChip" aria-hidden="true"></span><input id="cpHex" class="cp-hex" maxlength="7" autocomplete="off" spellcheck="false" aria-label="HEX 색상 코드" value="#FFFFFF"></div>
+    <div class="cp-sv" id="cpSV" role="slider" tabindex="0" aria-label="채도·밝기" aria-valuetext=""><i id="cpSVk"></i></div>
+    <div class="cp-hue" id="cpHue" role="slider" tabindex="0" aria-label="색상" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0"><i id="cpHuek"></i></div>
+  </div>
+
+</section>
+<footer class="app-foot"><a href="/privacy/">개인정보</a><a href="/support/">고객지원</a><button type="button" id="wipe">이 기기의 데이터 지우기</button></footer>
+</main>
+
+<script type="module" src="/src/app/boot.js"></script>
+</body></html>
