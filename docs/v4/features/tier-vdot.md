@@ -1,6 +1,6 @@
 # 티어와 VDOT
 
-색인 [../index.md](../index.md). Jev를 부르지 않는다.
+목록은 [../index.md](../index.md)다. Jev를 호출하지 않는다.
 
 ## 하는 일
 
@@ -16,10 +16,14 @@
 
 계산은 `src/engine/tier.js`와 `src/engine/data.js`에 있다. 표의 상한은 VDOT 85다. 훈련 페이스 설명은 `src/editor/workout.js`에 있다.
 
+## 결정
+
+계산 코드는 하나만 둔다. 웹용과 앱용으로 복사하지 않는다.
+
 ## 제안
 
-폰은 이 파일을 복사하지 않고 `src/engine/tier.js`를 불러 쓴다. [../platforms.md](../platforms.md)를 본다.
+공통 패키지에 두거나, 앱이 `src/engine/tier.js`와 `data.js`를 직접 가져다 쓴다. 어느 쪽인지는 아직 정하지 않았다. [../platforms.md](../platforms.md)를 본다.
 
-## 빈 칸
+## 아직 정할 내용
 
-웹의 계산 파일을 폰 저장소와 어떻게 같이 둘지.
+그 코드를 어느 경로에 두고, 웹과 앱이 어떻게 가져다 쓸지.
