@@ -80,6 +80,9 @@ details.method summary{color:var(--t3);font-size:13px}
 .prow .ltr{color:var(--pc);background:color-mix(in srgb,var(--pc) 16%,transparent)}
 .prow .exp{border-left-color:var(--pc)}
 .prow .exp{margin:0 0 12px 0}
+.wk{margin:0 0 8px}
+.wk input{min-height:44px;font-size:16px;padding-right:42px}
+.pace-foot{margin:4px 0 0;color:var(--t2);font-size:13px;line-height:1.55}
 
 /* 꾸미기 (선택) */
 .deco{margin:12px 0;border:1px solid var(--border);border-radius:var(--r);background:var(--surface)}

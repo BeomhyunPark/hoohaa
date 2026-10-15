@@ -1,5 +1,6 @@
 import { LS, idb } from '../storage/device.js';
 import { fetchWeather, searchPlace, wxHere, isoDay } from '../net/weather.js';
+import { paceGuide, parseWeekly } from './workout.js';
 
 export async function mountEditor(env) {
   const { $, esc, state, EVN } = env;
@@ -1109,9 +1110,8 @@ function tierStyle(name) {
 }
 const short = t => t.replace(/^0:/, ''); // 0:23:27 -> 23:27
 
-const PACES = [['E', '편하게', '대화 가능한 편한 속도, 주간 대부분. 그날 컨디션에 맞춰 이 범위 안에서 편하게 달리면 돼요.'],
-  ['M', '마라톤', '풀코스 목표 속도, 장거리 훈련에 섞어서.'], ['T', '템포', '조금 힘들지만 버틸 만한 속도, 20분 정도 꾸준히.'],
-  ['I', '인터벌', '숨이 꽤 차는 속도, 3~5분 달리고 쉬기 반복.'], ['R', '리피티션', '가장 빠른 속도, 200~400m 짧게 달리고 충분히 휴식.']];
+const PACE_ROWS = [['E', '이지'], ['M', '마라톤'], ['T', '역치'], ['I', '인터벌'], ['R', '리피티션']];
+let weeklyKm = '';
 const METHOD = '입력한 기록으로 달리기 능력 점수(VDOT)를 구하고, 같은 점수를 다른 거리에 적용한 것(잭 다니엘스 공식). 그 거리에 맞는 훈련을 했을 때 기준이라, 특히 풀코스는 장거리 훈련이 부족하면 실제로는 더 걸릴 수 있어요.';
 
 function renderResult(r) {
@@ -1132,9 +1132,10 @@ function renderResult(r) {
     const me = k === state.ev;
     return `<div class="cell${me ? ' me' : ''}"><div class="ev"><span>${n}</span>${me ? '<em>내 기록</em>' : ''}</div><div class="time">${short(r.predicted[k])}</div><div class="pace">${r.predictedPace[k]}</div></div>`;
   }).join('');
-  const rows = PACES.map(([L, n, d], i) => `<button type="button" class="prow" aria-expanded="false" aria-controls="pe${i}">
+  const guide = paceGuide(r.trainingPaces, weeklyKm);
+  const rows = PACE_ROWS.map(([L, n], i) => `<button type="button" class="prow" aria-expanded="false" aria-controls="pe${i}">
       <span class="line"><span class="ltr">${L}</span><span class="nm">${n}</span><span class="pv">${r.trainingPaces[L].replace(/\/km/g, '').replace(' ~ ', '~')}<small>/km</small></span><span class="chev" aria-hidden="true">▾</span></span>
-      <span class="exp" id="pe${i}" hidden>${d}</span></button>`).join('');
+      <span class="exp" id="pe${i}" hidden>${esc(guide[L]).replaceAll('\n', '<br>')}</span></button>`).join('');
   $('resBody').innerHTML = `
     <section class="tier-card fluid t-${ts.key} b-${TK.tier[ts.key].card.band}" aria-label="내 티어: ${esc(r.tier)}">
       <span class="tc-wm" aria-hidden="true">${WM_SVG}</span>
@@ -1158,7 +1159,10 @@ function renderResult(r) {
       <p class="more" id="prInfo" hidden>${METHOD}</p>
       <div class="grid">${cells}</div>
       </section>
-    <section class="card"><h2>훈련 페이스</h2>${rows}</section>`;
+    <section class="card"><h2>훈련 페이스</h2>
+      <div class="wk"><label class="lbl sm" for="wkKm">주간 거리</label><div class="suffix"><input id="wkKm" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="${esc(weeklyKm)}"><span>km</span></div></div>
+      ${rows}
+      <p class="pace-foot">${esc(guide.foot)}</p></section>`;
   state.story = { key: ts.key, tierKo: r.tier, word: ts.key.toUpperCase(), roman: ts.roman, long: LONG.has(ts.key),
     title: `${evName} 성적표`, recLine: `${evName} ${short(r.input.time)} · ${r.pace}`, who: pubWho, topLabel: r.topPercentLabel, headline: r.topPercentLabel, time: short(r.input.time), pace: r.pace, vdot: r.vdot.toFixed(1),
     nextLine: nx ? `${nx.tier}까지 ${evName} ${nx.gapText} 단축` : '최고 티어 챌린저 달성!' };
@@ -1167,6 +1171,12 @@ function renderResult(r) {
   for (const b of $('resBody').querySelectorAll('.info, .prow')) b.addEventListener('click', () => {
     const el = $(b.getAttribute('aria-controls')), open = b.getAttribute('aria-expanded') !== 'true';
     b.setAttribute('aria-expanded', String(open)); el.hidden = !open; const c = b.querySelector('.chev'); if (c) c.textContent = open ? '▴' : '▾';
+  });
+  const wk = $('wkKm');
+  if (wk) wk.addEventListener('input', () => {
+    weeklyKm = wk.value;
+    const next = paceGuide(r.trainingPaces, weeklyKm);
+    PACE_ROWS.forEach(([L], i) => { const el = $(`pe${i}`); if (el) el.innerHTML = esc(next[L]).replaceAll('\n', '<br>'); });
   });
 }
   return { renderResult };
