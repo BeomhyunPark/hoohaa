@@ -139,6 +139,6 @@ restore();
 const wipeBtn = document.getElementById('wipe');
 if (wipeBtn) wipeBtn.addEventListener('click', () => wipeDevice());
 
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+if ('serviceWorker' in navigator && location.protocol.startsWith('http') && (location.pathname === '/app' || location.pathname.startsWith('/app/'))) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
