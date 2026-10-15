@@ -205,7 +205,7 @@ details.method summary{color:var(--t3);font-size:13px}
 /* static SEO / info section */
 .seo{margin:36px 0 8px;padding-top:20px;border-top:1px solid var(--border);color:var(--t2);font-size:14px;line-height:1.65}
 .seo h2{font-size:16px;color:var(--t1);margin:22px 0 8px}.seo>h2:first-child{margin-top:0}
-.seo strong{color:var(--accent2);font-weight:700}.seo b{font-weight:700;color:inherit}.seo .hi{color:var(--accent2)}
+.seo strong{color:var(--accent2);font-weight:700}.seo b{font-weight:700;color:var(--t1)}.seo .hi{color:var(--accent2)}
 .seo details{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin:8px 0;padding:0 14px}
 .seo summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:48px;gap:12px}
 .seo summary::-webkit-details-marker{display:none}
