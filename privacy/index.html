@@ -1,5 +1,6 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>try{if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)document.documentElement.classList.add("standalone")}catch(e){}</script>
 <title>개인정보 처리방침 · hoohaa</title>
 <meta name="description" content="hoohaa는 기록을 서버에 저장하지 않아요. 입력과 사진은 이 기기에만 남고, 직접 지울 수 있어요.">
 <link rel="canonical" href="https://hoohaa.run/privacy/">
@@ -14,10 +15,14 @@ h1{color:var(--t1);font-size:26px;line-height:1.35;margin:0 0 10px;letter-spacin
 p{margin:0 0 12px}strong{color:var(--a2);font-weight:600}a{color:var(--a)}
 ul{margin:0 0 12px;padding-left:1.2em}li{margin:0 0 8px}
 button.wipe{min-height:52px;border:0;border-radius:14px;background:var(--a);color:#0F1620;font:inherit;font-weight:800;font-size:16px;padding:0 18px;cursor:pointer}
+.app-only{display:none!important}
+@media (display-mode:standalone){.web-only{display:none!important}.app-only{display:unset!important}}
+html.standalone .web-only{display:none!important}
+html.standalone .app-only{display:unset!important}
 .note{font-size:13px;color:var(--t3)}
 footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:13px;color:var(--t3)}</style>
 </head><body><div class="w">
-<header><a class="lg" href="../" aria-label="hoohaa 홈"><img src="../icons/wordmark.svg" alt=""></a></header>
+<header><a class="lg web-only" href="../" aria-label="hoohaa 홈"><img src="../icons/wordmark.svg" alt=""></a><a class="lg app-only" href="../app/" aria-label="hoohaa 앱"><img src="../icons/wordmark.svg" alt=""></a></header>
 <main>
 <h1>개인정보 처리방침</h1>
 <p class="note">시행 2026-10-15</p>
@@ -52,7 +57,7 @@ footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:
 <h2>문의</h2>
 <p>개인정보와 데이터 삭제는 <a href="https://github.com/BeomhyunPark/hoohaa/issues">GitHub 이슈</a>로 보내 주세요. 사용 방법은 <a href="../support/">고객지원</a>에 있어요.</p>
 </main>
-<footer><a href="../">hoohaa.run</a> · <a href="../app/">앱</a> · <a href="../support/">고객지원</a></footer>
+<footer><span class="web-only"><a href="../">hoohaa.run</a> · </span><a href="../app/">앱</a> · <a href="../support/">고객지원</a></footer>
 </div>
 <script type="module">
 import { wipeDevice } from '../src/storage/device.js';
