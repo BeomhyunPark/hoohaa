@@ -13,6 +13,7 @@
 | [withhold.md](withhold.md) | 판단 보류 |
 | [parked.md](parked.md) | 기능 문서로 올리지 않은 제안 |
 | [platforms.md](platforms.md) | 웹, 스토어, 워치를 어떻게 나눌지 |
+| [az.md](az.md) | 처음부터 끝까지 해야 할 일 |
 
 ## 기능
 
