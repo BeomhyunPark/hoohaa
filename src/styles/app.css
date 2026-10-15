@@ -205,16 +205,18 @@ details.method summary{color:var(--t3);font-size:13px}
 /* static SEO / info section */
 .seo{margin:36px 0 8px;padding-top:20px;border-top:1px solid var(--border);color:var(--t2);font-size:14px;line-height:1.65}
 .seo h2{font-size:16px;color:var(--t1);margin:22px 0 8px}.seo>h2:first-child{margin-top:0}
-.seo strong{color:var(--accent2);font-weight:600}
+.seo strong{color:var(--accent2);font-weight:700}.seo b{font-weight:700;color:inherit}.seo .hi{color:var(--accent2)}
 .seo details{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin:8px 0;padding:0 14px}
 .seo summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:48px;gap:12px}
 .seo summary::-webkit-details-marker{display:none}
 .seo summary::after{content:"+";color:var(--t3);font-size:20px;flex:none}.seo details[open] summary::after{content:"−"}
 .seo summary h2,.seo summary h3{margin:0;font-size:15px;font-weight:600;color:var(--t1)}
-.seo details p{margin:0 0 14px}
+.seo details p,.seo details ul{margin:0 0 14px}.seo details ul{padding-left:1.15em}.seo details li{margin:2px 0}
 .seo-tbl{width:100%;border-collapse:collapse;font-size:13px;margin:0 0 10px;font-variant-numeric:tabular-nums}
 .seo-tbl th,.seo-tbl td{padding:7px 4px;border-bottom:1px solid var(--border);text-align:right}
 .seo-tbl th:first-child{text-align:left;color:var(--t1);font-weight:600}.seo-tbl thead th{color:var(--t3);font-weight:500}
+.seo-tbl .t-iron{color:#A9B2BF}.seo-tbl .t-bronze{color:#E2A67F}.seo-tbl .t-silver{color:#D7DEE7}.seo-tbl .t-gold{color:#F6DC8E}.seo-tbl .t-platinum{color:#9FE3DC}.seo-tbl .t-emerald{color:#5FE0A0}.seo-tbl .t-diamond{color:#B9D4FF}.seo-tbl .t-master{color:#D9A8FF}.seo-tbl .t-grandmaster{color:#FF9C8A}
+.seo-tbl .t-challenger{background:linear-gradient(90deg,#FFF3C8,#FFC9EC,#A8F3FF);-webkit-background-clip:text;background-clip:text;color:transparent}
 .seo-links{display:flex;flex-wrap:wrap;gap:8px}.seo-links a{border:1px solid var(--border);border-radius:999px;padding:8px 13px;color:var(--t1);text-decoration:none;font-size:13.5px;min-height:36px}
 /* unified page width with landing pages (760px incl. padding) */
 main{max-width:760px}
