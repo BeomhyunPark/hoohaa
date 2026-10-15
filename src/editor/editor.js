@@ -215,7 +215,7 @@ async function saveStory(cv, name = 'running-tier.png') {
 // ---- stat ("기록 블록") values come only from the calculation result: never editable ----
 const STATS = { rec: ['기록', 'RECORD'], pace: ['페이스', 'PACE'], tier: ['티어', 'TIER'], top: ['상위 %', 'RANK'], vdot: ['VDOT', 'VDOT'], next: ['다음 티어까지', 'NEXT'], date: ['날짜', 'DATE'], race: ['대회명', 'RACE'], event: ['종목', 'EVENT'], combo: ['기록 문구', 'TEXT'] };
 const statLabel = (d, k) => k === 'rec' ? d.recLine.split(' ')[0] + ' 기록' : STATS[k][0];
-const statValue = (d, doc, k, L) => L && L.tx ? fillTok(L.tx, d, doc) : ({ rec: d.time, pace: d.pace, tier: d.word + (d.roman ? ' ' + d.roman : ''), top: d.topLabel, vdot: d.vdot, next: d.nextLine, date: ymd(), race: (doc.race || '').trim() || '대회명을 입력하세요', event: d.recLine.split(' ')[0] })[k];
+const statValue = (d, doc, k, L) => L && L.tx ? fillTok(L.tx, d, doc) : ({ rec: d.time, pace: d.pace, tier: d.word + (d.roman ? ' ' + d.roman : ''), top: d.topLabel, vdot: d.vdot, next: d.nextLine, date: ymd(), race: (doc.race || '').trim() || '대회명을 입력해 주세요', event: d.recLine.split(' ')[0] })[k];
 // result tokens used by the v4 templates (values always come from the calculation; race is the only user-typed one)
 const paceQ = p => { const m = /^(\d+):(\d\d)/.exec(p || ''); return m ? `${m[1]}'${m[2]}"` : (p || '').replace('/km', ''); };
 const pctOf = d => { const m = /([\d.]+)%/.exec(d.topLabel || ''); return m ? m[1] : ''; };
@@ -1048,7 +1048,7 @@ function bindPanel(L) {
   on('fClose', 'click', () => { libOpen = false; paintPanel(); });
   on('fSearch', 'input', () => { $('fList').innerHTML = libHTML(L); });
   on('fCats', 'click', e => { const b = e.target.closest('[data-c]'); if (!b) return; fontCat = b.dataset.c; for (const x of $('fCats').children) x.setAttribute('aria-checked', String(x === b)); $('fList').innerHTML = libHTML(L); });
-  on('eyedrop', 'click', () => { pickMode = true; status('캔버스에서 가져올 색을 탭하세요', 4000); });
+  on('eyedrop', 'click', () => { pickMode = true; status('캔버스에서 가져올 색을 탭해 주세요', 4000); });
   P.onclick = e => { const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
     if (d.c && t.classList.contains('qc')) setCol(d.c);
     if (d.tierc) setCol('@tier');

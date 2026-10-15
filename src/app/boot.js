@@ -71,7 +71,7 @@ function readInput() {
 }
 function validate() {
   const { t, by, km } = readInput();
-  $('tqHint').textContent = t && t.error ? t.error : '숫자만 입력하세요 · 2327 → 0:23:27';
+  $('tqHint').textContent = t && t.error ? t.error : '숫자만 입력하면 자동으로 변환돼요 · 2327 → 0:23:27';
   $('tqHint').classList.toggle('bad', !!(t && t.error));
   $('tq').setAttribute('aria-invalid', String(!!(t && t.error)));
   const kmOk = state.ev !== 'custom' || (+km > 0);
