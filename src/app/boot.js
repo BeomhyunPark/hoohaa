@@ -2,15 +2,26 @@ import { calculate } from '../engine/tier.js';
 import { LS, wipeDevice } from '../storage/device.js';
 
 function enableCardCss() {
-  const l = document.getElementById('cardCss');
-  if (!l || l.media === 'all') return Promise.resolve();
+  let l = document.getElementById('cardCss');
+  if (l && l.media === 'all') return Promise.resolve();
   return new Promise((res) => {
     let settled = false;
     const done = () => { if (!settled) { settled = true; res(); } };
-    l.addEventListener('load', done, { once: true });
-    l.addEventListener('error', done, { once: true });
-    l.media = 'all';
-    if (l.sheet) done();
+    if (!l) {
+      l = document.createElement('link');
+      l.id = 'cardCss';
+      l.rel = 'stylesheet';
+      l.href = '/src/styles/card.css';
+      l.media = 'all';
+      l.addEventListener('load', done, { once: true });
+      l.addEventListener('error', done, { once: true });
+      document.head.appendChild(l);
+    } else {
+      l.addEventListener('load', done, { once: true });
+      l.addEventListener('error', done, { once: true });
+      l.media = 'all';
+      if (l.sheet) done();
+    }
     setTimeout(done, 4000);
   });
 }
