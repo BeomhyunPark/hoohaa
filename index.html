@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>hoohaa · 러닝 티어 &amp; VDOT 기록 계산기 | 내 러닝 티어는?</title>
-<meta name="description" content="5K·10K·하프·풀코스 기록으로 내 러닝 티어를 확인하세요. VDOT 계산기로 마라톤 예상 기록과 E·M·T·I·R 훈련 페이스까지 한 번에. 같은 성별·나이대 상위 %로 아이언부터 챌린저까지, 무료·로그인 없이 브라우저에서 계산해요.">
+<meta name="description" content="5K·10K·하프·풀코스 기록으로 내 러닝 티어를 확인해요. VDOT 계산기로 마라톤 예상 기록과 E·M·T·I·R 훈련 페이스까지 한 번에. 같은 성별·나이대 상위 %로 아이언부터 챌린저까지, 무료·로그인 없이 브라우저에서 계산해요.">
 <link rel="canonical" href="https://hoohaa.run/">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0F1620">
@@ -47,7 +47,7 @@
   <div class="field">
     <label for="tq" class="lbl">기록</label>
     <input id="tq" class="big" inputmode="numeric" autocomplete="off" placeholder="25:00">
-    <p class="hint" id="tqHint">숫자만 입력하세요 · 2327 → 0:23:27</p>
+    <p class="hint" id="tqHint">숫자만 입력하면 자동으로 변환돼요 · 2327 → 0:23:27</p>
   </div>
   <div class="field">
     <span class="lbl" id="lSex">성별</span>
@@ -59,14 +59,14 @@
   <div class="field">
     <label for="by" class="lbl">출생연도</label>
     <input id="by" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="예: 1995">
-    <p class="hint">나이 = 올해 − 출생연도로 계산해요</p>
+    <p class="hint">나이는 출생연도로 계산해요</p>
   </div>
   <p id="err" class="err" role="alert"></p>
   <div id="barInput" class="actions"><button id="go" class="btn primary" disabled>내 티어 보기</button></div>
 <!--SEO-->
 <section class="seo web-only" aria-labelledby="hHow">
   <h2 id="hHow">어떻게 계산하나요</h2>
-  <p>5K·10K·하프·풀코스 기록을 넣으면 <strong>VDOT</strong>(잭 다니엘스 러닝 지수)을 계산하고, 같은 성별 러너 기록 분포에서 상위 몇 %인지로 <strong>러닝 티어</strong>를 정해요. 같은 VDOT으로 다른 거리의 <strong>마라톤 예상 기록</strong>과 E·M·T·I·R <strong>훈련 페이스</strong>도 함께 보여드려요.</p>
+  <p>5K·10K·하프·풀코스 기록을 입력하면 <b>VDOT</b>을 계산하고, 같은 성별 러너들의 <b>기록 분포</b>를 기준으로 <b>러닝 티어</b>를 정해요. 같은 VDOT을 기준으로 다른 거리의 예상 기록과 훈련 페이스도 함께 보여줘요.</p>
   <details class="seo-box"><summary><h2 id="hTbl">티어 기준표 (예: 10K · 30대 남성)</h2></summary>
   <table class="seo-tbl"><thead><tr><th scope="col">티어</th><th scope="col">10K 기록</th><th scope="col">누적 상위</th></tr></thead><tbody>
 <tr><th scope="row"><span class="t-challenger">챌린저</span></th><td>33:31 이내</td><td>상위 0.1%</td></tr>
@@ -80,14 +80,14 @@
 <tr><th scope="row"><span class="t-bronze">브론즈</span></th><td>1:05:28 이내</td><td>상위 88%</td></tr>
 <tr><th scope="row"><span class="t-iron">아이언</span></th><td>모든 완주 기록</td><td>누구나</td></tr>
   </tbody></table>
-  <p class="hint">각 티어의 가장 낮은 단계(3단계) 진입 기준이에요. 성별·나이대·종목에 따라 기준 기록이 달라지며, 결과 화면에서 내 조건의 전체 24단계 표를 볼 수 있어요.</p></details>
+  <p class="hint">각 티어의 3단계에 진입하는 기록이에요. 성별·나이대·종목에 따라 기준 기록이 달라지고, 결과 화면에서는 내 조건에 맞는 전체 24단계 기준표를 볼 수 있어요.</p></details>
   <h2 id="hFaq">자주 묻는 질문</h2>
-<details class="faq"><summary><h3>VDOT이 뭔가요?</h3></summary><p>잭 다니엘스(Jack Daniels) 코치가 만든 <b>러닝 능력 지수</b>예요. 한 번의 레이스 기록을 바탕으로 러너의 유산소 능력을 숫자로 나타내고, 이를 이용해 <span class="hi">다른 거리의 예상 기록과 훈련 페이스</span>를 계산합니다.</p><p>숫자가 높을수록 같은 거리를 더 빠르게 달릴 수 있는 능력이 높다는 뜻이에요.</p></details>
-<details class="faq"><summary><h3>티어는 어떤 기준으로 정해지나요?</h3></summary><p>같은 성별 러너들의 <b>기록 분포</b>를 기준으로 내 기록이 상위 몇 %에 해당하는지 계산해 티어를 정합니다.</p><p>아이언부터 챌린저까지 <b>10개 티어</b>로 나뉘며, 아이언부터 다이아몬드까지는 3·2·1 단계로 세분화됩니다.</p></details>
-<details class="faq"><summary><h3>마라톤 예상 기록은 얼마나 정확한가요?</h3></summary><p><strong>VDOT</strong> 공식으로 계산한 <b>이론적인 예상 기록</b>이라 참고용으로 봐주세요.</p><p>특히 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 있습니다. 장거리 훈련량, 코스, 날씨, 컨디션 등에 따라서도 실제 기록은 달라질 수 있어요.</p><p>가능하면 <span class="hi">최근 기록이면서 예측하려는 거리와 가까운 기록</span>을 입력하는 것이 좋습니다.</p></details>
-<details class="faq"><summary><h3>훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?</h3></summary><ul><li><b>E (Easy)</b> — 대화가 가능한 편안한 조깅</li><li><b>M (Marathon)</b> — 풀코스 목표 페이스</li><li><b>T (Threshold)</b> — 20~30분 정도 유지할 수 있는 ‘편하게 힘든’ 페이스</li><li><b>I (Interval)</b> — 3~5분 정도 반복하는 빠른 달리기</li><li><b>R (Repetition)</b> — 짧게 반복하는 가장 빠른 페이스</li></ul><p>훈련 목적에 따라 각각 역할이 다르지만, <strong>대부분의 러닝은 E 페이스</strong>로 진행하는 것이 좋습니다.</p></details>
-<details class="faq"><summary><h3>입력한 기록이 저장되나요?</h3></summary><p>계산은 <b>이 브라우저 안에서만</b> 이루어집니다.</p><p>입력한 기록, 성별, 출생연도, 편집한 사진은 서버로 보내지 않고 <b>이 기기에만 저장</b>됩니다. 저장된 정보는 <a href="/privacy/">개인정보</a>에서 삭제할 수 있어요.</p></details>
-<details class="faq"><summary><h3>느린 기록도 넣어도 되나요?</h3></summary><p>물론이에요.</p><p><b>완주 기록이라면 누구나</b> 티어를 확인할 수 있고, 다음 티어까지 얼마나 남았는지도 알려드립니다.</p><p>기록이 빠른지 느린지는 중요하지 않아요. <span class="hi">모든 러너는 출발선에 선 순간부터 러너입니다.</span></p></details>
+<details class="faq"><summary><h3>VDOT이 뭔가요?</h3></summary><p>잭 다니엘스(Jack Daniels) 코치가 만든 <b>러닝 능력 지수</b>예요. 한 번의 레이스 기록을 바탕으로 러너의 유산소 능력을 숫자로 나타내고, 이를 이용해 다른 거리의 예상 기록과 훈련 페이스를 계산해요.</p><p>숫자가 높을수록 러닝 능력이 높다고 볼 수 있어요.</p></details>
+<details class="faq"><summary><h3>티어는 어떤 기준으로 정해지나요?</h3></summary><p>같은 성별 러너들의 <b>기록 분포</b>를 기준으로 내 기록이 상위 몇 %에 해당하는지 계산해 티어를 정해요.</p><p>아이언부터 챌린저까지 <b>10개 티어</b>로 나뉘고, 아이언부터 다이아몬드까지는 3·2·1 단계로 세분화돼요.</p></details>
+<details class="faq"><summary><h3>마라톤 예상 기록은 얼마나 정확한가요?</h3></summary><p>VDOT을 바탕으로 계산한 <b>이론적인 예상 기록</b>이라 참고용으로 봐주세요.</p><p>특히 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나올 수 있어요. 장거리 훈련량, 코스, 날씨, 컨디션 등에 따라서도 실제 기록은 달라질 수 있어요.</p><p>가능하면 <b>최근에 달린 기록 중 예측하려는 거리와 가까운 기록</b>을 입력하는 게 좋아요.</p></details>
+<details class="faq"><summary><h3>훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?</h3></summary><ul><li><b>E (Easy)</b> — 대화가 가능한 편안한 조깅</li><li><b>M (Marathon)</b> — 풀코스 목표 페이스</li><li><b>T (Threshold)</b> — 20~30분 정도 유지할 수 있는 ‘편하게 힘든’ 페이스</li><li><b>I (Interval)</b> — 3~5분 정도 반복하는 빠른 달리기</li><li><b>R (Repetition)</b> — 짧게 반복하는 빠른 페이스</li></ul><p><b>대부분의 러닝은 E 페이스</b>로 진행하는 게 좋아요.</p></details>
+<details class="faq"><summary><h3>입력한 기록이 저장되나요?</h3></summary><p>계산은 <b>이 브라우저에서만</b> 이루어져요.</p><p>입력한 기록, 성별, 출생연도, 편집한 사진은 서버로 보내지 않고 <b>이 기기에만 저장</b>돼요. 저장된 정보는 <a href="/privacy/">개인정보</a>에서 삭제할 수 있어요.</p></details>
+<details class="faq"><summary><h3>느린 기록도 넣어도 되나요?</h3></summary><p>물론이에요.</p><p><b>완주 기록이라면 누구나</b> 티어를 확인할 수 있고, 다음 티어까지 얼마나 남았는지도 알려줘요.</p><p>기록이 빠른지 느린지는 중요하지 않아요. 모든 러너는 출발선에 선 순간부터 러너예요.</p></details>
   <h2 id="hMore">기록 기준표 더 보기</h2>
   <nav class="lanenav" aria-label="기록 가이드"><div class="lane"><span class="ln"><b aria-hidden="true">1</b>5K</span><div class="ls"><a href="5k/">티어표</a><a href="5k/20min/">20분</a><a href="5k/25min/">25분</a><a href="5k/30min/">30분</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">2</b>10K</span><div class="ls"><a href="10k/">티어표</a><a href="10k/40min/">40분</a><a href="10k/45min/">45분</a><a href="10k/50min/">50분</a><a href="10k/55min/">55분</a><a href="10k/60min/">1시간</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">3</b>하프</span><div class="ls"><a href="half/">티어표·계산기</a><a href="half/1h30/">1:30</a><a href="half/1h45/">1:45</a><a href="half/2h/">2:00</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">4</b>풀</span><div class="ls"><a href="full/">티어표·예상 기록</a><a class="sub2" href="full/sub2/">SUB2</a><a href="full/sub3/" class="sub3">SUB3</a><a href="full/sub330/" class="sub330">SUB3:30</a><a href="full/sub4/" class="sub4">SUB4</a><a href="full/sub430/" class="sub430">SUB4:30</a><a href="full/sub5/" class="sub5">SUB5</a><a href="predictor/">기록 예측기</a><a href="splits/">구간 기록표</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">5</b>공통</span><div class="ls"><a href="men/">남자 기준</a><a href="women/">여자 기준</a><a href="pace/">훈련 페이스</a><a href="pace-calculator/">페이스 계산기</a><a href="vdot/">VDOT</a><a href="vo2max/">VO2max</a><a href="tier-guide/">티어 기준</a><a href="age/20s-30s/">20·30대</a><a href="age/40s/">40대</a><a href="age/50s/">50대</a><a href="age/60s/">60대+</a><a href="guide/">전체 가이드</a></div></div></nav><style>.lanenav{margin:12px 0 4px;background:#0B1119;border:1px solid #26313F;border-radius:14px;overflow:hidden}
 .lane{display:flex;align-items:stretch;border-top:2px dashed rgba(255,255,255,.13);min-height:52px}.lane:first-child{border-top:0}
@@ -102,7 +102,7 @@
 @media (min-width:601px){.lane .ls{flex-wrap:wrap;overflow:visible}}
 @media (max-width:600px){.lane .ln{width:64px;padding-left:10px;font-size:13px}}</style>
 </section>
-<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"hoohaa","alternateName":"hoohaa 러닝 티어","url":"https://hoohaa.run/","inLanguage":"ko","applicationCategory":"SportsApplication","operatingSystem":"Web","isAccessibleForFree":true,"description":"PB 기록으로 러닝 티어, VDOT, 마라톤 예상 기록, 훈련 페이스를 계산하는 무료 웹앱","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"VDOT이 뭔가요?","acceptedAnswer":{"@type":"Answer","text":"잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록을 바탕으로 러너의 유산소 능력을 숫자로 나타내고, 이를 이용해 다른 거리의 예상 기록과 훈련 페이스를 계산합니다. 숫자가 높을수록 같은 거리를 더 빠르게 달릴 수 있는 능력이 높다는 뜻이에요."}},{"@type":"Question","name":"티어는 어떤 기준으로 정해지나요?","acceptedAnswer":{"@type":"Answer","text":"같은 성별 러너들의 기록 분포를 기준으로 내 기록이 상위 몇 %에 해당하는지 계산해 티어를 정합니다. 아이언부터 챌린저까지 10개 티어로 나뉘며, 아이언부터 다이아몬드까지는 3·2·1 단계로 세분화됩니다."}},{"@type":"Question","name":"마라톤 예상 기록은 얼마나 정확한가요?","acceptedAnswer":{"@type":"Answer","text":"VDOT 공식으로 계산한 이론적인 예상 기록이라 참고용으로 봐주세요. 특히 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나오는 경우가 있습니다. 장거리 훈련량, 코스, 날씨, 컨디션 등에 따라서도 실제 기록은 달라질 수 있어요. 가능하면 최근 기록이면서 예측하려는 거리와 가까운 기록을 입력하는 것이 좋습니다."}},{"@type":"Question","name":"훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"E(Easy)는 대화가 가능한 편안한 조깅, M(Marathon)은 풀코스 목표 페이스, T(Threshold)는 20~30분 정도 유지할 수 있는 ‘편하게 힘든’ 페이스, I(Interval)는 3~5분 정도 반복하는 빠른 달리기, R(Repetition)은 짧게 반복하는 가장 빠른 페이스예요. 훈련 목적에 따라 각각 역할이 다르지만, 대부분의 러닝은 E 페이스로 진행하는 것이 좋습니다."}},{"@type":"Question","name":"입력한 기록이 저장되나요?","acceptedAnswer":{"@type":"Answer","text":"계산은 이 브라우저 안에서만 이루어집니다. 입력한 기록, 성별, 출생연도, 편집한 사진은 서버로 보내지 않고 이 기기에만 저장됩니다. 저장된 정보는 개인정보 페이지에서 삭제할 수 있어요."}},{"@type":"Question","name":"느린 기록도 넣어도 되나요?","acceptedAnswer":{"@type":"Answer","text":"물론이에요. 완주 기록이라면 누구나 티어를 확인할 수 있고, 다음 티어까지 얼마나 남았는지도 알려드립니다. 기록이 빠른지 느린지는 중요하지 않아요. 모든 러너는 출발선에 선 순간부터 러너입니다."}}]}]</script>
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"hoohaa","alternateName":"hoohaa 러닝 티어","url":"https://hoohaa.run/","inLanguage":"ko","applicationCategory":"SportsApplication","operatingSystem":"Web","isAccessibleForFree":true,"description":"PB 기록으로 러닝 티어, VDOT, 마라톤 예상 기록, 훈련 페이스를 계산하는 무료 웹앱","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"VDOT이 뭔가요?","acceptedAnswer":{"@type":"Answer","text":"잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록을 바탕으로 러너의 유산소 능력을 숫자로 나타내고, 이를 이용해 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 러닝 능력이 높다고 볼 수 있어요."}},{"@type":"Question","name":"티어는 어떤 기준으로 정해지나요?","acceptedAnswer":{"@type":"Answer","text":"같은 성별 러너들의 기록 분포를 기준으로 내 기록이 상위 몇 %에 해당하는지 계산해 티어를 정해요. 아이언부터 챌린저까지 10개 티어로 나뉘고, 아이언부터 다이아몬드까지는 3·2·1 단계로 세분화돼요."}},{"@type":"Question","name":"마라톤 예상 기록은 얼마나 정확한가요?","acceptedAnswer":{"@type":"Answer","text":"VDOT을 바탕으로 계산한 이론적인 예상 기록이라 참고용으로 봐주세요. 특히 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나올 수 있어요. 장거리 훈련량, 코스, 날씨, 컨디션 등에 따라서도 실제 기록은 달라질 수 있어요. 가능하면 최근에 달린 기록 중 예측하려는 거리와 가까운 기록을 입력하는 게 좋아요."}},{"@type":"Question","name":"훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"E(Easy)는 대화가 가능한 편안한 조깅, M(Marathon)은 풀코스 목표 페이스, T(Threshold)는 20~30분 정도 유지할 수 있는 ‘편하게 힘든’ 페이스, I(Interval)는 3~5분 정도 반복하는 빠른 달리기, R(Repetition)은 짧게 반복하는 빠른 페이스예요. 대부분의 러닝은 E 페이스로 진행하는 게 좋아요."}},{"@type":"Question","name":"입력한 기록이 저장되나요?","acceptedAnswer":{"@type":"Answer","text":"계산은 이 브라우저에서만 이루어져요. 입력한 기록, 성별, 출생연도, 편집한 사진은 서버로 보내지 않고 이 기기에만 저장돼요. 저장된 정보는 개인정보에서 삭제할 수 있어요."}},{"@type":"Question","name":"느린 기록도 넣어도 되나요?","acceptedAnswer":{"@type":"Answer","text":"물론이에요. 완주 기록이라면 누구나 티어를 확인할 수 있고, 다음 티어까지 얼마나 남았는지도 알려줘요. 기록이 빠른지 느린지는 중요하지 않아요. 모든 러너는 출발선에 선 순간부터 러너예요."}}]}]</script>
 <!--/SEO-->
 </section>
 
@@ -112,7 +112,7 @@
   <section class="card tpl" aria-labelledby="hTpl">
     <h2 id="hTpl">공유 이미지</h2>
     <div class="st-top"><button type="button" class="chip-btn" id="tplReset">템플릿으로 되돌리기</button><span class="sp"></span><button type="button" class="stp" id="undo" aria-label="실행취소">↶</button><button type="button" class="stp" id="redo" aria-label="다시실행">↷</button></div>
-    <div class="st-fmt"><div class="seg n3" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true">스토리 9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false">피드 4:5</button><button type="button" role="radio" data-v="square" aria-checked="false">1:1</button></div><button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">IG 안전영역</button></div>
+    <div class="st-fmt"><div class="seg n3" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true">스토리 9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false">피드 4:5</button><button type="button" role="radio" data-v="square" aria-checked="false">1:1</button></div><button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">인스타 안전영역</button></div>
     <div class="st-row" id="tplEd">
       <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas><button type="button" class="bg-btn" id="bgBtn">📷 배경 사진</button>
         <div class="mini" id="miniBar" hidden role="toolbar" aria-label="선택한 요소"><button type="button" data-mb="up" aria-label="앞으로" title="앞으로">↑<small>앞으로</small></button><button type="button" data-mb="down" aria-label="뒤로" title="뒤로">↓<small>뒤로</small></button><button type="button" data-mb="behind" aria-label="인물 뒤로" aria-pressed="false" hidden>👤<small>인물 뒤로</small></button><button type="button" data-mb="asbg" aria-label="배경으로" title="배경으로" hidden>🖼<small>배경으로</small></button><button type="button" data-mb="dup" aria-label="복제" title="복제">⧉<small>복제</small></button><button type="button" data-mb="del" aria-label="삭제" title="삭제">🗑<small>삭제</small></button></div><div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="behind" id="ctxBehind" role="menuitem" hidden>인물 뒤로</button><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
