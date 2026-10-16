@@ -20,10 +20,6 @@
 
 계산 코드는 하나만 둔다. 웹용과 앱용으로 복사하지 않는다.
 
-## 제안
+## 결정
 
-공통 패키지에 두거나, 앱이 `src/engine/tier.js`와 `data.js`를 직접 가져다 쓴다. 어느 쪽인지는 아직 정하지 않았다. [../platforms.md](../platforms.md)를 본다.
-
-## 아직 정할 내용
-
-그 코드를 어느 경로에 두고, 웹과 앱이 어떻게 가져다 쓸지.
+계산 코드는 `src/engine/tier.js`와 `src/engine/data.js`에 둔다. 앱이 그 파일을 직접 가져다 쓴다. 공통 패키지로 옮기지 않는다. 웹의 import 경로는 그대로 둔다. [../platforms.md](../platforms.md)를 본다.

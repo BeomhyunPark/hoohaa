@@ -16,7 +16,7 @@
 
 ## 결정 — 기술
 
-폰은 React Native와 TypeScript다. iPhone과 Android 화면은 하나다. `src/engine/tier.js`와 `data.js`는 브라우저에 묶여 있지 않은 ES 모듈이라 폰에서 그대로 불러 쓴다. 계산을 Swift나 Kotlin으로 다시 쓰지 않는다.
+폰은 React Native와 TypeScript다. iPhone과 Android 화면은 하나다. `src/engine/tier.js`와 `data.js`는 브라우저에 묶여 있지 않은 ES 모듈이라 폰에서 그대로 불러 쓴다. 공통 패키지로 옮기지 않는다. 계산을 Swift나 Kotlin으로 다시 쓰지 않는다.
 
 스토어 빌드는 Expo Go가 아니다. 건강 앱 권한은 개발 빌드(prebuild)가 필요하다. Expo Go 안에서는 HealthKit과 헬스 커넥트가 되지 않는다.
 
