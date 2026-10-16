@@ -25,10 +25,10 @@
 | 2 | [features/condition.md](features/condition.md) | Jev | 오늘의 컨디션 |
 | 3 | [features/goal.md](features/goal.md) | Jev | 목표 달성 |
 | 4 | [features/tomorrow.md](features/tomorrow.md) | Jev | 내일 훈련 |
-| 5 | [features/runner-type.md](features/runner-type.md) | Jev | 러너 유형 |
+| 5 | [features/runner-type.md](features/runner-type.md) | 우리 | 러너 유형 |
 | 6 | [features/photo.md](features/photo.md) | 우리 | 사진 편집, 경로를 카드에 그리기 |
 | 7 | [features/tier-vdot.md](features/tier-vdot.md) | 우리 | 티어, VDOT, 훈련 페이스 숫자 |
 | 8 | [features/copy.md](features/copy.md) | 우리 | 화면에 나오는 문장 |
 | 후순위 | [features/live-pace.md](features/live-pace.md) | Jev | 달리는 중 페이스 |
 
-운동이 끝난 뒤의 컨디션, 목표, 내일 훈련, 러너 유형을 Jev 호출 한 번으로 처리할지는 [engine.md](engine.md)의 제안이다. 달리는 중 페이스와 사진은 그 호출에 넣지 않는다.
+운동이 끝난 뒤의 컨디션, 목표, 내일 훈련은 Jev 호출 한 번으로 묻는다. 정한 내용은 [engine.md](engine.md)에 있다. 러너 유형, 달리는 중 페이스, 사진은 그 호출에 넣지 않는다.
