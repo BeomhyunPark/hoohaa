@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseDur, fmtDur, fmtPace, paceSec, dayN, ddayLabel, gearKm, bindValues, startDateOf, defaultTemplate, sortLogs } from './logcalc.js';
+import { parseDur, fmtDur, fmtPace, paceSec, dayN, ddayLabel, bindValues, startDateOf, defaultTemplate, sortLogs } from './logcalc.js';
 
 assert.equal(parseDur('29:38'), 1778); assert.equal(parseDur('2938'), 1778); assert.equal(parseDur('1:02:03'), 3723); assert.equal(parseDur('5:70'), null); assert.equal(parseDur(''), null);
 assert.equal(fmtDur(1778), '29:38'); assert.equal(fmtDur(3723), '1:02:03');
@@ -12,13 +12,13 @@ const logs = [
   { id: 'b', type: 'run', date: '2026-10-23', createdAt: 2, data: { distance: '5.2', time: '29:38', gearId: 'g1' } },
   { id: 'c', type: 'run', date: '2026-10-21', createdAt: 3, data: { distance: '3', time: '18:00' } },
 ];
-assert.equal(gearKm(gear[0], logs), 482);
 const profile = { startDate: '2026-09-05', dayCountMode: 'custom' };
 const v = bindValues(logs[1], { profile, logs, gear });
-assert.equal(v.dayN, 'Day 49'); assert.equal(v.date, '2026.10.23'); assert.equal(v.distance, '5.20'); assert.equal(v.pace, '5:42'); assert.equal(v.time, '29:38'); assert.equal(v.gearKm, '482');
+assert.equal(v.dayN, 'Day 49'); assert.equal(v.date, '2026.10.23'); assert.equal(v.distance, '5.20'); assert.equal(v.pace, '5:42'); assert.equal(v.time, '29:38');
+assert.equal(v.gearKm, undefined); assert.equal(v.gearName, undefined); // old gearId on run logs is ignored
 assert.equal(startDateOf({ dayCountMode: 'first-log' }, logs), '2026-10-20');
-const g = bindValues({ type: 'gear', date: '2026-10-23', data: { gearId: 'g1' } }, { logs, gear });
-assert.equal(g.gearKm, '482'); assert.equal(g.distance, '5.20'); assert.equal(g.gearName, '러닝화');
+const g = bindValues({ type: 'gear', date: '2026-10-23', data: { gearId: 'g1' } }, { logs, gear }); // old gear log: no throw, no gear values
+assert.equal(g.gearKm, undefined); assert.equal(g.date, '2026.10.23');
 const r = bindValues({ type: 'race', date: '2026-10-23', data: { name: '○○ 마라톤 10K', date: '2026-11-09', distance: '10', goal: '50:00' } }, {});
 assert.equal(r.dday, 'D-17'); assert.equal(r.dateMD, '11.09'); assert.equal(r.distance, '10'); assert.equal(r.time, '50:00');
 const rr = bindValues({ type: 'race', date: '2026-11-09', data: { name: 'x', distance: '10', result: '52:14' } }, {});

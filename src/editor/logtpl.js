@@ -5,8 +5,8 @@
 
 export const LOG_W = 1080, LOG_H = 1440;
 export const TOKENS = { bg: '#17181B', text: '#ECEBE6', 'accent-run': '#B5C96A', 'accent-race': '#E08A62', 'accent-gear': '#7FA8C9', 'accent-diet': '#6FB894' };
-export const LOG_TPLS = [['run-photo', '러닝 · 사진'], ['run-solid', '러닝 · 단색'], ['race-dday', '대회 D-day'], ['race-result', '대회 결과'], ['gear', '신발'], ['diet', '식단']];
-export const BIND_KEYS = ['dayN', 'date', 'distance', 'time', 'pace', 'weather', 'note', 'raceName', 'dday', 'result', 'gearName', 'gearKm', 'meal', 'menu'];
+export const LOG_TPLS = [['run-photo', '러닝 · 사진'], ['run-solid', '러닝 · 단색'], ['race-dday', '대회 D-day'], ['race-result', '대회 결과'], ['diet', '식단']];
+export const BIND_KEYS = ['dayN', 'date', 'distance', 'time', 'pace', 'weather', 'note', 'raceName', 'dday', 'result', 'meal', 'menu'];
 
 // Phosphor Icons (MIT) · duotone · timer, medal, sneaker-move, bowl-food. Colour is applied at render time.
 const PH = {
@@ -23,8 +23,8 @@ export function iconSVG(k, col = TOKENS.text) { const b = PH[String(k).replace(/
 const M = 72, COLS = [72, 392, 712];
 const BL = { hero: 1054.8 /* box y888–1088, lh 200 */, title: 1159.5 /* y1112, lh 56 */, label: 1243.3 /* y1216, lh 32 */, value: 1306.7 /* y1256, lh 64 */ };
 const LINE = { x: 72, y: 1192, w: 80, h: 4 };
-const SCRIM = { 'run-photo': [.45, .75], 'race-dday': [.6, .85], gear: [.3, .75], diet: [.45, .75] };
-const ACC = { run: 'accent-run', race: 'accent-race', gear: 'accent-gear', diet: 'accent-diet' };
+const SCRIM = { 'run-photo': [.45, .75], 'race-dday': [.6, .85], diet: [.45, .75] };
+const ACC = { run: 'accent-run', race: 'accent-race', diet: 'accent-diet' };
 const kindOf = t => t.split('-')[0];
 
 let seq = 0;
@@ -44,7 +44,6 @@ const SPEC = {
   'run-solid': { icon: 'timer', els: () => [hero('dayN'), titleNum('date'), label('l1', '거리', COLS[0]), num('v1', 'distance', COLS[0], 'km'), label('l2', '페이스', COLS[1]), num('v2', 'pace', COLS[1], '/km'), label('l3', '시간', COLS[2]), num('v3', 'time', COLS[2])] },
   'race-dday': { icon: 'medal', photo: 1, els: () => [hero('dday'), titleKr('raceName'), label('l1', '날짜', COLS[0]), { ...num('v1', 'date', COLS[0]), bf: 'md' }, label('l2', '거리', COLS[1]), num('v2', 'distance', COLS[1], 'km'), label('l3', '목표 기록', COLS[2]), num('v3', 'time', COLS[2])] },
   'race-result': { icon: 'medal', els: () => [hero('result'), titleKr('raceName'), label('l1', '날짜', COLS[0]), { ...num('v1', 'date', COLS[0]), bf: 'md' }, label('l2', '거리', COLS[1]), num('v2', 'distance', COLS[1], 'km'), label('l3', '페이스', COLS[2]), num('v3', 'pace', COLS[2], '/km')] },
-  gear: { icon: 'sneaker-move', photo: 1, els: () => [titleKr('gearName'), label('l1', '누적', COLS[0]), num('v1', 'gearKm', COLS[0], 'km'), label('l2', '최근 러닝', COLS[1]), num('v2', 'distance', COLS[1], 'km'), label('l3', '평균 페이스', COLS[2]), num('v3', 'pace', COLS[2], '/km')] },
   diet: { icon: 'bowl-food', photo: 1, els: () => [titleKr('meal'), title2('menu', 'notokr'), label('l1', '시간', COLS[0]), num('v1', 'time', COLS[0]), label('l2', '이후 러닝', COLS[1]), num('v2', 'distance', COLS[1], 'km'), label('l3', '메모', COLS[2]), krVal('v3', 'note', COLS[2])] },
 };
 export const tplHasPhotoSlot = id => !!(SPEC[id] && SPEC[id].photo);
