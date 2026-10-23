@@ -227,6 +227,8 @@ main{max-width:760px}
 
 /* in-flow primary actions (no sticky bars) */
 .actions{display:flex;flex-direction:column;gap:8px;margin:16px 0 8px}
+.to-ed{margin:4px 0 0}
+body.log-mode .to-ed{display:none!important}
 /* ===== share editor v3 (story-style; everything in page flow, no sticky/fixed) ===== */
 .st-top{display:flex;align-items:center;gap:6px;margin-bottom:8px}.st-top .sp{flex:1}
 .stp{min-width:44px;min-height:44px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-size:18px;cursor:pointer;flex:none}
