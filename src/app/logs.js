@@ -10,6 +10,7 @@ const TPL_KO = { 'run-photo': '러닝 · 사진', 'run-solid': '러닝 · 단색
 
 export function mountLogs(env) {
   const { $, esc, show, openEditor } = env;
+  const navBack = env.navBack || (() => show('scrInput'));
   const root = $('logRoot');
   let S = { profile: db.PROFILE0, logs: [], races: [], gear: [] }, type = 'run', msg = '', editor = null, cur = null;
   const ctx = () => ({ profile: S.profile, logs: S.logs, races: S.races, gear: S.gear });
@@ -80,7 +81,7 @@ export function mountLogs(env) {
   function livePace() { const o = $('lgPace'); if (!o) return; const p = fmtPace(paceSec(num(val('lgDist')), parseDur(val('lgTime')))); o.textContent = p ? p + '/km' : '–'; }
   function bind() {
     const on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
-    on('lgBack', 'click', () => show('scrInput'));
+    on('lgBack', 'click', () => navBack());
     on('lgType', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; type = b.dataset.v; msg = ''; paint(); });
     on('lgDist', 'input', livePace); on('lgTime', 'input', livePace);
     on('lgWxGo', 'click', async () => {
