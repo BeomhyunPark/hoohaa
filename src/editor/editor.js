@@ -1003,6 +1003,10 @@ function bindFx(L) { const on = (id, f) => { const e = $(id); if (e) e.addEventL
 // ---- user-input stickers: plain text layers (editable, styleable like any text) ----
 const WX = ['☀️', '⛅', '☁️', '🌧️', '❄️', '🌬️', '🌙'];
 const INSTK = { weather: ['날씨', { t: '☀️ 18°C', size: 72, font: null, w: 700 }], place: ['코스·장소', { t: '📍 한강 반포', size: 60, font: null, w: 600 }], bib: ['배번', { t: '1234', size: 150, font: 'anton', col: '#111111', box: 'full', bcol: '#ffffff', bo: 1, ls: 4 }], memo: ['메모 (손글씨)', { t: '오늘도 완주!', size: 96, font: 'nanumpen', w: 400 }] };
+let stkCat = 'rec';
+const STK_TABS = [['rec', '기록'], ['mark', '배지'], ['run', '러닝'], ['say', '문구']];
+const STK_CAT = { pb: 'mark', medal: 'mark', stamp: 'mark', bib: 'mark', chip5k: 'mark', chip10k: 'mark', chiphalf: 'mark', marathon: 'mark', splits: 'mark', streak: 'mark', crew: 'mark', wordmark: 'mark', dawnrun: 'run', rainrun: 'run', hangang: 'run', shoe: 'run', fuel: 'run', pacer: 'run', heart: 'run', ohunwan: 'say', runlini: 'say', tiredhappy: 'say', handwritten: 'say', runnershigh: 'say', proud: 'say', together: 'say' };
+const stkBtn = (k, n, kind) => `<button type="button" class="pre stk" data-${kind}="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${esc(n)}</small></button>`;
 function paintPanel() {
   { const L0 = sel && getL(sel), b = L0 && (L0.ax || L0.ay) && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; delete L0.ay; } }
   const P = $('panel'); $('cpick').hidden = true; document.body.appendChild($('cpick')); const L = sel && getL(sel);
@@ -1040,7 +1044,11 @@ function paintPanel() {
   } else if (mode === 'stat') {
     h += `<div class="sh-head"><h3>기록 블록 추가</h3></div><p class="hint lock">🔒 값은 계산 결과 그대로예요</p><div class="grid2">${Object.entries(STATS).filter(([k]) => k !== 'combo').map(([k, [n]]) => `<button type="button" class="pre" data-addstat="${k}"><b>${n}</b><small>${esc(statValue(state.story, doc, k))}</small></button>`).join('')}<button type="button" class="pre" data-addcard="0"><b>티어 카드</b><small>카드</small></button><button type="button" class="pre" data-addcard="1"><b>티어 배지</b><small>${esc(state.story.word)}</small></button></div>`;
   } else if (mode === 'sticker') {
-    h += `<div class="sh-head"><h3>스티커</h3></div><div class="grid3">${Object.entries(STK_NAMES).filter(([k]) => !k.startsWith('data_')).map(([k, n]) => `<button type="button" class="pre stk" data-addstk="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${n}</small></button>`).join('')}</div><span class="lbl sm">직접 입력 스티커 (내용을 직접 적어요)</span><div class="grid3">${Object.keys(DATA_STK).map(k => `<button type="button" class="pre stk" data-addin="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${DATA_STK[k].n}</small></button>`).join('')}</div>`;
+    const tabs = `<div class="fcats" id="stkCats" role="radiogroup" aria-label="스티커 분류">${STK_TABS.map(([k, n]) => `<button type="button" role="radio" data-stkcat="${k}" aria-checked="${stkCat === k}">${n}</button>`).join('')}</div>`;
+    const grid = stkCat === 'rec'
+      ? Object.keys(DATA_STK).map(k => stkBtn(k, DATA_STK[k].n, 'addin')).join('')
+      : Object.entries(STK_NAMES).filter(([k]) => !k.startsWith('data_') && (STK_CAT[k] || 'say') === stkCat).map(([k, n]) => stkBtn(k, n, 'addstk')).join('');
+    h += `<div class="sh-head"><h3>스티커</h3></div>${tabs}<div class="grid3">${grid}</div>` + (stkCat === 'rec' ? '<p class="hint">기록 스티커는 내용을 직접 적어요</p>' : '');
   } else if (mode === 'bg') {
     const GR = [['#0F1620', '#14324a'], ['#3DC8F5', '#9b8cff'], ['#ff8a5b', '#ffd166'], ['#ffd6e8', '#fff4c2'], ['#0b3d2e', '#3fd68a'], ['#1b1f26', '#5a24a8']];
     h += `<div class="sh-head"><h3>바탕</h3></div><div class="ed-btns"><button type="button" class="chip-btn" data-bg="tier" aria-pressed="${doc.bg.type === 'tier'}">티어 색</button><button type="button" class="chip-btn" data-bg="dark" aria-pressed="${doc.bg.type === 'dark'}">다크</button></div>
@@ -1114,6 +1122,7 @@ function bindPanel(L) {
     if (d.act) act(d.act);
     if (d.addstat) { if (d.addstat === 'top' && doc.layers.some(isTop)) { sel = doc.layers.find(isTop).id; mode = null; paintPanel(); paintOvl(); status('상위 %는 이미 있어요'); return; } addLayer(mk('stat', { stat: d.addstat, v: 0 })); }
     if (d.addcard) addLayer(mk('card', { v: +d.addcard, s: d.addcard === '0' ? .8 : 1 }));
+    if (d.stkcat) { stkCat = d.stkcat; paintPanel(); return; }
     if (d.addstk) addLayer(mk('sticker', { k: d.addstk, col: '#ffffff' }));
     if (d.addin) { addLayer(mk('sticker', { k: d.addin, s: .6, f: { ...DATA_STK[d.addin].f }, x: 540, y: FH() * ({ data_weather: .3, data_course: .5, data_bib: .45, data_memo: .7 }[d.addin] || .5) })); setTimeout(() => { const ta = document.querySelector('#panel [data-df]'); if (ta) { ta.focus(); ta.select(); } }, 50); }
     if (d.bg) { doc.bg = { type: d.bg }; changed(true); paintPanel(); }

@@ -273,7 +273,8 @@ body.fs-open{overflow:hidden}
 .fq.more,.fquick .fq.more{font-family:inherit;font-size:16px;font-weight:600;line-height:1;height:44px;min-height:44px;padding:0 12px;border-radius:12px;box-sizing:border-box;margin:0;vertical-align:middle;align-self:center;color:var(--t1)}
 .fq.loading,.fopt.loading{background:linear-gradient(90deg,var(--raised) 25%,rgba(255,255,255,.08) 50%,var(--raised) 75%);background-size:200% 100%;animation:sk 1s linear infinite;color:transparent}
 @keyframes sk{to{background-position:-200% 0}}
-.fcats{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fcats{display:flex;flex-wrap:nowrap;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.fcats::-webkit-scrollbar{display:none}
+#stkCats button{min-height:44px;height:44px}
 .fcats button{min-height:36px;height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--border2);background:var(--raised);color:var(--t1);font-family:inherit;font-size:13px;font-weight:600;line-height:1;white-space:nowrap;cursor:pointer;box-sizing:border-box}
 .fcats button[aria-checked=true]{background:var(--accent);border-color:var(--accent);color:#0F1620}
 .flist{display:flex;flex-direction:column;gap:6px;margin:10px 0}
