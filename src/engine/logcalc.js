@@ -1,4 +1,4 @@
-// 오늘 기록 (run / race / gear / diet): pure helpers shared by the log screen and the card templates.
+// 오늘 기록 (run / race / diet): pure helpers shared by the log screen and the card templates.
 // No DOM, no storage — easy to test with `node src/engine/logcalc.test.mjs`.
 
 const p2 = n => String(n).padStart(2, '0');
@@ -38,41 +38,28 @@ export function startDateOf(profile, logs) {
 }
 // D-17 · D-DAY · D+3
 export function ddayLabel(raceDate, from) { const a = dayNum(raceDate), b = dayNum(from); if (!isFinite(a) || !isFinite(b)) return ''; const n = a - b; return n > 0 ? `D-${n}` : n === 0 ? 'D-DAY' : `D+${-n}`; }
-// cumulative km is never stored: startKm + every run log that used this gear
-export function gearKm(gear, logs) {
-  const runs = (logs || []).filter(l => l.type === 'run' && l.data && l.data.gearId === gear.id);
-  return (num(gear.startKm) || 0) + runs.reduce((a, l) => a + (num(l.data.distance) || 0), 0);
-}
 export const fmtDate = iso => (iso || '').replaceAll('-', '.');           // 2026.10.23
 export const fmtMD = iso => (iso || '').slice(5).replace('-', '.');        // 10.23
 
-export const TPL_IDS = ['run-photo', 'run-solid', 'race-dday', 'race-result', 'gear', 'diet'];
+export const TPL_IDS = ['run-photo', 'run-solid', 'race-dday', 'race-result', 'diet'];
 export function defaultTemplate(log, profile) {
   if (log.type === 'run') { const d = profile && profile.defaultTemplateId; if (d === 'run-photo' || d === 'run-solid') return d; return (log.photoIds || []).length ? 'run-photo' : 'run-solid'; }
   if (log.type === 'race') return log.data && log.data.result ? 'race-result' : 'race-dday';
-  return log.type === 'gear' ? 'gear' : 'diet';
+  return 'diet';
 }
 
 // every binding key → display string (units are drawn by the template, never part of the value)
-// ctx: { profile, logs, races, gear }
+// ctx: { profile, logs, races }  (old run logs may still carry data.gearId: ignored)
 export function bindValues(log, ctx = {}) {
   const d = log.data || {}, logs = ctx.logs || [], V = { date: fmtDate(log.date), dateMD: fmtMD(log.date) };
   const sd = startDateOf(ctx.profile, logs), n = sd ? dayN(log.date, sd) : null; V.dayN = n != null ? `Day ${n}` : '';
   if (log.type === 'run') {
     const km = num(d.distance), sec = parseDur(d.time); V.distance = km != null ? fmtKm(km) : ''; V.time = sec ? fmtDur(sec) : ''; V.pace = fmtPace(paceSec(km, sec)); V.weather = d.weather || ''; V.note = d.note || '';
-    const g = d.gearId && (ctx.gear || []).find(x => x.id === d.gearId); if (g) { V.gearName = g.name || ''; V.gearKm = fmtKm(gearKm(g, logs), 0).replace(/\.0+$/, ''); }
   } else if (log.type === 'race') {
     const r = (d.raceId && (ctx.races || []).find(x => x.id === d.raceId)) || d, km = num(r.distance ?? d.distance), res = parseDur(d.result || r.result), goal = parseDur(d.goal || r.goal);
     V.raceName = r.name || d.name || ''; V.dateMD = fmtMD(r.date || log.date); V.date = fmtDate(r.date || log.date);
     V.dday = ddayLabel(r.date || log.date, log.date); V.distance = km != null ? fmtKm(km, 0) : ''; V.time = goal ? fmtDur(goal) : ''; V.result = res ? fmtDur(res) : '';
     V.pace = fmtPace(paceSec(km, res || goal)); V.note = d.note || '';
-  } else if (log.type === 'gear') {
-    const g = (ctx.gear || []).find(x => x.id === d.gearId) || { id: d.gearId, name: d.name, startKm: d.startKm };
-    V.gearName = g.name || ''; const total = gearKm(g, logs); V.gearKm = String(Math.round(total));
-    const runs = logs.filter(l => l.type === 'run' && l.data && l.data.gearId === g.id && l.date <= log.date).sort((a, b) => (b.date + b.createdAt).localeCompare(a.date + a.createdAt));
-    const last = runs[0]; V.distance = last && num(last.data.distance) != null ? fmtKm(num(last.data.distance)) : '';
-    const tk = runs.reduce((a, l) => a + (parseDur(l.data.time) ? num(l.data.distance) || 0 : 0), 0), ts = runs.reduce((a, l) => a + (num(l.data.distance) ? parseDur(l.data.time) || 0 : 0), 0);
-    V.pace = fmtPace(paceSec(tk, ts)); V.note = d.note || '';
   } else if (log.type === 'diet') {
     V.meal = d.meal || ''; V.menu = d.menu || ''; V.time = d.time || ''; V.note = d.note || '';
     let km = num(d.distance); if (km == null) { const run = logs.find(l => l.type === 'run' && l.date === log.date && num(l.data && l.data.distance) != null); if (run) km = num(run.data.distance); }

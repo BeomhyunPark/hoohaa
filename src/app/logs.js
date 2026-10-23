@@ -1,10 +1,12 @@
-// 오늘 기록 남기기: run / race / gear / diet records on this device (IndexedDB) → 3:4 thumbnail cards.
+// 오늘 기록 남기기: run / race / diet records on this device (IndexedDB) → 3:4 thumbnail cards.
 import * as db from '../storage/logdb.js';
-import { bindValues, defaultTemplate, sortLogs, parseDur, fmtPace, paceSec, num, isoToday, gearKm, startDateOf, dayN, TPL_IDS } from '../engine/logcalc.js';
+import { bindValues, defaultTemplate, sortLogs, parseDur, fmtPace, paceSec, num, isoToday, startDateOf, dayN, TPL_IDS } from '../engine/logcalc.js';
 
-const TYPES = [['run', '러닝'], ['race', '대회'], ['gear', '신발'], ['diet', '식단']];
+const TYPES = [['run', '러닝'], ['race', '대회'], ['diet', '식단']];
 const TNAME = Object.fromEntries(TYPES);
-const ACCENTS = [['#B5C96A', '러닝'], ['#E08A62', '대회'], ['#7FA8C9', '신발'], ['#6FB894', '식단']];
+// 신발(gear) is parked until login: old gear logs/stores stay in IndexedDB and backups, but are hidden here
+const SHOWN = l => l && Object.prototype.hasOwnProperty.call(TNAME, l.type);
+const ACCENTS = [['#B5C96A', '러닝'], ['#E08A62', '대회'], ['#6FB894', '식단']];
 const MEALS = ['아침', '점심', '저녁', '간식', '러닝 전', '러닝 후'];
 const TPL_KO = { 'run-photo': '러닝 · 사진', 'run-solid': '러닝 · 단색' };
 
@@ -12,30 +14,25 @@ export function mountLogs(env) {
   const { $, esc, show, openEditor } = env;
   const navBack = env.navBack || (() => show('scrInput'));
   const root = $('logRoot');
-  let S = { profile: db.PROFILE0, logs: [], races: [], gear: [] }, type = 'run', msg = '', editor = null, cur = null;
-  const ctx = () => ({ profile: S.profile, logs: S.logs, races: S.races, gear: S.gear });
+  let S = { profile: db.PROFILE0, logs: [], races: [] }, type = 'run', msg = '', editor = null, cur = null;
+  const ctx = () => ({ profile: S.profile, logs: S.logs, races: S.races });
   const say = t => { msg = t; const m = $('lgMsg'); if (m) m.textContent = t; };
-  async function reload() { try { S = await db.loadAll(); } catch (e) { console.error(e); say('이 브라우저에서는 기기 저장소(IndexedDB)를 쓸 수 없어요'); } }
+  async function reload() { try { const a = await db.loadAll(); S = { profile: a.profile, logs: (a.logs || []).filter(SHOWN), races: a.races || [] }; } catch (e) { console.error(e); say('이 브라우저에서는 기기 저장소(IndexedDB)를 쓸 수 없어요'); } }
 
   const field = (id, label, input, hint = '') => `<div class="field"><label class="lbl sm" for="${id}">${label}</label>${input}${hint ? `<p class="hint">${hint}</p>` : ''}</div>`;
   const photoField = () => field('lgPhoto', '사진', '<input id="lgPhoto" type="file" accept="image/*">', '사진은 이 기기에만 저장되고 서버로 보내지 않아요');
   function formHTML() {
     const today = isoToday(), dateF = field('lgDate', '날짜', `<input id="lgDate" type="date" value="${today}">`);
     if (type === 'run') {
-      const gears = S.gear.filter(g => !g.retired);
       return dateF + `<div class="lg-row">${field('lgDist', '거리', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="5.20"><span>km</span></div>')}${field('lgTime', '시간', '<input id="lgTime" inputmode="numeric" autocomplete="off" placeholder="29:38">')}</div>`
         + `<p class="hint lg-pace">페이스 <b id="lgPace">–</b> <span>(거리와 시간으로 자동 계산)</span></p>`
         + field('lgWx', '날씨', '<div class="wxrow"><input id="lgWx" autocomplete="off" placeholder="예: 12°C 맑음"><button type="button" class="chip-btn" id="lgWxGo">📍 불러오기</button></div>', '위치는 날씨 조회에 한 번만 쓰이고 저장되지 않아요 (Open-Meteo)')
-        + field('lgGear', '신은 신발', `<select id="lgGear"><option value="">선택 안 함</option>${gears.map(g => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select>`, gears.length ? '' : '신발 탭에서 신발을 등록하면 누적 거리가 자동으로 쌓여요')
         + field('lgNote', '메모', '<input id="lgNote" autocomplete="off" maxlength="40">') + photoField();
     }
     if (type === 'race') return dateF + field('lgName', '대회명', '<input id="lgName" autocomplete="off" placeholder="○○ 마라톤 10K">')
       + `<div class="lg-row">${field('lgRDate', '대회 날짜', `<input id="lgRDate" type="date" value="${today}">`)}${field('lgDist', '거리', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="10"><span>km</span></div>')}</div>`
       + `<div class="lg-row">${field('lgGoal', '목표 기록', '<input id="lgGoal" inputmode="numeric" autocomplete="off" placeholder="50:00">')}${field('lgRes', '결과 기록', '<input id="lgRes" inputmode="numeric" autocomplete="off" placeholder="대회 후 입력">')}</div>`
       + '<p class="hint">결과 기록을 비우면 D-day 카드, 넣으면 결과 카드가 만들어져요</p>' + photoField();
-    if (type === 'gear') return dateF + field('lgName', '신발 이름', '<input id="lgName" autocomplete="off" placeholder="러닝화 모델명">')
-      + field('lgStart', '시작 거리', '<div class="suffix"><input id="lgStart" inputmode="decimal" autocomplete="off" placeholder="0"><span>km</span></div>', '등록 전에 이미 달린 거리. 누적 거리 = 시작 거리 + 이 신발로 기록한 러닝')
-      + photoField();
     const now = new Date(), hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     return dateF + field('lgMeal', '식사', `<input id="lgMeal" list="lgMeals" autocomplete="off" placeholder="러닝 전"><datalist id="lgMeals">${MEALS.map(m => `<option value="${m}">`).join('')}</datalist>`)
       + field('lgMenu', '메뉴 메모', '<input id="lgMenu" autocomplete="off" maxlength="30" placeholder="오트밀과 커피">')
@@ -46,17 +43,12 @@ export function mountLogs(env) {
     const v = bindValues(l, ctx());
     if (l.type === 'run') return [v.dayN, v.distance && v.distance + 'km', v.time, v.pace && v.pace + '/km'].filter(Boolean).join(' · ');
     if (l.type === 'race') return [v.raceName, v.result ? '결과 ' + v.result : v.dday].filter(Boolean).join(' · ');
-    if (l.type === 'gear') return [v.gearName, v.gearKm + 'km 누적'].filter(Boolean).join(' · ');
     return [v.meal, v.menu].filter(Boolean).join(' · ');
   }
   function listHTML() {
     const L = sortLogs(S.logs);
     if (!L.length) return '<p class="hint">아직 기록이 없어요. 위에서 첫 기록을 남겨 보세요.</p>';
     return `<ol class="lg-list">${L.map(l => `<li><span class="lg-t t-${l.type}">${TNAME[l.type]}</span><span class="lg-s"><b>${esc((l.date || '').replaceAll('-', '.'))}</b><small>${esc(summary(l))}</small></span><button type="button" class="chip-btn" data-card="${esc(l.id)}">카드</button><button type="button" class="chip-btn quiet" data-del="${esc(l.id)}" aria-label="기록 삭제">삭제</button></li>`).join('')}</ol>`;
-  }
-  function gearHTML() {
-    if (!S.gear.length) return '';
-    return `<div class="field"><span class="lbl sm">내 신발</span><ul class="lg-gear">${S.gear.map(g => `<li><span>${esc(g.name)} · ${Math.round(gearKm(g, S.logs))}km</span><label><input type="checkbox" data-retire="${esc(g.id)}"${g.retired ? ' checked' : ''}> 은퇴</label></li>`).join('')}</ul></div>`;
   }
   function settingsHTML() {
     const p = S.profile, sd = startDateOf(p, S.logs), n = sd ? dayN(isoToday(), sd) : null;
@@ -65,13 +57,12 @@ export function mountLogs(env) {
       <div class="field"><span class="lbl sm" id="lgModeL">Day 계산 기준</span><div class="seg n2" id="lgMode" role="radiogroup" aria-labelledby="lgModeL"><button type="button" role="radio" data-v="custom" aria-checked="${p.dayCountMode !== 'first-log'}">직접 정한 시작일</button><button type="button" role="radio" data-v="first-log" aria-checked="${p.dayCountMode === 'first-log'}">첫 러닝 기록일</button></div></div>
       ${field('lgHandle', '핸들', `<input id="lgHandle" autocomplete="off" maxlength="30" placeholder="@my_runs" value="${esc(p.handle || '')}">`)}
       ${field('lgDefTpl', '러닝 기본 템플릿', `<select id="lgDefTpl"><option value="">사진 있으면 사진, 없으면 단색</option>${['run-photo', 'run-solid'].map(t => `<option value="${t}"${p.defaultTemplateId === t ? ' selected' : ''}>${TPL_KO[t]}</option>`).join('')}</select>`)}
-      ${gearHTML()}
       <div class="field"><span class="lbl sm">백업</span><div class="ed-btns"><button type="button" class="chip-btn" id="lgExport">백업 내보내기 (zip)</button><button type="button" class="chip-btn" id="lgImportB">백업 가져오기</button></div><input id="lgImport" type="file" accept=".zip,application/zip" class="vh" tabindex="-1" aria-hidden="true"><p class="hint">기록과 사진이 zip 파일 하나에 담겨요. 서버에는 아무것도 올라가지 않아요.</p></div>
     </details>`;
   }
   function paint() {
     root.innerHTML = `<header class="top lg-top"><button type="button" class="icon-btn" id="lgBack" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 id="hLog">오늘 기록 남기기</h1></header>
-      <section class="card"><div class="seg n4" id="lgType" role="radiogroup" aria-label="기록 종류">${TYPES.map(([k, n]) => `<button type="button" role="radio" data-v="${k}" aria-checked="${k === type}">${n}</button>`).join('')}</div>
+      <section class="card"><div class="seg n3" id="lgType" role="radiogroup" aria-label="기록 종류">${TYPES.map(([k, n]) => `<button type="button" role="radio" data-v="${k}" aria-checked="${k === type}">${n}</button>`).join('')}</div>
       <form id="lgForm" class="lg-form" autocomplete="off">${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">저장하고 카드 만들기</button></div></form></section>
       <section class="card" aria-labelledby="hLgList"><h2 id="hLgList">기록</h2>${listHTML()}</section>
       ${settingsHTML()}`;
@@ -92,7 +83,6 @@ export function mountLogs(env) {
     on('lgForm', 'submit', async e => { e.preventDefault(); const log = await saveForm(); if (log) await openCard(log); });
     root.querySelectorAll('[data-card]').forEach(b => b.addEventListener('click', () => { const l = S.logs.find(x => x.id === b.dataset.card); if (l) openCard(l); }));
     root.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => { const l = S.logs.find(x => x.id === b.dataset.del); if (!l || !confirm('이 기록을 지울까요? 사진도 함께 지워져요.')) return; await db.deleteLog(l); await reload(); paint(); }));
-    root.querySelectorAll('[data-retire]').forEach(b => b.addEventListener('change', async () => { const g = S.gear.find(x => x.id === b.dataset.retire); if (!g) return; g.retired = b.checked; await db.put('gear', g); await reload(); paint(); }));
     const prof = async patch => { S.profile = { ...S.profile, ...patch }; await db.saveProfile(S.profile); await reload(); paint(); };
     on('lgStartDate', 'change', e => prof({ startDate: e.target.value }));
     on('lgMode', 'click', e => { const b = e.target.closest('[data-v]'); if (b) prof({ dayCountMode: b.dataset.v }); });
@@ -110,16 +100,11 @@ export function mountLogs(env) {
       if (km == null && !sec) { say('거리나 시간을 입력해 주세요'); return null; }
       if (val('lgTime') && !sec) { say('시간은 29:38 또는 1:02:03처럼 입력해 주세요'); return null; }
       data = { distance: km != null ? String(km) : '', time: val('lgTime'), pace: fmtPace(paceSec(km, sec)), weather: val('lgWx'), note: val('lgNote') };
-      if (val('lgGear')) data.gearId = val('lgGear');
     } else if (type === 'race') {
       if (!val('lgName')) { say('대회명을 입력해 주세요'); return null; }
       for (const id of ['lgGoal', 'lgRes']) if (val(id) && !parseDur(val(id))) { say('기록은 50:00 또는 1:52:14처럼 입력해 주세요'); return null; }
       const race = { id: db.uid('race'), name: val('lgName'), date: val('lgRDate') || date, distance: val('lgDist'), goal: val('lgGoal'), result: val('lgRes') };
       await db.put('races', race); data = { raceId: race.id, name: race.name, date: race.date, distance: race.distance, goal: race.goal, result: race.result };
-    } else if (type === 'gear') {
-      if (!val('lgName')) { say('신발 이름을 입력해 주세요'); return null; }
-      const g = { id: db.uid('gear'), name: val('lgName'), startKm: num(val('lgStart')) || 0, retired: false };
-      await db.put('gear', g); data = { gearId: g.id, name: g.name };
     } else {
       if (!val('lgMeal') && !val('lgMenu')) { say('식사나 메뉴를 입력해 주세요'); return null; }
       data = { meal: val('lgMeal'), menu: val('lgMenu'), time: val('lgClock'), note: val('lgNote') }; if (num(val('lgDist')) != null) data.distance = String(num(val('lgDist')));
