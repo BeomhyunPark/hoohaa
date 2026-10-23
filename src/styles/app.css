@@ -298,10 +298,11 @@ body.fs-open{overflow:hidden}
 .segt .thumb{display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:28px;border-radius:6px;background:#0F1620;color:#F4F6F8;line-height:1;overflow:hidden}
 .segt .thumb b{font:800 11px/1 "TC Archivo",sans-serif}.segt .thumb .th-l{font:600 6px/1 "TC Archivo",sans-serif;font-style:normal;letter-spacing:.08em;color:#B8C2CF;margin:1px 0}
 .segt .thumb .th-big{font-size:15px}.segt .thumb .th-pill{background:#3DC8F5;color:#0F1620;border-radius:99px;padding:3px 6px}.segt .thumb .th-run{font-style:italic;font-size:14px;font-weight:900}
-.adj-row.rgx{display:grid;grid-template-columns:40px minmax(0,1fr) 44px;gap:2px;align-items:center}
-.rgx .trk{display:flex;align-items:center;min-width:0}.rgx input[type=range]{flex:1;min-width:0;margin:0}
+.adj-row.rgx{display:grid;grid-template-columns:minmax(52px,auto) minmax(0,1fr) 48px;gap:4px;align-items:center}
+.rgx .trk{display:flex;align-items:center;gap:2px;min-width:0}.rgx input[type=range]{flex:1;min-width:0;margin:0}
 .stp{position:relative;flex:none;width:22px;height:28px;padding:0;border:0;background:none;color:var(--t2);font:500 20px/1 inherit;font-family:inherit;cursor:pointer}.stp::after{content:'';position:absolute;inset:-8px -11px}.stp:active{color:var(--accent)}
-.rgx .trk .stp{min-width:0;min-height:0;width:16px;height:28px}
+.rgx .trk .stp{min-width:44px;min-height:44px;width:44px;height:44px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);color:var(--t1);font-size:22px;line-height:1}
+.rgx .trk .stp::after{content:none}
 .rv{flex:none;width:44px;min-width:0;min-height:44px;border:0;border-radius:10px;background:var(--surface);color:var(--t1);cursor:text;padding:0 6px;font-family:inherit;font-weight:600;font-size:13px}
 .rv-in{flex:none;width:44px;padding:0;min-height:44px;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--t1);font-size:16px;text-align:center}
 .rgx .lbl{min-width:0;white-space:nowrap;overflow:visible;font-size:11.5px;letter-spacing:-.04em}
