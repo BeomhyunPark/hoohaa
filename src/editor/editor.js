@@ -660,6 +660,14 @@ $('undo').addEventListener('click', () => undoRedo(-1)); $('redo').addEventListe
 function paintTop() { $('undo').disabled = hi <= 0; $('redo').disabled = hi >= hist.length - 1; }
 const getL = id => doc.layers.find(l => l.id === id);
 // the user resized it: freeze the auto-fitted size as the element's own size
+// 오늘 기록 layers are placed by ratio (rx/ry) at render time and carry no usable x/y until moved.
+// Edge-anchored (ax/ay) layers store an edge, not the centre. Before any gesture reads L.x/L.y, copy the drawn centre
+// from the last render so the layer (and every Shift-selected one) stays put and moves by the pointer delta.
+function pinXY(L) { if (!L) return; const anc = !!(L.ax || L.ay); if (!anc && Number.isFinite(L.x) && Number.isFinite(L.y) && !(L.lt && !L.mv && L.rx != null)) return; const b = boxes.find(q => q.id === L.id); if (b && Number.isFinite(b.x) && Number.isFinite(b.y)) { L.x = b.x; L.y = b.y; if (anc) { delete L.ax; delete L.ay; } } }
+// moving one member of a shared stat row takes it out of the row layout; freeze the rest of the row (and rows sharing its
+// size) exactly where they are drawn so they don't re-centre or re-size under the user's finger
+function freezeRow(L) { if (!L || !L.row || L.mv) return; const key = L.row.k + L.row.n;
+  for (const m of doc.layers) { if (m === L || !m.row || m.mv || m.af === false || m.row.k + m.row.n !== key) continue; const b = boxes.find(q => q.id === m.id); if (!b) continue; m.x = b.x; m.y = b.y; m.s = b.s; m.af = false; delete m.ax; delete m.ay; } }
 function pinS(L) { if (!L || !L.af) return; const b = boxes.find(q => q.id === L.id); if (b) L.s = b.s; L.af = false; }
 // hoohaa v4 wordmark (stopwatch 'o') as a debossed mark: dark upper edge, light lower edge, faint recessed fill
 const WM_G = `<g transform="translate(40,4) skewX(-14) translate(0,0)" fill="none" stroke="currentColor" stroke-width="16"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100"/><circle cx="102" cy="70" r="22"/><path d="M102 70L113.8 63.2" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5" fill="currentColor" stroke="none"/><rect x="95.2" y="28.6" width="13.6" height="9.2" rx="1.8" fill="currentColor" stroke="none"/><rect x="99" y="37.4" width="6" height="4.4" fill="currentColor" stroke="none"/><circle cx="174" cy="70" r="22"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100"/><circle cx="318" cy="70" r="22"/><path d="M340 40V100"/><circle cx="390" cy="70" r="22"/><path d="M412 40V100"/></g>`;
@@ -775,13 +783,16 @@ tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(se
 const toLocal = (b, x, y) => { const c = Math.cos(-(b.r || 0)), s = Math.sin(-(b.r || 0)), dx = x - b.x, dy = y - b.y; return [(dx * c - dy * s) / b.s, (dx * s + dy * c) / b.s]; };
 function hitAt(x, y) { for (let i = boxes.length - 1; i >= 0; i--) { const b = boxes[i]; if (b.hidden || b.nh) continue; const [lx, ly] = toLocal(b, x, y), pad = Math.max(0, 30 / b.s - 0); if (Math.abs(lx) <= b.w / 2 + pad && Math.abs(ly) <= b.h / 2 + pad) return b; } return null; }
 window.__hitAt = (x, y) => (hitAt(x, y) || {}).id;
-const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.find(q => q.id === sel); if (!b) return false; const [hx, hy] = corners(b)[2]; return Math.hypot(x - hx, y - hy) < HANDLE * 1.3; };
+const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.find(q => q.id === sel); if (!b) return false; const [hx, hy] = corners(b)[2]; if (Math.hypot(x - hx, y - hy) >= HANDLE * 1.3) return false;
+  const [lx, ly] = toLocal(b, x, y); if (Math.abs(lx) < b.w * .3 && Math.abs(ly) < b.h * .3) return false; // small text: a finger on its middle moves it, never resizes
+  // a finger on another element's body grabs that element, not the selected one's resize handle
+  return !boxes.some(q => q.id !== b.id && !q.hidden && !q.nh && (q.type === 'text' || q.type === 'stat') && (([qx, qy]) => Math.abs(qx) <= q.w / 2 && Math.abs(qy) <= q.h / 2)(toLocal(q, x, y))); };
 // ---- gestures: tap select · drag move (snap) · pinch scale+rotate · corner handle · long-press menu · drag to trash ----
 {
   const st = $('stage'), ov = $('ovl'), pts = new Map(); let g0 = null, lp = 0, moved = false;
   const cv = e => { const r = ov.getBoundingClientRect(); return [(e.clientX - r.left) * 1080 / r.width, (e.clientY - r.top) * FH() / r.height]; };
   const ang = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]);
-  const start = () => { const P = [...pts.values()], L = sel && getL(sel); if (L && P.length > 1) pinS(L); g0 = { P: P.map(p => [...p]), L: L ? clone(L) : null, bg: clone(doc.bg), M: [...multi].map(id => { const m = getL(id); return m && [id, m.x, m.y]; }).filter(Boolean) }; };
+  const start = () => { const P = [...pts.values()], L = sel && getL(sel); pinXY(L); for (const id of multi) pinXY(getL(id)); if (L && P.length > 1) pinS(L); g0 = { P: P.map(p => [...p]), L: L ? clone(L) : null, bg: clone(doc.bg), M: [...multi].map(id => { const m = getL(id); return m && [id, m.x, m.y]; }).filter(Boolean) }; };
   ov.addEventListener('pointerdown', e => {
     fineP = e.pointerType === 'mouse' && matchMedia('(hover: hover) and (pointer: fine)').matches; hideMenu(); const p = cv(e); pts.set(e.pointerId, p); ov.setPointerCapture(e.pointerId); e.preventDefault();
     if (pickMode) { pickMode = false; const px = $('tplPreview').getContext('2d').getImageData(Math.round(p[0]), Math.round(p[1]), 1, 1).data; setCol('#' + [px[0], px[1], px[2]].map(v => v.toString(16).padStart(2, '0')).join('')); status('색을 가져왔어요'); pts.delete(e.pointerId); return; }
@@ -808,7 +819,7 @@ const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.fin
       pinS(L); L.s = Math.max(.08, Math.min(8, b0.s * d1 / Math.max(1, d0))); L.r = snapR(b0.r + a1 - a0); }
     else if (P.length > 1 && L) { const f = Math.hypot(P[0][0] - P[1][0], P[0][1] - P[1][1]) / Math.max(1, Math.hypot(g0.P[0][0] - g0.P[1][0], g0.P[0][1] - g0.P[1][1]));
       L.s = Math.max(.08, Math.min(8, g0.L.s * f)); L.r = snapR(g0.L.r + ang(P[0], P[1]) - ang(g0.P[0], g0.P[1])); L.x = g0.L.x + dx; L.y = g0.L.y + dy; }
-    else if (L && g0.hit) { dragging = true; let nx = g0.L.x + dx, ny = g0.L.y + dy; const b = boxes.find(q => q.id === L.id) || { x: L.x, y: L.y, w: 0, h: 0, s: 1, r: 0 }, cs = corners(b), hw = Math.max(...cs.map(q => Math.abs(q[0] - b.x))), hh = Math.max(...cs.map(q => Math.abs(q[1] - b.y))); const gx = [], gy = [];
+    else if (L && g0.hit) { dragging = true; if (!g0.frz) { g0.frz = 1; freezeRow(L); for (const id of multi) freezeRow(getL(id)); } let nx = g0.L.x + dx, ny = g0.L.y + dy; const b = boxes.find(q => q.id === L.id) || { x: L.x, y: L.y, w: 0, h: 0, s: 1, r: 0 }, cs = corners(b), hw = Math.max(...cs.map(q => Math.abs(q[0] - b.x))), hh = Math.max(...cs.map(q => Math.abs(q[1] - b.y))); const gx = [], gy = [];
       const HH = FH(), sz = HH === 1920 ? [250, 1670] : [60, HH - 60], T = 18, skip = new Set([L.id, ...multi]);
       const tx = [[540, 0]], ty = [[HH / 2, 0]]; // [target line, own offset]
       for (const q of boxes) { if (skip.has(q.id) || q.hidden || q.nh || q.w * q.s > 1070) continue; const qc = corners(q), xs = qc.map(v => v[0]), ys = qc.map(v => v[1]), l = Math.min(...xs), r = Math.max(...xs), t = Math.min(...ys), bt = Math.max(...ys); for (const x of [l, (l + r) / 2, r]) tx.push([x, null]); for (const y of [t, (t + bt) / 2, bt]) ty.push([y, null]); }
