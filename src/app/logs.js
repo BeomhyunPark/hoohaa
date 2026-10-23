@@ -52,7 +52,7 @@ export function mountLogs(env) {
   function listHTML() {
     const L = sortLogs(S.logs);
     if (!L.length) return '<p class="hint">아직 기록이 없어요. 위에서 첫 기록을 남겨 보세요.</p>';
-    return `<ol class="lg-list">${L.map(l => `<li><span class="lg-t t-${l.type}">${TNAME[l.type]}</span><span class="lg-s"><b>${esc((l.date || '').replaceAll('-', '.'))}</b><small>${esc(summary(l))}</small></span><button type="button" class="chip-btn" data-card="${esc(l.id)}">카드</button><button type="button" class="chip-btn ghost" data-del="${esc(l.id)}" aria-label="기록 삭제">삭제</button></li>`).join('')}</ol>`;
+    return `<ol class="lg-list">${L.map(l => `<li><span class="lg-t t-${l.type}">${TNAME[l.type]}</span><span class="lg-s"><b>${esc((l.date || '').replaceAll('-', '.'))}</b><small>${esc(summary(l))}</small></span><button type="button" class="chip-btn" data-card="${esc(l.id)}">카드</button><button type="button" class="chip-btn quiet" data-del="${esc(l.id)}" aria-label="기록 삭제">삭제</button></li>`).join('')}</ol>`;
   }
   function gearHTML() {
     if (!S.gear.length) return '';
@@ -70,7 +70,7 @@ export function mountLogs(env) {
     </details>`;
   }
   function paint() {
-    root.innerHTML = `<header class="top lg-top"><button type="button" class="chip-btn ghost" id="lgBack" aria-label="뒤로">←</button><h1 id="hLog">오늘 기록 남기기</h1></header>
+    root.innerHTML = `<header class="top lg-top"><button type="button" class="icon-btn" id="lgBack" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 id="hLog">오늘 기록 남기기</h1></header>
       <section class="card"><div class="seg n4" id="lgType" role="radiogroup" aria-label="기록 종류">${TYPES.map(([k, n]) => `<button type="button" role="radio" data-v="${k}" aria-checked="${k === type}">${n}</button>`).join('')}</div>
       <form id="lgForm" class="lg-form" autocomplete="off">${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">저장하고 카드 만들기</button></div></form></section>
       <section class="card" aria-labelledby="hLgList"><h2 id="hLgList">기록</h2>${listHTML()}</section>
