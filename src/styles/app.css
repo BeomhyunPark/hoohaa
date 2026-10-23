@@ -154,18 +154,18 @@ details.method summary{color:var(--t3);font-size:13px}
 .add-photo small{font-size:11px;font-weight:500;opacity:.8}
 .ed{margin:4px 0 14px}
 .ed-tabs{display:flex;gap:2px;background:var(--raised);border-radius:12px;padding:3px;overflow-x:auto}
-.ed-tabs [role=tab]{flex:1 0 auto;min-height:44px;padding:0 10px;border:0;border-radius:9px;background:none;color:var(--t2);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.ed-tabs [role=tab]{flex:1 0 auto;min-height:44px;padding:0 10px;border:0;border-radius:9px;background:none;color:var(--t2);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}
 .ed-tabs [role=tab][aria-selected=true]{background:var(--surface);color:var(--t1)}
 .ed-tabs [role=tab]:disabled{opacity:.4;cursor:not-allowed}
-.ed-reset{flex:none;min-height:44px;padding:0 10px;border:0;background:none;color:var(--t3);font:500 13px inherit;font-family:inherit;cursor:pointer;text-decoration:underline}
+.ed-reset{flex:none;min-height:44px;padding:0 10px;border:0;background:none;color:var(--t3);font-family:inherit;font-weight:500;font-size:13px;cursor:pointer;text-decoration:underline}
 .ed-panel{padding:10px 2px 0;min-height:150px}
 .ed-panel .adj-row{margin-top:2px}
 .ed-panel output{min-width:44px;text-align:right;color:var(--t2);font-size:13px;font-variant-numeric:tabular-nums}
 .ed-btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.chip-btn{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.chip-btn{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}
 .seg.three{grid-template-columns:1fr 1fr 1fr}
 .tgl{display:flex;flex-wrap:wrap;gap:6px}
-.tg{min-height:44px;padding:0 12px;border-radius:22px;border:1px solid var(--border2);background:none;color:var(--t2);font:600 13px inherit;font-family:inherit;cursor:pointer}
+.tg{min-height:44px;padding:0 12px;border-radius:22px;border:1px solid var(--border2);background:none;color:var(--t2);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}
 .tg[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .tg:disabled{opacity:.4;cursor:not-allowed}
 .ed-panel .cp-sv{height:96px;margin-top:6px}
@@ -241,7 +241,7 @@ main{max-width:760px}
 .st-tools button b{font-size:18px;line-height:1}.st-tools button small{font-size:10px;color:var(--t2)}
 .st-tools button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .ctx{position:absolute;display:flex;flex-wrap:wrap;gap:4px;background:#0F1620;border:1px solid var(--border2);border-radius:12px;padding:4px;width:200px;z-index:2}
-.ctx button{flex:1 1 45%;min-height:44px;border:0;border-radius:9px;background:var(--raised);color:var(--t1);font:600 13px inherit;font-family:inherit;cursor:pointer}
+.ctx button{flex:1 1 45%;min-height:44px;border:0;border-radius:9px;background:var(--raised);color:var(--t1);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}
 .pv-hint{margin:6px 0;text-align:center;font-size:13px;color:var(--t3);min-height:18px}
 .panel{background:var(--raised);border-radius:14px;padding:6px 12px 12px;margin-bottom:12px}
 .panel .lbl{display:block;margin:12px 0 6px}
@@ -285,7 +285,7 @@ body.fs-open{overflow:hidden}
 .pre b{font-size:15px}.pre small{font:500 11px "TC Pretendard",sans-serif;color:var(--t3);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pre.stk{align-items:center}.pre.stk canvas{width:56px;height:56px}
 .qcs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
-.qc.qt{width:auto;padding:0 12px;border-radius:22px;border:1px solid var(--border2);background:none;color:var(--t2);font:600 13px inherit;font-family:inherit;min-height:44px}
+.qc.qt{width:auto;padding:0 12px;border-radius:22px;border:1px solid var(--border2);background:none;color:var(--t2);font-family:inherit;font-weight:600;font-size:13px;min-height:44px}
 .qc.grad{border-radius:50%;border:2px solid var(--border2)}
 .qcs.one{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.qcs.one::-webkit-scrollbar{display:none}.qcs.one .qc{flex:none}
 .qc[data-tierc]{background:radial-gradient(circle,var(--c) 0 13px,#F4F6F8 13.5px 15px,transparent 15.5px)}
@@ -302,7 +302,7 @@ body.fs-open{overflow:hidden}
 .rv{flex:none;width:44px;min-width:0;min-height:44px;border:0;border-radius:10px;background:var(--surface);color:var(--t1);cursor:text;padding:0 6px;font-family:inherit;font-weight:600;font-size:13px}
 .rv-in{flex:none;width:44px;padding:0;min-height:44px;border-radius:10px;border:1px solid var(--accent);background:var(--surface);color:var(--t1);font-size:16px;text-align:center}
 .rgx .lbl{min-width:0;white-space:nowrap;overflow:visible;font-size:11.5px;letter-spacing:-.04em}
-.acc{display:flex;width:100%;align-items:center;justify-content:space-between;min-height:44px;margin-top:4px;padding:0 12px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.acc{display:flex;width:100%;align-items:center;justify-content:space-between;min-height:44px;margin-top:4px;padding:0 12px;border-radius:12px;border:1px solid var(--border2);background:none;color:var(--t1);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}
 .acc-body{padding:2px 0 4px}
 .ed-btns.acts .chip-btn{flex:1}
 .tl{display:block;margin:4px 0 6px}
@@ -313,7 +313,7 @@ body.fs-open{overflow:hidden}
 .tpl-del{position:absolute;top:-4px;right:-4px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(15,22,32,.85);color:#fff;cursor:pointer;font-size:14px}
 .actions .ghost-btn{background:none;border:0;color:var(--t2);text-decoration:underline;min-height:44px;font-size:15px}
 .ph-btn{display:none}
-.bg-btn{position:absolute;left:8px;top:8px;min-height:44px;padding:0 14px;border-radius:22px;border:0;background:rgba(15,22,32,.72);color:#fff;font:600 13px inherit;font-family:inherit;cursor:pointer;z-index:1;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.bg-btn{position:absolute;left:8px;top:8px;min-height:44px;padding:0 14px;border-radius:22px;border:0;background:rgba(15,22,32,.72);color:#fff;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;z-index:1;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 .tg.loading{opacity:.6}
 .behind-tg{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;margin:4px 0 12px;padding:10px 14px;border-radius:14px;border:1.5px solid #3DC8F5;background:rgba(61,200,245,.10);color:#F4F6F8;font:inherit;text-align:left;cursor:pointer}
 .behind-tg .bi{font-size:22px}.behind-tg>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px}.behind-tg b{font-size:15px}.behind-tg small{font-size:12px;color:#B8C2CF}
@@ -359,7 +359,14 @@ body.fs-open{overflow:hidden}
 @media (display-mode:standalone){.web-only{display:none!important}}
 html.standalone .web-only{display:none!important}
 /* ---- 오늘 기록 남기기 ---- */
-.lg-top{display:flex;align-items:center;gap:8px}.lg-top .chip-btn{flex:0 0 auto;min-width:44px;padding:0 12px}.lg-top h1{font-size:20px;margin:0}
+.lg-top{display:flex;align-items:center;gap:10px}.lg-top h1{font-size:20px;line-height:1.2;margin:0}
+/* round icon button (header back): no link underline, no iOS default button look */
+.icon-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--border2);border-radius:50%;background:var(--raised);color:var(--t1);text-decoration:none;cursor:pointer;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;transition:background .15s,border-color .15s}
+.icon-btn svg{display:block}
+.icon-btn:active{background:var(--surface);border-color:var(--accent)}
+.icon-btn:focus{outline:none}.icon-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (hover:hover){.icon-btn:hover{border-color:var(--accent)}}
+.chip-btn.quiet{border-color:transparent;color:var(--t2);text-decoration:none}
 .lg-form{display:flex;flex-direction:column;gap:4px;margin-top:12px}.lg-form .field{margin:8px 0}
 .lg-form input,.lg-form select,.log-bar select,.lg-set input:not([type=checkbox]):not(.vh),.lg-set select{
   display:block;width:100%;min-width:0;max-width:100%;min-height:44px;box-sizing:border-box;
