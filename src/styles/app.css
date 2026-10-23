@@ -402,3 +402,34 @@ html.standalone .web-only{display:none!important}
 .lb-acc{display:flex;gap:8px;align-items:center}.lb-acc button{width:40px;height:40px;border-radius:50%;border:2px solid var(--border2);background:var(--c);cursor:pointer}
 .lb-acc input[type=color]{width:44px;height:44px;border:0;background:none;padding:0}
 #barInput #logGo{margin-top:0}
+
+/* story editor: one in-flow screen. buttons stay in the page, never pinned. */
+.card.tpl{display:flex;flex-direction:column;height:100dvh;max-height:100dvh;margin:0;padding:6px 8px max(8px,env(safe-area-inset-bottom));overflow:hidden;box-sizing:border-box}
+@media (max-width:600px){.card.tpl{margin-left:calc(var(--pad) * -1);margin-right:calc(var(--pad) * -1);border-left:0;border-right:0;border-radius:0;width:auto}}
+.st-chrome{flex:none;display:flex;flex-wrap:nowrap;align-items:center;gap:3px;min-height:48px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.st-chrome::-webkit-scrollbar{display:none}
+.st-chrome .tpl-list{flex:0 0 64px;width:64px;min-width:64px;max-width:64px;display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;padding:2px 0;margin:0;scrollbar-width:none}
+.st-chrome .tpl-list::-webkit-scrollbar{display:none}
+.st-chrome .tpl-btn{flex:0 0 28px;width:28px;min-width:28px;gap:0}
+.st-chrome .tpl-btn canvas{width:28px;height:40px;aspect-ratio:auto;border-radius:6px}
+.st-chrome .tpl-btn .tn{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.st-chrome .tpl-mine{flex:0 0 28px;min-width:28px}
+.st-chrome .tpl-del{width:28px;height:28px;top:0;right:-6px;font-size:12px}
+.st-chrome .seg{flex:1 1 116px;min-width:112px;width:auto;display:flex;gap:2px;padding:2px}
+.st-chrome .seg button{flex:1 1 0;min-width:0;min-height:44px;padding:0 2px;font-size:12px;letter-spacing:-.04em;white-space:nowrap}
+#undo.stp,#redo.stp{width:44px;height:44px;min-width:44px;min-height:44px;border:1px solid var(--border2);border-radius:12px;background:var(--raised);color:var(--t1)}
+#undo.stp::after,#redo.stp::after{content:none}
+.st-chrome .st-act{width:auto;flex:none;min-width:44px;height:44px;min-height:44px;padding:0 8px;font-size:15px;border-radius:12px}
+.st-chrome .chip-btn{flex:none;white-space:nowrap;padding:0 12px}
+.st-chrome #barResult.actions{display:flex;flex-direction:row;flex:none;width:auto;margin:0}
+.st-chrome #barResult .ghost-btn{width:auto;white-space:nowrap;text-decoration:none;border:1px solid var(--border2);border-radius:12px;padding:0 12px}
+.st-fit{flex:1 1 auto;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;container-type:size}
+.card.tpl .st-stage{width:min(100cqw,calc(100cqh * var(--arn,.5625)));max-width:100%;height:auto;flex:none}
+.card.tpl .pv-hint{flex:none;margin:0;min-height:0;max-height:1.35em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px;line-height:1.35}
+.card.tpl .st-tools{flex:none;flex-direction:row;width:100%;gap:4px;overflow-x:auto;scrollbar-width:none}
+.card.tpl .st-tools::-webkit-scrollbar{display:none}
+.card.tpl .st-tools button{flex:1 1 0;width:auto;min-width:48px;min-height:48px;height:48px}
+.card.tpl .panel{flex:0 1 auto;max-height:35dvh;overflow:auto;min-height:0;margin:0;-webkit-overflow-scrolling:touch}
+body.log-mode .card.tpl{height:auto;max-height:none;overflow:visible}
+body.log-mode .st-fit{flex:none;height:min(48dvh,480px)}
+@media (min-width:600px){.st-chrome .tpl-list{flex-basis:220px;width:220px;min-width:160px;max-width:280px}}

@@ -754,7 +754,7 @@ $('tplList').addEventListener('click', e => { const del = e.target.closest('[dat
 $('tplReset').addEventListener('click', () => { if (doc.log) { const pid = doc.bg.type === 'photo' ? doc.bg.pid : null; const f0 = doc.fmt; doc = setLogBg(buildLogDoc(doc.log.tpl, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc: doc.tok.acc }), pid); if (f0 !== 'thumb') relayout(doc, f0 || 'story'); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); return; }
   const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc'), f0); doc.race = race; placePhoto(keepBg && keepBg.pid, keepBg); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
 $('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: doc.log ? doc.tpl : 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
-$('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); myPut({ fmt: f }); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.textContent} 형식으로 바꿨어요`); });
+$('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); myPut({ fmt: f }); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.getAttribute('aria-label') || b.textContent} 형식으로 바꿨어요`); });
 $('safeBtn').addEventListener('click', e => { safeOn = !safeOn; e.currentTarget.setAttribute('aria-pressed', String(safeOn)); paintOvl(); status(safeOn ? '점선 영역은 인스타 스토리 UI에 가려질 수 있어요 (저장 이미지엔 안 나와요)' : '안전영역 가이드를 껐어요', 2600); });
 // ---- overlay: selection, handles, guides, trash (never part of the exported image) ----
 const corners = b => { const c = Math.cos(b.r || 0), s = Math.sin(b.r || 0), hw = b.w * b.s / 2, hh = b.h * b.s / 2; return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(([x, y]) => [b.x + x * c - y * s, b.y + x * s + y * c]); };
@@ -870,7 +870,7 @@ function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) 
 // ---- right toolbar ----
 const addLayer = L => { doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); };
 $('tools').addEventListener('click', async e => { const b = e.target.closest('[data-tool]'); if (!b) return; const t = b.dataset.tool; hideMenu();
-  if (t === 'text') { addLayer(mk('text', { t: '텍스트', size: 96, font: null, col: '#ffffff', x: 540, y: 960 })); setTimeout(() => { const ta = $('tText'); if (ta) { ta.focus(); ta.select(); } }, 50); return; }
+  if (t === 'text') { addLayer(mk('text', { t: '텍스트', size: 96, font: null, col: '#ffffff', x: 540, y: 960 })); setTimeout(() => { const ta = $('tText'); if (ta) { ta.focus({ preventScroll: true }); ta.select(); } }, 50); return; }
   sel = null; mode = mode === t ? null : t; paintPanel(); });
 let photoTarget = 'layer';
 const pickPhoto = () => { status('사진은 이 기기 안에서만 쓰여요', 2200); $('photo').click(); };
@@ -1057,7 +1057,7 @@ function paintPanel() {
     P.dataset.grads = JSON.stringify(GR);
   } else if (mode === 'layers') {
     h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
-  } else h += `<p class="hint">오른쪽 도구로 텍스트·사진·스티커·기록 블록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p><div class="ed-btns"><button type="button" class="chip-btn" id="myOff" aria-pressed="${!MY().off}">내 스타일 기억 ${MY().off ? '꺼짐' : '켜짐'}</button><button type="button" class="chip-btn" id="myReset">내 스타일 초기화</button></div><p class="hint">마지막에 쓴 템플릿·형식·글꼴·색·테두리를 다음 기록에도 자동으로 써요</p>`;
+  } else h += `<p class="hint">아래 도구로 텍스트·사진·스티커·기록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p><div class="ed-btns"><button type="button" class="chip-btn" id="myOff" aria-pressed="${!MY().off}">내 스타일 기억 ${MY().off ? '꺼짐' : '켜짐'}</button><button type="button" class="chip-btn" id="myReset">내 스타일 초기화</button></div><p class="hint">마지막에 쓴 템플릿·형식·글꼴·색·테두리를 다음 기록에도 자동으로 써요</p>`;
   P.innerHTML = h; bindPanel(L);
   for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
   paintSelInfo();
@@ -1124,7 +1124,7 @@ function bindPanel(L) {
     if (d.addcard) addLayer(mk('card', { v: +d.addcard, s: d.addcard === '0' ? .8 : 1 }));
     if (d.stkcat) { stkCat = d.stkcat; paintPanel(); return; }
     if (d.addstk) addLayer(mk('sticker', { k: d.addstk, col: '#ffffff' }));
-    if (d.addin) { addLayer(mk('sticker', { k: d.addin, s: .6, f: { ...DATA_STK[d.addin].f }, x: 540, y: FH() * ({ data_weather: .3, data_course: .5, data_bib: .45, data_memo: .7 }[d.addin] || .5) })); setTimeout(() => { const ta = document.querySelector('#panel [data-df]'); if (ta) { ta.focus(); ta.select(); } }, 50); }
+    if (d.addin) { addLayer(mk('sticker', { k: d.addin, s: .6, f: { ...DATA_STK[d.addin].f }, x: 540, y: FH() * ({ data_weather: .3, data_course: .5, data_bib: .45, data_memo: .7 }[d.addin] || .5) })); setTimeout(() => { const ta = document.querySelector('#panel [data-df]'); if (ta) { ta.focus({ preventScroll: true }); ta.select(); } }, 50); }
     if (d.bg) { doc.bg = { type: d.bg }; changed(true); paintPanel(); }
     if (d.grad) { const g = JSON.parse(P.dataset.grads)[+d.grad]; doc.bg = { type: 'grad', c1: g[0], c2: g[1] }; changed(true); paintPanel(); }
     if (d.pick) { sel = d.pick; mode = null; paintPanel(); paintOvl(); }
