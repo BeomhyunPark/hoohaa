@@ -390,10 +390,9 @@ html.standalone .web-only{display:none!important}
 .lg-list li{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border2)}
 .lg-list .chip-btn{flex:0 0 auto;min-height:36px;padding:0 12px}
 .lg-t{flex:0 0 auto;font-family:inherit;font-weight:700;font-size:12px;line-height:1;padding:6px 8px;border-radius:8px;background:var(--raised);color:#17181B}
-.lg-t.t-run{background:#B5C96A}.lg-t.t-race{background:#E08A62}.lg-t.t-gear{background:#7FA8C9}.lg-t.t-diet{background:#6FB894}
+.lg-t.t-run{background:#B5C96A}.lg-t.t-race{background:#E08A62}.lg-t.t-diet{background:#6FB894}
 .lg-s{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.lg-s small{color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .lg-set summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
-.lg-gear{list-style:none;margin:0;padding:0}.lg-gear li{display:flex;justify-content:space-between;align-items:center;min-height:40px}
 .log-bar{display:flex;flex-direction:column;gap:4px;margin:8px 0}
 .lb-acc{display:flex;gap:8px;align-items:center}.lb-acc button{width:40px;height:40px;border-radius:50%;border:2px solid var(--border2);background:var(--c);cursor:pointer}
 .lb-acc input[type=color]{width:44px;height:44px;border:0;background:none;padding:0}
