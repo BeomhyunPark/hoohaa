@@ -104,7 +104,7 @@ function restore() {
 
 // ---------- screens ----------
 function show(name) {
-  for (const [scr, bar] of [['scrInput', 'barInput'], ['scrResult', 'barResult']]) { $(scr).hidden = scr !== name; $(bar).hidden = scr !== name; }
+  for (const [scr, bar] of [['scrInput', 'barInput'], ['scrResult', 'barResult'], ['scrLog', null]]) { $(scr).hidden = scr !== name; if (bar) $(bar).hidden = scr !== name; }
   window.scrollTo(0, 0);
 }
 const MSG = { birthdate: '출생연도를 4자리로 입력해 주세요.', age_range: '10~100세까지 계산할 수 있어요. 출생연도를 확인해 주세요.', sex: '성별을 선택해 주세요.',
@@ -129,6 +129,7 @@ $('go').addEventListener('click', async () => {
   try {
     await Promise.all([enableCardCss(), ensureEditor()]);
     const { renderResult } = await ensureEditor();
+    $('logBar').hidden = true;
     state.last = r;
     renderResult(r);
     show('scrResult');
@@ -142,7 +143,14 @@ $('go').addEventListener('click', async () => {
     else validate();
   }
 });
-$('again').addEventListener('click', () => { show('scrInput'); $('tq').focus(); });
+$('again').addEventListener('click', () => { if (document.body.classList.contains('log-mode')) { openLogs(); return; } show('scrInput'); $('tq').focus(); });
+
+// ---------- 오늘 기록 남기기 (second entry path into the same editor: log data instead of tier data) ----------
+let logsP = null;
+const logs = () => logsP ||= import('./logs.js').then(m => m.mountLogs({ $, esc, show, openEditor: async () => { await Promise.all([enableCardCss(), ensureEditor()]); return ensureEditor(); } }));
+async function openLogs() { try { (await logs()).open(); } catch (e) { console.error(e); $('err').textContent = '기록 화면을 열지 못했어요. 다시 시도해 주세요.'; } }
+$('logGo').addEventListener('click', openLogs);
+if (new URLSearchParams(location.search).has('log')) openLogs();
 restore();
 // landing-page deep link: ?ev=5k|10k|half|full preselects the event
 { const q = { '5k': '5K', '10k': '10K', half: 'half', full: 'full' }[(new URLSearchParams(location.search).get('ev') || '').toLowerCase()]; if (q) { state.ev = q; applyEv(); validate(); } }
