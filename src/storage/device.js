@@ -32,7 +32,7 @@ export const idb = (() => {
   };
 })();
 
-const WIPE_TEXT = '이 기기에 저장된 입력, 편집 내용, 템플릿, 앱 안의 사진을 지울까요?\n사진 앱에 이미 저장한 이미지는 지워지지 않아요.';
+const WIPE_TEXT = '이 기기에 저장된 입력, 편집 내용, 템플릿, 오늘 기록, 앱 안의 사진을 지울까요?\n사진 앱에 이미 저장한 이미지는 지워지지 않아요.';
 
 export async function wipeDevice() {
   if (!confirm(WIPE_TEXT)) return false;
@@ -45,6 +45,7 @@ export async function wipeDevice() {
     for (const k of keys) localStorage.removeItem(k);
   } catch { /* storage unavailable */ }
   try { await idb.clear(); } catch { /* database unavailable */ }
+  try { await new Promise(res => { const r = indexedDB.deleteDatabase('hoohaa-log'); r.onsuccess = r.onerror = r.onblocked = () => res(); }); } catch { /* 오늘 기록 DB unavailable */ }
   location.reload();
   return true;
 }

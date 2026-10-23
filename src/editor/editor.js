@@ -1,6 +1,7 @@
 import { LS, idb } from '../storage/device.js';
 import { fetchWeather, searchPlace, wxHere, isoDay } from '../net/weather.js';
 import { paceGuide, parseWeekly } from './workout.js';
+import { LOG_TPLS, TOKENS, ICON_NAMES, iconSVG, buildLogDoc, fillBindings, setLogBg, LOG_H } from './logtpl.js';
 
 export async function mountEditor(env) {
   const { $, esc, state, EVN } = env;
@@ -57,6 +58,7 @@ const FONTS = {
   mono: { n: 'JetBrains Mono', cat: 'mono', fam: `"OV Mono",monospace`, ws: [700], sz: .88, emb: 1, lic: 'OFL-1.1' },
   blackhan: { n: '검은고딕 (Black Han Sans)', cat: 'ko', fam: `"OV BlackHan","LZ blackhank",${PRE}`, ws: [400], emb: 1, ko: 1, lic: 'OFL-1.1' },
   pretendard: { n: 'Pretendard', cat: 'ko', fam: PRE, ws: [500, 600, 700], emb: 1, ko: 1, lic: 'OFL-1.1' },
+  notokr: { n: 'Noto Sans KR', cat: 'ko', fam: `"LZ notokr",${PRE}`, ws: [400, 500, 700], files: [['notokr-400.woff2', '400'], ['notokr-500.woff2', '500'], ['notokr-700.woff2', '700']], ko: 1, lic: 'OFL-1.1' },
 };
 for (const f of LAZY_FONTS) FONTS[f.k] = { n: f.n, cat: f.cat, fam: `"LZ ${f.k}",${f.ko ? '' : PRE + ','}${SYS_KO}`.replace(',,', ','), ws: [...new Set(f.files.flatMap(x => rng(x[1])))], files: f.files, ko: f.ko, lic: f.lic, pw: f.pw };
 const PICKABLE = k => FONTS[k] && FONTS[k].cat !== 'hidden';
@@ -229,8 +231,8 @@ const STAT_SIZE = STAT_SIZE0;
 const TOP_MIN_PX = 64; // 상위 % is always shown big
 const STICKERS = [['wordmark', 'hoohaa 워드마크'], ['emblem', '티어 엠블럼'], ['runner', '러너'], ['shoe', '러닝화'], ['dist', '거리 배지'], ['sun', '맑음'], ['date', '날짜 도장'], ['flag', '피니시'], ['sparkle', '반짝'], ['heart', '하트'], ['bolt', '번개'], ['star', '별'], ['rect', '사각형'], ['circle', '원'], ['line', '선']];
 const FILTERS = [['none', '원본'], ['vivid', '선명하게'], ['golden', '골든아워'], ['warm', '따뜻하게'], ['morning', '새벽공기'], ['cool', '차갑게'], ['teal', '틸 & 오렌지'], ['film', '필름'], ['fade', '빈티지'], ['bw', '흑백'], ['noir', '누아르']];
-// export formats: 9:16 story (default), 4:5 feed, 1:1
-const FORMATS = [['story', '스토리 9:16', 1920], ['feed', '피드 4:5', 1350], ['square', '정사각 1:1', 1080]];
+// export formats: 9:16 story (default), 4:5 feed, 1:1, 3:4 thumbnail (default for 오늘 기록 cards)
+const FORMATS = [['story', '스토리 9:16', 1920], ['feed', '피드 4:5', 1350], ['square', '정사각 1:1', 1080], ['thumb', '썸네일 3:4', 1440]];
 const fmtH = f => (FORMATS.find(x => x[0] === f) || FORMATS[0])[2];
 const MASKS = [['rect', '사각'], ['round', '둥근'], ['circle', '원형'], ['polaroid', '폴라로이드']];
 const LK = { x: 540, y: 960, s: 1, r: 0, o: 1 };
@@ -311,7 +313,28 @@ function fxText(c, t, x, ty, sz, col) { const fx = FX || {}; const l = { t };
 function boxBehind(c, w, h, style, col, pad, rad, L = {}) { if (!style || style === 'none') return; rr(c, -w / 2 - pad, -h / 2 - pad * .7, w + pad * 2, h + pad * 1.4, rad);
   c.save(); if (L.bcol) { c.fillStyle = L.bcol; c.globalAlpha *= L.bo ?? (style === 'semi' ? .45 : 1); } else { c.fillStyle = style === 'semi' ? '#000000' : col; c.globalAlpha *= L.bo ?? (style === 'semi' ? .45 : 1); } c.fill(); c.restore(); }
 // ---- each layer type: measure() -> {w,h} local, draw(c) centred at 0,0 ----
+// ---- 오늘 기록 templates: colour tokens ('@text' / '@acc' / '@bg') and baseline-anchored, optically aligned text ----
+const tokCol = (doc, v) => typeof v === 'string' && v[0] === '@' && doc && doc.tok ? (v === '@acc' ? doc.tok.acc : v === '@bg' ? doc.tok.bg : v === '@text' ? doc.tok.text : v) : v;
+// ratio coords on 1080x1440 → px in the current format (lower half stays bottom-anchored so 9:16 / 4:5 / 1:1 keep the spacing)
+const ltPos = L => { const y0 = L.ry * LOG_H; return { x: L.rx * W_, y: H_ === LOG_H || L.ry <= .5 ? y0 : H_ - (LOG_H - y0) }; };
+const ltFam = L => L.font === 'archivo' ? `${ARC_.replace(',sans-serif', '')},"LZ notokr",${PRE_}` : famOf(L.font, true);
+// Optical alignment: the template x is where the INK of the first glyph starts. measureText().actualBoundingBoxLeft is the
+// first glyph's side bearing measured on the real outline (same as LSB/unitsPerEm×size from hmtx, ≲0.3px apart), so x = target − sb.
+function logText(c, L) {
+  const sz = L.size || 56, fam = ltFam(L), ls = L.ls || 0, t = String(L.t ?? '') || ' ';
+  font(c, sz, L.w || 600, fam); c.letterSpacing = ls + 'px'; const m = c.measureText(t);
+  let um = null, usz = Math.round(sz * .6), ug = L.ug ?? 8; if (L.unit) { font(c, usz, 400, ltFam({ font: 'archivo' })); c.letterSpacing = '0px'; um = c.measureText(L.unit); }
+  c.letterSpacing = '0px';
+  const inkL = -(m.actualBoundingBoxLeft || 0), adv = m.width - ls, right = um ? adv + ug + um.actualBoundingBoxRight : m.actualBoundingBoxRight;
+  const asc = Math.max(m.actualBoundingBoxAscent || sz * .72, um ? um.actualBoundingBoxAscent : 0), desc = Math.max(m.actualBoundingBoxDescent || 0, um ? um.actualBoundingBoxDescent : 0, 1);
+  const w = Math.max(1, right - inkL), h = asc + desc, col = L.col || '#ffffff';
+  return { w, h, asc, draw: () => { const ox = -w / 2 - inkL, oy = -h / 2 + asc; c.save(); c.globalAlpha *= (L.ga ?? 1); c.fillStyle = col; c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+    font(c, sz, L.w || 600, fam); c.letterSpacing = ls + 'px'; fxText(c, t, ox, oy, sz, col); c.letterSpacing = '0px';
+    if (um) { font(c, usz, 400, ltFam({ font: 'archivo' })); c.fillText(L.unit, ox + adv + ug, oy); } c.restore(); } };
+}
 function layerGeom(c, L, d, doc, photos) {
+  if (doc && doc.tok) { if (L.col && L.col[0] === '@') L = { ...L, col: tokCol(doc, L.col) }; if (typeof L.fill === 'string' && L.fill[0] === '@') L = { ...L, fill: tokCol(doc, L.fill) }; }
+  if (L.lt && L.type === 'text') return logText(c, L);
   if (L.col === '@tier') L = { ...L, col: accentOf(d) }; else if (L.col === '@tierL') L = { ...L, col: tierTint(d) };
   if (L.bcol === '@tier') L = { ...L, bcol: accentOf(d) };
   if (L.sp && (L.type === 'text' || L.type === 'stat')) return specText(c, L, d, doc);
@@ -435,7 +458,7 @@ function dataArt(k, f) { const F = { ...DATA_STK[k === 'data_weather' || k.start
   return null; }
 const dataFields = L => ({ ...DATA_STK[L.k.startsWith('data_weather') ? 'data_weather' : L.k]?.f, ...(L.k.startsWith('data_weather_') && !(L.f && L.f.icon) ? { icon: L.k.slice(13) } : {}), ...(L.f || {}) });
 const dtext = (c, t, x, y, sz, fam, w, col, anchor = 'center', ls = 0) => { font(c, sz, w, fam); c.letterSpacing = ls + 'px'; c.fillStyle = col; c.textAlign = anchor === 'start' ? 'left' : anchor === 'end' ? 'right' : 'center'; c.textBaseline = 'alphabetic'; c.fillText(t, x, y); c.letterSpacing = '0px'; c.textAlign = 'left'; };
-function v4Sticker(c, L) { const k = L.k, data = k.startsWith('data_'), F = data ? dataFields(L) : null, svg = data ? dataArt(k, F) : STK_SVG[k]; if (!svg) return null;
+function v4Sticker(c, L) { const k = L.k, data = k.startsWith('data_'), F = data ? dataFields(L) : null, svg = data ? dataArt(k, F) : k.startsWith('ph:') ? iconSVG(k, L.col || TOKENS.text) : STK_SVG[k]; if (!svg) return null;
   return { w: 512, h: 512, draw: () => { const im = imgNow(svg); if (im) c.drawImage(im, -256, -256, 512, 512); if (!data) return; c.save(); c.translate(-256, -256);
     const A = FONTS.anton.fam, K = FONTS.kodemono ? FONTS.kodemono.fam : FONTS.mono.fam, Pf = FONTS.pretendard.fam, G = FONTS.gaegu ? FONTS.gaegu.fam : Pf;
     if (k.startsWith('data_weather')) { const ink = F.icon === 'night' ? '#fff' : INK; dtext(c, String(F.temp || '').slice(0, 5), 370, 250, 120, A, 400, ink); dtext(c, String(F.label || '').slice(0, 16), 256, 345, 40, Pf, 700, ink); }
@@ -489,7 +512,8 @@ async function renderDoc(d, doc, photos = {}, cv) {
   await document.fonts.ready; await Promise.all(PRE_FONTS.map(f => document.fonts.load(f, 'A가').catch(() => { })));
   await Promise.all([...new Set(doc.layers.map(l => l.font).filter(Boolean))].map(loadFont));
   if (doc.layers.some(l => l.type === 'card')) await Promise.all([chipLoad(d.key), cardFontsReady()]);
-  await Promise.all(doc.layers.filter(l => l.type === 'sticker').map(l => stkLoad(l.k, l))); await Promise.all(doc.layers.filter(l => l.type === 'sticker' && l.k.startsWith('data_')).map(l => imgOf(dataArt(l.k, dataFields(l)))));
+  await Promise.all(doc.layers.filter(l => l.type === 'sticker').map(l => l.k.startsWith('ph:') ? imgOf(iconSVG(l.k, tokCol(doc, l.col) || TOKENS.text)) : stkLoad(l.k, l)));
+  if (doc.log) await loadFont('notokr'); await Promise.all(doc.layers.filter(l => l.type === 'sticker' && l.k.startsWith('data_')).map(l => imgOf(dataArt(l.k, dataFields(l)))));
   { const txt = doc.layers.map(l => l.type === 'text' ? (l.t || '') : l.type === 'stat' ? statValue(d, doc, l.stat, l) + (l.lab || statLabel(d, l.stat)) : l.f ? Object.values(l.f).join('') : '').join('') + (doc.race || '');
     const fk = []; if (needFull(txt)) fk.push('pretendardk'); if (doc.layers.some(l => l.font === 'blackhan' || (l.sp && l.sp.f === 'blackhan')) && needFull(txt, true)) fk.push('blackhank'); await Promise.all(fk.map(loadFont)); }
   setH_(fmtH(doc.fmt)); cv = cv || document.createElement('canvas'); cv.width = W_; cv.height = H_; const c = cv.getContext('2d');
@@ -507,7 +531,12 @@ async function renderDoc(d, doc, photos = {}, cv) {
       if (n > 2 && srt.length === n && srt.some(l => RW[l.id].w * f > col + .5)) { const tot = srt.reduce((a, l) => a + RW[l.id].w * f, 0), gap = (W_ - 2 * MARGIN - tot) / (n - 1); let x = MARGIN; for (const l of srt) { const w = RW[l.id].w * f; if (l.row.i > 0 && l.row.i < n - 1) rowX[l.id] = x + w / 2; x += w + gap; } } } }
   for (const L0 of order) {
     if (L0 === null) { c.drawImage(subj[0], ...subj[1]); continue; }
+    if (L0.lt && L0.type === 'shape' && L0.rh && !L0.mv) { L0.h = Math.round(L0.rh * Math.min(H_, LOG_H)); L0.w = Math.round(L0.rw * W_); }
     c.save(); const g = layerGeom(c, L0, d, doc, photos), L = { ...eff(L0, g) }; c.restore();
+    if (L0.lt && !L0.mv && L0.rx != null) { // 오늘 기록 templates: ratio anchor → centre (text: ink-left + baseline, others: top-left)
+      const P = ltPos(L0), s = L.s, fl = L0.flow && boxes.find(b => b.sid === L0.flow && !b.hidden);
+      if (fl) P.x = fl.x + fl.w * fl.s / 2 + (L0.gap ?? 16);
+      L.x = P.x + g.w * s / 2; L.y = g.asc != null ? P.y - g.asc * s + g.h * s / 2 : P.y + g.h * s / 2; }
     if (L.row && !L0.mv && L0.af !== false && rowS[L.row.g] != null) { L.s = rowS[L.row.g]; if (rowX[L.id] != null) L.x = rowX[L.id]; }
     else if (L.af && !(L.r)) { // template auto-fit: keep drawn bounds (incl. slant) inside ~6% safe margins until the user resizes it
       const M = L.sp ? MARGIN : 65, MY = L.sp ? 24 : 40, vw = L.vert ? g.h : g.w, vh = L.vert ? g.w : g.h, aw = L.ax === 'left' ? W_ - M - L.x : L.ax === 'right' ? L.x - M : 2 * Math.min(L.x - M, W_ - M - L.x), ah = L.ay === 'top' ? H_ - MY - L.y : L.ay === 'bottom' ? L.y - MY : 2 * Math.min(L.y - MY, H_ - MY - L.y);
@@ -546,7 +575,7 @@ function templateDoc(t, d, fmt = 'story') {
 }
 // ---- shared template layout system: one side margin, equal stat columns, one type scale (canvas + export + every format) ----
 const MARGIN = 72, COL_GAP = 32;
-const FMT_K = { story: 1, feed: .8, square: .66 };
+const FMT_K = { story: 1, feed: .8, square: .66, thumb: .75 };
 const typeScale = fmt => { const k = FMT_K[fmt] || 1; return { val: Math.round(64 * k), sub: Math.round(40 * k), lab: Math.round(26 * k), meta: Math.round(26 * k) }; };
 function normLayout(doc, els, fmt, W) {
   const TS = typeScale(fmt), byId = id => doc.layers.find(l => l.sid === id), side = e => e.y != null ? 't' : 'b', yv = e => e.y != null ? e.y : e.yb, xv = e => e.right != null ? W - e.right : e.x;
@@ -623,9 +652,10 @@ async function restorePhotos() { const ids = new Set([doc.bg.pid, ...doc.layers.
   if (doc.bg.type === 'photo' && photos[doc.bg.pid] && doc.layers.some(l => l.behind)) { if (await ensureMask(doc.bg.pid)) changed(true); else { doc.layers.forEach(l => l.behind = false); changed(true); } } }
 // ---- history + autosave ----
 let hist = [], hi = -1, comT = 0;
-function commit() { clearTimeout(comT); if (!doc) return; const s = JSON.stringify(doc); if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 100) hist.shift(); hi = hist.length - 1; } LS('runtier:v3doc', doc); paintTop(); }
+function commit() { clearTimeout(comT); if (!doc) return; const s = JSON.stringify(doc); if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 100) hist.shift(); hi = hist.length - 1; } LS(docKey(), doc); paintTop(); }
 const later = () => { clearTimeout(comT); comT = setTimeout(commit, 300); };
-function undoRedo(dd) { commit(); const n = hi + dd; if (n < 0 || n >= hist.length) return; hi = n; doc = JSON.parse(hist[hi]); if (sel && !getL(sel)) sel = null; LS('runtier:v3doc', doc); changed(true); paintPanel(); }
+function undoRedo(dd) { commit(); const n = hi + dd; if (n < 0 || n >= hist.length) return; hi = n; doc = JSON.parse(hist[hi]); if (sel && !getL(sel)) sel = null; LS(docKey(), doc); changed(true); paintPanel(); }
+const docKey = () => doc && doc.log ? 'runtier:logdoc' : 'runtier:v3doc';
 $('undo').addEventListener('click', () => undoRedo(-1)); $('redo').addEventListener('click', () => undoRedo(1));
 function paintTop() { $('undo').disabled = hi <= 0; $('redo').disabled = hi >= hist.length - 1; }
 const getL = id => doc.layers.find(l => l.id === id);
@@ -660,7 +690,8 @@ function fitStage() { const h = FH(), pv = $('tplPreview'), o = $('ovl'); if (pv
   for (const b of document.querySelectorAll('#fmtSeg [data-v]')) b.setAttribute('aria-checked', String(b.dataset.v === (doc.fmt || 'story'))); $('safeBtn').hidden = (doc.fmt || 'story') !== 'story'; }
 // re-lay out proportionally: positions + sizes follow the height ratio, edge anchors stay at the margins; template blocks re-fit (auto-fit), everything kept inside the safe margins
 const CARRY = ['font', 'col', 'bcol', 'bo', 'box', 'fsh', 'fol', 'fgl', 'o', 'lab', 't', 'hidden', 'behind', 'pid', 'crop', 'cr', 'rot', 'flip', 'filter', 'adj', 'cut', 'ol', 'f', 'k', 'ls', 'lh'];
-function relayout(d, to) { if (d.tpl && TEMPLATES.some(t => t[0] === d.tpl) && d.layers.some(l => l.sid)) return specRelayout(d, to); return propRelayout(d, to); }
+function relayout(d, to) { if (d.log) { const h0 = fmtH(d.fmt), k = fmtH(to) / h0; d.fmt = to === 'story' ? undefined : to; for (const L of d.layers) if (L.mv || L.rx == null) { L.y *= k; } needClamp = true; clampN = 0; return d; }
+  if (d.tpl && TEMPLATES.some(t => t[0] === d.tpl) && d.layers.some(l => l.sid)) return specRelayout(d, to); return propRelayout(d, to); }
 function specRelayout(d, to) { const h0 = fmtH(d.fmt), h1 = fmtH(to), nd = templateDoc(d.tpl, state.story, to), k = h1 / h0, used = new Set(), out = [];
   for (const L of d.layers) { const N = L.sid && nd.layers.find(n => n.sid === L.sid);
     if (N) { used.add(N); const keep = { id: L.id }; for (const c of CARRY) if (L[c] !== undefined && !(c === 'hidden' && L.hf)) keep[c] = L[c]; if (L.hf) keep.hidden = false;
@@ -693,17 +724,20 @@ async function refreshTpl() { // called from renderResult
   changed(true); paintPanel(); thumbs();
 }
 async function thumbs() {
-  const mine = LS('runtier:mytpl') || [];
+  if (doc && doc.log) return logThumbs();
+  const mine = (LS('runtier:mytpl') || []).map((m, i) => ({ ...m, _i: i })).filter(m => !m.log);
   $('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-t="${k}" aria-checked="${doc.tpl === k}"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${n}</span></button>`).join('') +
-    mine.map((m, i) => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${i}" aria-checked="false"><canvas width="108" height="192"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
-  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? relayout(templateDoc(b.dataset.t, state.story), doc.fmt || 'story') : mine[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
+    mine.map(m => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${m._i}" aria-checked="false"><canvas width="108" height="192"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${m._i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
+  const all = LS('runtier:mytpl') || [];
+  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? relayout(templateDoc(b.dataset.t, state.story), doc.fmt || 'story') : all[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
 }
 $('tplList').addEventListener('click', e => { const del = e.target.closest('[data-mdel]'); if (del) { const m = LS('runtier:mytpl') || []; m.splice(+del.dataset.mdel, 1); LS('runtier:mytpl', m); thumbs(); return; }
-  const b = e.target.closest('.tpl-btn'); if (!b) return; const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null;
+  const b = e.target.closest('.tpl-btn'); if (!b) return; if (doc.log) { pickLogTpl(b); return; } const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null;
   const f0 = doc.fmt || 'story', keepPid = keepBg ? keepBg.pid : (doc.layers.find(l => l.type === 'photo' && l.pid && photos[l.pid]) || {}).pid; doc = b.dataset.t ? (myPut({ tpl: b.dataset.t }), newDoc(b.dataset.t)) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined }; if (!b.dataset.t) relayout(doc, f0); else if ((doc.fmt || 'story') !== f0) relayout(doc, f0); doc.race = race; placePhoto(keepPid, keepBg); sel = null; mode = null;
   for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); });
-$('tplReset').addEventListener('click', () => { const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc'), f0); doc.race = race; placePhoto(keepBg && keepBg.pid, keepBg); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
-$('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
+$('tplReset').addEventListener('click', () => { if (doc.log) { const pid = doc.bg.type === 'photo' ? doc.bg.pid : null; const f0 = doc.fmt; doc = setLogBg(buildLogDoc(doc.log.tpl, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc: doc.tok.acc }), pid); if (f0 !== 'thumb') relayout(doc, f0 || 'story'); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); return; }
+  const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc'), f0); doc.race = race; placePhoto(keepBg && keepBg.pid, keepBg); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
+$('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: doc.log ? doc.tpl : 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
 $('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); myPut({ fmt: f }); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.textContent} 형식으로 바꿨어요`); });
 $('safeBtn').addEventListener('click', e => { safeOn = !safeOn; e.currentTarget.setAttribute('aria-pressed', String(safeOn)); paintOvl(); status(safeOn ? '점선 영역은 인스타 스토리 UI에 가려질 수 있어요 (저장 이미지엔 안 나와요)' : '안전영역 가이드를 껐어요', 2600); });
 // ---- overlay: selection, handles, guides, trash (never part of the exported image) ----
@@ -886,7 +920,7 @@ function openFontSheet() { const L = getL(sel); if (!L) return; let sh = $('fShe
 function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); }
 // ---- bottom panel (one level deep, in page flow) ----
 const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', sticker: '스티커', shape: '도형' };
-const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (DATA_STK[L.k] ? DATA_STK[L.k].n + ' 스티커' : STK_NAMES[L.k] || (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커') : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
+const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (DATA_STK[L.k] ? DATA_STK[L.k].n + ' 스티커' : ICON_NAMES[L.k] ? ICON_NAMES[L.k] + ' 아이콘' : STK_NAMES[L.k] || (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커') : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
 const seg = (id, opts, cur) => `<div class="seg n${opts.length}" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
 const STYLE_THUMB = ['<i class="th-l">PACE</i><b>4:54</b>', '<b class="th-big">4:54</b>', '<b class="th-pill">4:54</b>', '<b class="th-run">4:54</b><i class="th-l">PACE</i>'];
 const segT = (id, opts, cur) => `<div class="seg segt n${opts.length}" id="${id}" role="radiogroup" aria-label="표시 스타일">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}"><span class="thumb" aria-hidden="true">${STYLE_THUMB[v]}</span>${n}</button>`).join('')}</div>`;
@@ -1019,7 +1053,7 @@ function bindWx(L) { const on = (id, ev, f) => { const e = $(id); if (e) e.addEv
 function bindPanel(L) {
   const P = $('panel'), on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
   on('pDone', 'click', () => { sel = null; multi.clear(); multiSnap = null; libOpen = false; paintPanel(); paintOvl(); });
-  on('tText', 'input', e => { L.t = e.target.value; changed(); $('pName').textContent = lname(L); });
+  on('tText', 'input', e => { L.t = e.target.value; if (L.bind) delete L.bind; changed(); $('pName').textContent = lname(L); });
   on('raceIn', 'input', e => { doc.race = e.target.value; changed(); });
   const segOn = (id, f) => { const s = $(id); if (s) s.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { f(b.dataset.v); changed(true); paintPanel(); } }); };
   segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pCT', v => { colMode = v; }); on('pBgNone', 'click', () => { if (L.v === 2) { delete L.bcol; delete L.bo; } else { L.box = 'none'; } changed(true); paintPanel(); }); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => doc.bg.filter = v);
@@ -1076,13 +1110,13 @@ window.__exportSig = async () => pxSig(await finalCanvas()); window.__previewSig
 async function finalCanvas() { commit(); const cv = await renderDoc(state.story, doc, photos); window.__lastStory = cv; return cv; }
 $('save').addEventListener('click', async () => {
   const b = $('save'); if (b.disabled || !state.story) return; b.disabled = true; const lbl = b.textContent; b.textContent = '저장 중…';
-  try { const cv = await finalCanvas(); const how = await saveStory(cv, `hoohaa-${state.story.key}.png`); b.textContent = how === 'cancelled' ? lbl : '저장했어요'; }
+  try { const cv = await finalCanvas(); const how = await saveStory(cv, doc.log ? `hoohaa-${doc.log.tpl}.png` : `hoohaa-${state.story.key}.png`); b.textContent = how === 'cancelled' ? lbl : '저장했어요'; }
   catch (e) { console.error(e); b.textContent = '다시 시도해 주세요'; }
   setTimeout(() => { b.textContent = lbl; b.disabled = false; }, 1400);
 });
 $('share').addEventListener('click', async () => {
   const b = $('share'); if (b.disabled || !state.story) return; b.disabled = true;
-  try { const cv = await finalCanvas(); const blob = await new Promise(r => cv.toBlob(r, 'image/png')), file = new File([blob], `hoohaa-${state.story.key}.png`, { type: 'image/png' });
+  try { const cv = await finalCanvas(); const blob = await new Promise(r => cv.toBlob(r, 'image/png')), file = new File([blob], doc.log ? `hoohaa-${doc.log.tpl}.png` : `hoohaa-${state.story.key}.png`, { type: 'image/png' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file] }); } catch (e) { if (e.name !== 'AbortError') throw e; } }
     else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 30000); status('이 브라우저는 바로 공유를 지원하지 않아 이미지로 저장했어요', 3500); }
   } catch (e) { console.error(e); status('다시 시도해 주세요'); }
@@ -1115,6 +1149,7 @@ let weeklyKm = '';
 const METHOD = '입력한 기록으로 달리기 능력 점수(VDOT)를 구하고, 같은 점수를 다른 거리에 적용한 것(잭 다니엘스 공식). 그 거리에 맞는 훈련을 했을 때 기준이라, 특히 풀코스는 장거리 훈련이 부족하면 실제로는 더 걸릴 수 있어요.';
 
 function renderResult(r) {
+  if (doc && doc.log) { doc = null; sel = null; logCtx = null; document.body.classList.remove('log-mode'); }
   const ts = tierStyle(r.tier), nx = r.nextTier;
   const evName = EVN[state.ev] || `${r.input.distanceKm}km`;
   const who = `${r.input.ageGroupLabel} ${r.input.sex === 'M' ? '남성' : '여성'}`, pubWho = ''; // pubWho: card + share images never reveal age/sex
@@ -1179,5 +1214,38 @@ function renderResult(r) {
     PACE_ROWS.forEach(([L], i) => { const el = $(`pe${i}`); if (el) el.innerHTML = esc(next[L]).replaceAll('\n', '<br>'); });
   });
 }
-  return { renderResult };
+  // ================= entry path 2: 오늘 기록 → card (log data instead of tier data) =================
+  let logCtx = null;
+  const LOG_STORY = { key: 'iron', tierKo: '', word: '', roman: '', long: false, title: '', recLine: ' ', who: '', topLabel: '', headline: '', time: '', pace: '', vdot: '', nextLine: '' };
+  async function logPhoto(id, blob) { const pid = 'log:' + id; if (!photos[pid] && blob) { const im = await blobToImg(blob), k = Math.min(1, 1600 / Math.max(im.width, im.height)), cv = document.createElement('canvas'); cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k); cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height); photos[pid] = cv; } return photos[pid] ? pid : null; }
+  // opts: { log, vals (bindValues), tpl, photo: {id, blob} | null, acc? }
+  async function openLog(o) {
+    $('resBody').innerHTML = ''; document.body.classList.add('log-mode');
+    state.story = { ...LOG_STORY, time: o.vals.time || '', pace: o.vals.pace || '' };
+    const pid = o.photo ? await logPhoto(o.photo.id, o.photo.blob) : null;
+    logCtx = { log: o.log, vals: o.vals, pid };
+    doc = buildLogDoc(o.tpl, o.vals, { pid: pid && LOG_TPLS.length ? pid : null, logId: o.log && o.log.id, type: o.log && o.log.type, acc: o.acc, fmt: 'thumb' });
+    if (!pid) setLogBg(doc, null);
+    sel = null; mode = null; hist = [JSON.stringify(doc)]; hi = 0; needClamp = false;
+    changed(true); paintPanel(); thumbs(); return doc;
+  }
+  // picking another log refills only the still-bound elements of the current card
+  function applyLogVals(vals, log) { if (!doc || !doc.log) return; logCtx = { ...(logCtx || {}), vals, log }; if (log) doc.log.id = log.id; fillBindings(doc, vals); changed(true); paintPanel(); }
+  function setAccent(hex) { if (!doc || !doc.tok) return; doc.tok.acc = hex; changed(true); thumbs(); }
+  function setLogBackground(photoOn) { if (!doc || !doc.log) return; setLogBg(doc, photoOn ? logCtx && logCtx.pid : null); changed(true); }
+  async function logThumbs() {
+    const mine = (LS('runtier:mytpl') || []).map((m, i) => ({ ...m, _i: i })).filter(m => m.log);
+    $('tplList').innerHTML = LOG_TPLS.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-lt="${k}" aria-checked="${doc.log.tpl === k}"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${n}</span></button>`).join('') +
+      mine.map(m => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${m._i}" aria-checked="false"><canvas width="108" height="${Math.round(108 * fmtH(m.fmt) / 1080)}"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${m._i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
+    const all = LS('runtier:mytpl') || [], f0 = doc.fmt || 'story';
+    for (const b of $('tplList').querySelectorAll('.tpl-btn')) { let d2; if (b.dataset.lt) { d2 = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, acc: doc.tok.acc }); if (f0 !== 'thumb') relayout(d2, f0); } else d2 = fillBindings(clone(all[+b.dataset.m]), logCtx.vals);
+      const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
+  }
+  function pickLogTpl(b) { const f0 = doc.fmt || 'story', acc = b.dataset.lt && doc.tok && doc.log.tpl.split('-')[0] === b.dataset.lt.split('-')[0] ? doc.tok.acc : undefined;
+    if (b.dataset.lt) { doc = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc }); if (f0 !== 'thumb') relayout(doc, f0); }
+    else { const m = clone((LS('runtier:mytpl') || [])[+b.dataset.m]); delete m.n; doc = fillBindings(m, logCtx.vals); doc.log = { ...doc.log, id: logCtx.log && logCtx.log.id }; }
+    const bgSeg = document.getElementById('lbBg'); if (bgSeg) for (const x of bgSeg.querySelectorAll('[data-v]')) x.setAttribute('aria-checked', String((x.dataset.v === 'photo') === (doc.bg.type === 'photo')));
+    sel = null; mode = null; for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); }
+  window.__logDoc = () => doc && doc.log ? clone(doc) : null;
+  return { renderResult, openLog, applyLogVals, setAccent, setLogBackground, exportCanvas: finalCanvas };
 }

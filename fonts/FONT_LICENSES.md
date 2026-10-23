@@ -41,3 +41,10 @@ All fonts allow commercial use and web embedding. Licence checked from each font
 | 동해독도 (East Sea Dokdo) | 손글씨 | OFL-1.1 | lazy (on pick) | fonts/lazy/LICENSE-eastsea.txt |
 | 기랑해랑 (Kirang Haerang) | 손글씨 | OFL-1.1 | lazy (on pick) | fonts/lazy/LICENSE-kirang.txt |
 | 디필레이아 (Diphylleia) | 한글 | OFL-1.1 | lazy (on pick) | fonts/lazy/LICENSE-diphylleia.txt |
+| Noto Sans KR (KS X 1001 subset, 400/500/700) | 한글 · 오늘 기록 템플릿 | OFL-1.1 | lazy (오늘 기록 카드) | fonts/lazy/LICENSE-notokr.txt |
+
+## Icons
+
+| Icons | Use | License |
+|---|---|---|
+| Phosphor Icons (duotone: timer, medal, sneaker-move, bowl-food), inlined in src/editor/logtpl.js | 오늘 기록 템플릿 | MIT (c) 2023 Phosphor Icons |

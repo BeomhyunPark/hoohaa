@@ -1,4 +1,4 @@
-const CACHE = 'hoohaa-shell-2';
+const CACHE = 'hoohaa-shell-3';
 const SHELL = [
   '/app/',
   '/app/index.html',
@@ -26,6 +26,11 @@ const ON_USE = [
   '/src/editor/assets.js',
   '/src/net/weather.js',
   '/src/styles/card.css',
+  '/src/app/logs.js',
+  '/src/engine/logcalc.js',
+  '/src/storage/logdb.js',
+  '/src/storage/zip.js',
+  '/src/editor/logtpl.js',
 ];
 
 self.addEventListener('install', (event) => {
