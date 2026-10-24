@@ -389,7 +389,7 @@ function layerGeom(c, L, d, doc, photos) {
       c.save(); c.beginPath(); if (L.cut) c.rect(ox - bw, oy - bh, bw * 3, bh * 3); else if (L.mask === 'circle') c.ellipse(0, oy + bh / 2, bw / 2, bh / 2, 0, 0, 7); else c.roundRect(ox, oy, bw, bh, L.mask === 'round' ? 48 : 0); c.clip();
       if (im) { const src = im, cz = Math.max(1, L.cz || 1), sc = Math.max(bw / im.width, bh / im.height) * cz, iw = im.width * sc, ih = im.height * sc;
         const mx = (iw - bw) / 2, my = (ih - bh) / 2; if (L.cut) { const dw = bw * cz, dh = bh * cz; c.drawImage(src, ox + (bw - dw) / 2 + (L.cx || 0) * (dw - bw) / 2, oy + (bh - dh) / 2 + (L.cy || 0) * (dh - bh) / 2, dw, dh); } else c.drawImage(src, ox - mx + (L.cx || 0) * mx, oy - my + (L.cy || 0) * my, iw, ih); }
-      else { const g = c.createLinearGradient(ox, oy, ox + bw * .4, oy + bh); g.addColorStop(0, '#6f7a86'); g.addColorStop(1, '#2a323c'); c.fillStyle = pol ? '#dcd8cf' : g; c.fillRect(ox, oy, bw, bh); c.fillStyle = pol ? '#6b6a66' : 'rgba(255,255,255,.75)'; c.textAlign = 'center'; font(c, Math.max(28, Math.min(44, bw / 14)), 600, PRE_); c.fillText('📷 사진 넣기', 0, oy + bh / 2 + 14); c.textAlign = 'left'; }
+      else { const g = c.createLinearGradient(ox, oy, ox + bw * .4, oy + bh); g.addColorStop(0, '#6f7a86'); g.addColorStop(1, '#2a323c'); c.fillStyle = pol ? '#dcd8cf' : g; c.fillRect(ox, oy, bw, bh); c.fillStyle = pol ? '#6b6a66' : 'rgba(255,255,255,.75)'; c.textAlign = 'center'; font(c, Math.max(28, Math.min(44, bw / 14)), 600, PRE_); c.fillText('사진 넣기', 0, oy + bh / 2 + 14); c.textAlign = 'left'; }
       c.restore(); if (L.bd && !L.cut) { c.save(); shp(); c.lineWidth = L.bd[0] * 2; c.strokeStyle = L.bd[1]; c.clip(); c.stroke(); c.restore(); } } };
   }
   if (L.type === 'sticker') return sticker(c, L, d);
@@ -642,7 +642,7 @@ const canBehind = L => !!L && L.type !== 'photo' && !!personPid();
 async function toggleBehind(L) {
   if (L.behind) { L.behind = false; changed(true); paintPanel(); return; }
   const src = personPid(); if (!src) { status('먼저 인물 사진을 넣어 주세요', 3000); return; }
-  if (!src.bg) { doc.bg = { type: 'photo', pid: src.pid, pz: 1, px: 0, py: 0, filter: src.L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== src.L); status('사진을 배경으로 깔고 인물을 찾을게요', 3000); changed(true); }
+  if (!src.bg) { doc.bg = { type: 'photo', pid: src.pid, pz: 1, px: 0, py: 0, filter: src.L.filter || 'none' }; doc.layers = doc.layers.filter(l => l !== src.L); status('배경 사진으로 깔고 인물을 찾을게요', 3000); changed(true); }
   const b = document.querySelector('#miniBar [data-mb=behind]'); if (b) { b.classList.add('loading'); b.querySelector('small').textContent = '찾는 중…'; } status('인물을 찾는 중이에요… (사진은 기기 밖으로 나가지 않아요)', 8000);
   const ok = await ensureMask(doc.bg.pid);
   if (ok) { L.behind = true; status('인물 뒤로 보냈어요'); } else status(segFailMsg('글자는 앞에 그대로 둘게요'), 5000);
@@ -691,7 +691,7 @@ function syncMulti() { for (const id of [...multi]) { const m = getL(id); if (!m
   if (multiSnap && multiSnap.id === L.id) for (const k of MSYNC) if (JSON.stringify(L[k]) !== JSON.stringify(multiSnap[k])) for (const id of multi) { const m = getL(id); if (L[k] === undefined) delete m[k]; else m[k] = clone(L[k]); }
   multiSnap = clone(L); }
 window.__multi = () => [...multi];
-function changed(now) { syncTier(); syncMulti(); const bb = $('bgBtn'); if (bb && doc) bb.hidden = doc.bg.type === 'photo' && !!photos[doc.bg.pid]; if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; fitStage(); $('tplPreview').getContext('2d').drawImage(cv, 0, 0); if (needClamp) { needClamp = false; if (clampN++ < 5 && clampIn()) { changed(true); return; } clampN = 0; } paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
+function changed(now) { syncTier(); syncMulti(); if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; fitStage(); $('tplPreview').getContext('2d').drawImage(cv, 0, 0); if (needClamp) { needClamp = false; if (clampN++ < 5 && clampIn()) { changed(true); return; } clampN = 0; } paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
 // ---- format: 9:16 story · 4:5 feed · 1:1 (preview canvas follows the export aspect) ----
 let needClamp = false, clampN = 0;
 function fitStage() { const h = FH(), pv = $('tplPreview'), o = $('ovl'); if (pv.height !== h) { pv.height = h; o.height = h; } $('stage').style.setProperty('--ar', `1080/${h}`); $('stage').style.setProperty('--arn', String(1080 / h));
@@ -739,14 +739,22 @@ async function thumbs() {
   const all = LS('runtier:mytpl') || [];
   for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? relayout(templateDoc(b.dataset.t, state.story), doc.fmt || 'story') : all[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
 }
+const userLayers = d => (d.layers || []).filter(l => l && !l.sid).map(clone);
 $('tplList').addEventListener('click', e => { const del = e.target.closest('[data-mdel]'); if (del) { const m = LS('runtier:mytpl') || []; m.splice(+del.dataset.mdel, 1); LS('runtier:mytpl', m); thumbs(); return; }
-  const b = e.target.closest('.tpl-btn'); if (!b) return; if (doc.log) { pickLogTpl(b); return; } const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null;
-  const f0 = doc.fmt || 'story', keepPid = keepBg ? keepBg.pid : (doc.layers.find(l => l.type === 'photo' && l.pid && photos[l.pid]) || {}).pid; doc = b.dataset.t ? (myPut({ tpl: b.dataset.t }), newDoc(b.dataset.t)) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined }; if (!b.dataset.t) relayout(doc, f0); else if ((doc.fmt || 'story') !== f0) relayout(doc, f0); doc.race = race; placePhoto(keepPid, keepBg); sel = null; mode = null;
+  const b = e.target.closest('.tpl-btn'); if (!b) return; if (doc.log) { pickLogTpl(b); return; }
+  const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null, f0 = doc.fmt || 'story';
+  const kept = b.dataset.t ? userLayers(doc) : [];
+  const slot = doc.layers.find(l => l.sid && l.type === 'photo' && l.pid && photos[l.pid]);
+  const keepPid = keepBg ? keepBg.pid : (slot || {}).pid;
+  doc = b.dataset.t ? (myPut({ tpl: b.dataset.t }), newDoc(b.dataset.t)) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined };
+  if (!b.dataset.t) relayout(doc, f0); else if ((doc.fmt || 'story') !== f0) relayout(doc, f0);
+  if (kept.length) doc.layers.push(...kept);
+  doc.race = race; placePhoto(keepPid, keepBg); sel = null; mode = null;
   for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); });
 $('tplReset').addEventListener('click', () => { if (doc.log) { const pid = doc.bg.type === 'photo' ? doc.bg.pid : null; const f0 = doc.fmt; doc = setLogBg(buildLogDoc(doc.log.tpl, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc: doc.tok.acc }), pid); if (f0 !== 'thumb') relayout(doc, f0 || 'story'); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); return; }
   const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc'), f0); doc.race = race; placePhoto(keepBg && keepBg.pid, keepBg); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
 $('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: doc.log ? doc.tpl : 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
-$('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); myPut({ fmt: f }); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.textContent} 형식으로 바꿨어요`); });
+$('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); myPut({ fmt: f }); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.getAttribute('aria-label') || b.textContent} 형식으로 바꿨어요`); });
 $('safeBtn').addEventListener('click', e => { safeOn = !safeOn; e.currentTarget.setAttribute('aria-pressed', String(safeOn)); paintOvl(); status(safeOn ? '점선 영역은 인스타 스토리 UI에 가려질 수 있어요 (저장 이미지엔 안 나와요)' : '안전영역 가이드를 껐어요', 2600); });
 // ---- overlay: selection, handles, guides, trash (never part of the exported image) ----
 const corners = b => { const c = Math.cos(b.r || 0), s = Math.sin(b.r || 0), hw = b.w * b.s / 2, hh = b.h * b.s / 2; return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(([x, y]) => [b.x + x * c - y * s, b.y + x * s + y * c]); };
@@ -846,7 +854,7 @@ function hideMenu() { $('ctxMenu').hidden = true; }
 tapButtons($('ctxMenu'), '[data-act]', b => { hideMenu(); if (b.dataset.act === 'behind') { const L0 = getL(sel); if (L0) toggleBehind(L0); } else act(b.dataset.act); });
 function photoToBg(L) { if (!L || !L.pid || !photos[L.pid]) return; const old = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null;
   doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none', ...(L.adj ? { adj: clone(L.adj) } : {}), ...(L.crop ? { crop: clone(L.crop) } : {}), ...(L.rot ? { rot: L.rot } : {}), ...(L.flip ? { flip: L.flip } : {}) };
-  doc.layers = doc.layers.filter(l => l !== L); sel = null; multi.clear(); if (old) bgToLayer(old, true); else { changed(true); paintPanel(); } status(old ? '배경과 사진을 맞바꿨어요' : '사진을 배경으로 깔았어요'); }
+  doc.layers = doc.layers.filter(l => l !== L); sel = null; multi.clear(); if (old) bgToLayer(old, true); else { changed(true); paintPanel(); } status(old ? '배경 사진과 맞바꿨어요' : '배경 사진으로 깔았어요'); }
 function bgToLayer(bg = doc.bg, keepBg = false) { if (bg.type !== 'photo' || !photos[bg.pid]) return; if (doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; }
   const L = mk('photo', { pid: bg.pid, mask: 'rect', filter: bg.filter || 'none', x: 540, y: FH() / 2, s: .7, ...(bg.adj ? { adj: clone(bg.adj) } : {}), ...(bg.crop ? { crop: clone(bg.crop) } : {}), ...(bg.rot ? { rot: bg.rot } : {}), ...(bg.flip ? { flip: bg.flip } : {}) });
   if (!keepBg) { doc.bg = { type: 'tier' }; doc.layers.forEach(l => l.behind = false); } doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); if (!keepBg) status('배경 사진을 꺼냈어요 · 끌어서 옮겨 보세요'); }
@@ -862,11 +870,9 @@ function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) 
 // ---- right toolbar ----
 const addLayer = L => { doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); };
 $('tools').addEventListener('click', async e => { const b = e.target.closest('[data-tool]'); if (!b) return; const t = b.dataset.tool; hideMenu();
-  if (t === 'text') { addLayer(mk('text', { t: '텍스트', size: 96, font: null, col: '#ffffff', x: 540, y: 960 })); setTimeout(() => { const ta = $('tText'); if (ta) { ta.focus(); ta.select(); } }, 50); return; }
-  if (t === 'photo') { photoTarget = 'layer'; pickPhoto(); return; }
+  if (t === 'text') { addLayer(mk('text', { t: '텍스트', size: 96, font: null, col: '#ffffff', x: 540, y: 960 })); setTimeout(() => { const ta = $('tText'); if (ta) { ta.focus({ preventScroll: true }); ta.select(); } }, 50); return; }
   sel = null; mode = mode === t ? null : t; paintPanel(); });
 let photoTarget = 'layer';
-$('bgBtn').addEventListener('click', () => { photoTarget = 'bg'; pickPhoto(); });
 const pickPhoto = () => { status('사진은 이 기기 안에서만 쓰여요', 2200); $('photo').click(); };
 $('photo').addEventListener('change', async e => {
   const fs = [...e.target.files]; e.target.value = ''; if (!fs.length) return;
@@ -944,7 +950,7 @@ const colRow = (id, cur, tier = false) => `<div class="olc" id="${id}">${tier ? 
 const fchips = (id, opts, cur) => `<div class="fchips" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
 const ADJ = [['br', '밝기'], ['ct', '대비'], ['sa', '채도'], ['wa', '따뜻함']];
 function photoEdHTML(P) { const a = P.adj || {}, ol = P.ol || {};
-  return `<div class="pe-row"><button type="button" class="chip-btn" id="peCrop" aria-pressed="${!!P.crop}">✂ 자르기</button><button type="button" class="chip-btn" id="peRot" aria-label="90도 회전">↻ 90°</button><button type="button" class="chip-btn" id="peFlip" aria-pressed="${!!P.flip}">⇋ 좌우 반전</button><button type="button" class="chip-btn" id="peCut" aria-pressed="${!!P.cut}">${P.cut ? '↺ 원본 사진' : '✦ 배경 지우기'}</button></div>`
+  return `<div class="pe-row"><button type="button" class="chip-btn" id="peCrop" aria-pressed="${!!P.crop}">✂ 자르기</button><button type="button" class="chip-btn" id="peRot" aria-label="90도 회전">↻ 90°</button><button type="button" class="chip-btn" id="peFlip" aria-pressed="${!!P.flip}">⇋ 좌우 반전</button><button type="button" class="chip-btn" id="peCut" aria-pressed="${!!P.cut}">${P.cut ? '↺ 원본 사진' : '인물만 남기기'}</button></div>`
     + (P.cut ? `<div class="pe-row"><button type="button" class="chip-btn" id="peOl" aria-pressed="${!!ol.on}">누끼 테두리 ${ol.on ? '켜짐' : '꺼짐'}</button></div>` + (ol.on ? `<span class="lbl sm">테두리 색</span>${colRow('olCol', ol.col || '#ffffff')}` + range('olW', '테두리 두께', 2, 40, ol.w || 12, 'px') : '') : '')
     + `<span class="lbl sm">필터</span>${fchips('peFilter', FILTERS, P.filter || 'none')}`
     + `<button type="button" class="acc" id="peMore" aria-expanded="${moreAdj}" aria-controls="peAdj"><span>밝기·대비·채도·따뜻함</span><i aria-hidden="true">${moreAdj ? '▴' : '▾'}</i></button><div id="peAdj" class="acc-body"${moreAdj ? '' : ' hidden'}>${ADJ.map(([k, n]) => range('pa_' + k, n, -100, 100, a[k] || 0)).join('')}<button type="button" class="chip-btn" id="peAdjReset">조정 초기화</button></div>`; }
@@ -972,7 +978,7 @@ function bindPhotoEd(P) { const on = (id, f) => { const e = $(id); if (e) e.addE
   on('peRot', () => { P.rot = ((P.rot || 0) + 1) & 3; delete P.crop; delete P.bw; delete P.bh; changed(true); paintPanel(); });
   on('peFlip', () => { P.flip = !P.flip; if (P.crop) P.crop = { ...P.crop, x: +(1 - P.crop.x - P.crop.w).toFixed(4) }; changed(true); paintPanel(); });
   on('peCut', async e => { if (P.cut) { P.cut = false; changed(true); paintPanel(); status('원본 사진으로 돌렸어요'); return; }
-    const b = e.currentTarget; b.classList.add('loading'); b.disabled = true; b.setAttribute('aria-busy', 'true'); b.textContent = segP ? '인물 찾는 중…' : '인식 모델 준비 중…'; status((segP ? '배경을 지우는 중이에요…' : '인물 인식 모델을 준비하고 있어요 (처음 한 번만)…') + ' 사진은 기기 밖으로 나가지 않아요', 15000);
+    const b = e.currentTarget; b.classList.add('loading'); b.disabled = true; b.setAttribute('aria-busy', 'true'); b.textContent = segP ? '인물 찾는 중…' : '인식 모델 준비 중…'; status((segP ? '인물을 남기는 중이에요…' : '인물 인식 모델을 준비하고 있어요 (처음 한 번만)…') + ' 사진은 기기 밖으로 나가지 않아요', 15000);
     const ok = await ensureMask(P.pid); if (ok) { P.cut = true; if (!P.ol) P.ol = { on: false, col: '#ffffff', w: 12, ...(MY().ol || {}), on: false }; status('인물만 남겼어요 · 원본 사진으로 언제든 돌릴 수 있어요'); } else status(segFailMsg('사진은 그대로 둘게요'), 5000);
     changed(true); paintPanel(); });
   on('peOl', () => { P.ol = { col: '#ffffff', w: 12, ...(P.ol || {}), on: !(P.ol && P.ol.on) }; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(true); paintPanel(); });
@@ -997,6 +1003,10 @@ function bindFx(L) { const on = (id, f) => { const e = $(id); if (e) e.addEventL
 // ---- user-input stickers: plain text layers (editable, styleable like any text) ----
 const WX = ['☀️', '⛅', '☁️', '🌧️', '❄️', '🌬️', '🌙'];
 const INSTK = { weather: ['날씨', { t: '☀️ 18°C', size: 72, font: null, w: 700 }], place: ['코스·장소', { t: '📍 한강 반포', size: 60, font: null, w: 600 }], bib: ['배번', { t: '1234', size: 150, font: 'anton', col: '#111111', box: 'full', bcol: '#ffffff', bo: 1, ls: 4 }], memo: ['메모 (손글씨)', { t: '오늘도 완주!', size: 96, font: 'nanumpen', w: 400 }] };
+let stkCat = 'rec';
+const STK_TABS = [['rec', '기록'], ['mark', '배지'], ['run', '러닝'], ['say', '문구']];
+const STK_CAT = { pb: 'mark', medal: 'mark', stamp: 'mark', bib: 'mark', chip5k: 'mark', chip10k: 'mark', chiphalf: 'mark', marathon: 'mark', splits: 'mark', streak: 'mark', crew: 'mark', wordmark: 'mark', dawnrun: 'run', rainrun: 'run', hangang: 'run', shoe: 'run', fuel: 'run', pacer: 'run', heart: 'run', ohunwan: 'say', runlini: 'say', tiredhappy: 'say', handwritten: 'say', runnershigh: 'say', proud: 'say', together: 'say' };
+const stkBtn = (k, n, kind) => `<button type="button" class="pre stk" data-${kind}="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${esc(n)}</small></button>`;
 function paintPanel() {
   { const L0 = sel && getL(sel), b = L0 && (L0.ax || L0.ay) && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; delete L0.ay; } }
   const P = $('panel'); $('cpick').hidden = true; document.body.appendChild($('cpick')); const L = sel && getL(sel);
@@ -1013,13 +1023,13 @@ function paintPanel() {
     if (L.type === 'card') h += `<span class="lbl sm">디자인</span>${seg('pV', [[0, '카드'], [1, '배지']], L.v || 0)}`;
     if (L.type === 'text' || L.type === 'stat') h += `<span class="lbl sm">글꼴</span>${fontRow(L)}`;
     const tb = L.type === 'text' || L.type === 'stat'; if (!tb) colMode = 'fg';
-    if (L.type !== 'card' && L.type !== 'photo') h += `<span class="lbl sm">색</span>` + (tb ? `<div class="seg n2 ctsw" id="pCT" role="radiogroup" aria-label="색 대상">${[['fg', '글자 색'], ['bg', '배경 색']].map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${colMode === v}">${n}</button>`).join('')}</div>` : '')
-      + (tb && colMode === 'bg' ? (L.v === 2 ? `<div class="ed-btns"><button type="button" class="chip-btn" id="pBgNone" aria-pressed="${!L.bcol}">기본 배지 색</button></div>` : `<span class="lbl sm">배경 박스</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '채움']], L.box || 'none')}`) : '') + chipsHTML()
-      + (tb && colMode === 'bg' && hasBg(L) ? range('pBo', '배경 불투명도', 0, 100, Math.round((L.bo ?? (L.v !== 2 && L.box === 'semi' ? .45 : 1)) * 100), '%') : '');
-    if (!tb && L.type === 'text') h += `<span class="lbl sm">배경 박스</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '채움']], L.box || 'none')}`;
+    if (L.type !== 'card' && L.type !== 'photo') h += `<span class="lbl sm">색</span>` + (tb ? `<div class="seg n2 ctsw" id="pCT" role="radiogroup" aria-label="색 대상">${[['fg', '글자 색'], ['bg', '상자 색']].map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${colMode === v}">${n}</button>`).join('')}</div>` : '')
+      + (tb && colMode === 'bg' ? (L.v === 2 ? `<div class="ed-btns"><button type="button" class="chip-btn" id="pBgNone" aria-pressed="${!L.bcol}">기본 배지 색</button></div>` : `<span class="lbl sm">상자</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '채움']], L.box || 'none')}`) : '') + chipsHTML()
+      + (tb && colMode === 'bg' && hasBg(L) ? range('pBo', '상자 불투명도', 0, 100, Math.round((L.bo ?? (L.v !== 2 && L.box === 'semi' ? .45 : 1)) * 100), '%') : '');
+    if (!tb && L.type === 'text') h += `<span class="lbl sm">상자</span>${seg('pBox', [['none', '없음'], ['semi', '반투명'], ['full', '채움']], L.box || 'none')}`;
     if (L.type === 'text') h += `<span class="lbl sm">정렬</span>${seg('pAl', [['left', '왼쪽'], ['center', '가운데'], ['right', '오른쪽']], L.al || 'center')}`;
     if (L.type === 'text') h += range('pTs', '글자 크기', 20, 300, Math.round(L.size || 96));
-    if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}` + (L.pid && photos[L.pid] ? photoEdHTML(L) : '') + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경으로 쓰기</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
+    if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}` + (L.pid && photos[L.pid] ? photoEdHTML(L) : '') + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경 사진으로</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
     if (L.type === 'sticker' && L.k.startsWith('data_')) { const F = dataFields(L), inp = (k, lab, max, ph = '') => `<label class="lbl sm" for="df_${k}">${lab}</label><input id="df_${k}" data-df="${k}" maxlength="${max}" autocomplete="off" value="${esc(F[k] ?? '')}" placeholder="${esc(ph)}">`;
       h += `<p class="hint">직접 적는 스티커예요 · 값은 자동으로 채워지지 않아요</p>`;
       if (L.k.startsWith('data_weather')) h += `<span class="lbl sm">날씨</span>${fchips('dfIcon', WEATHER, F.icon)}` + inp('temp', '기온', 5, '12°') + inp('label', '한 줄 메모', 16, '맑음 · 바람 약함') + wxHTML();
@@ -1028,19 +1038,26 @@ function paintPanel() {
       if (L.k === 'data_memo') h += inp('text1', '첫 줄', 14) + inp('text2', '둘째 줄', 16) + inp('date', '날짜 (MM.DD)', 5, '10.14'); }
     h += range('pS', '크기', 8, 400, Math.round(((boxes.find(q => q.id === L.id) || {}).s ?? L.s) * 100), '%') + (L.type === 'text' || L.type === 'stat' ? `<button type="button" class="acc" id="pMoreT" aria-expanded="${moreTxt}" aria-controls="pTxtAcc"><span>자간</span><i aria-hidden="true">${moreTxt ? '▴' : '▾'}</i></button><div id="pTxtAcc" class="acc-body"${moreTxt ? '' : ' hidden'}>${range('pLs', '자간', -10, 60, L.ls || 0, 'px')}</div>` + fxHTML(L) : '') + range('pR', '회전', -180, 180, Math.round((L.r || 0) * 180 / Math.PI), '°') + (isTop(L) ? '' : range('pO', '불투명도', 5, 100, Math.round((L.o ?? 1) * 100), '%'));
     // block actions (앞으로/뒤로/인물 뒤로/복제/삭제) live in the on-canvas mini toolbar (#miniBar) for every block type
+  } else if (mode === 'photo') {
+    h += `<div class="sh-head"><h3>사진</h3></div><div class="ed-btns"><button type="button" class="chip-btn primary-chip" id="phAdd">사진 추가</button><button type="button" class="chip-btn" id="phBg">배경 사진</button></div><p class="hint">사진은 이 기기 안에서만 쓰여요. 템플릿의 빈 칸은 그 칸을 고른 뒤 사진 넣기로 채워요.</p>`;
+    if (doc.bg.type === 'photo') h += (photos[doc.bg.pid] ? `<span class="lbl sm">배경 사진</span>` + photoEdHTML(doc.bg) : '') + range('bgZ', '확대', 100, 400, Math.round((doc.bg.pz || 1) * 100), '%') + '<p class="hint">빈 곳을 끌면 배경 사진이 움직여요</p>' + (photos[doc.bg.pid] ? '<div class="ed-btns"><button type="button" class="chip-btn" id="bgOut">꺼내기 · 움직이는 사진으로</button></div>' : '');
   } else if (mode === 'stat') {
     h += `<div class="sh-head"><h3>기록 블록 추가</h3></div><p class="hint lock">🔒 값은 계산 결과 그대로예요</p><div class="grid2">${Object.entries(STATS).filter(([k]) => k !== 'combo').map(([k, [n]]) => `<button type="button" class="pre" data-addstat="${k}"><b>${n}</b><small>${esc(statValue(state.story, doc, k))}</small></button>`).join('')}<button type="button" class="pre" data-addcard="0"><b>티어 카드</b><small>카드</small></button><button type="button" class="pre" data-addcard="1"><b>티어 배지</b><small>${esc(state.story.word)}</small></button></div>`;
   } else if (mode === 'sticker') {
-    h += `<div class="sh-head"><h3>스티커</h3></div><div class="grid3">${Object.entries(STK_NAMES).filter(([k]) => !k.startsWith('data_')).map(([k, n]) => `<button type="button" class="pre stk" data-addstk="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${n}</small></button>`).join('')}</div><span class="lbl sm">직접 입력 스티커 (내용을 직접 적어요)</span><div class="grid3">${Object.keys(DATA_STK).map(k => `<button type="button" class="pre stk" data-addin="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${DATA_STK[k].n}</small></button>`).join('')}</div>`;
+    const tabs = `<div class="fcats" id="stkCats" role="radiogroup" aria-label="스티커 분류">${STK_TABS.map(([k, n]) => `<button type="button" role="radio" data-stkcat="${k}" aria-checked="${stkCat === k}">${n}</button>`).join('')}</div>`;
+    const grid = stkCat === 'rec'
+      ? Object.keys(DATA_STK).map(k => stkBtn(k, DATA_STK[k].n, 'addin')).join('')
+      : Object.entries(STK_NAMES).filter(([k]) => !k.startsWith('data_') && (STK_CAT[k] || 'say') === stkCat).map(([k, n]) => stkBtn(k, n, 'addstk')).join('');
+    h += `<div class="sh-head"><h3>스티커</h3></div>${tabs}<div class="grid3">${grid}</div>` + (stkCat === 'rec' ? '<p class="hint">기록 스티커는 내용을 직접 적어요</p>' : '');
   } else if (mode === 'bg') {
     const GR = [['#0F1620', '#14324a'], ['#3DC8F5', '#9b8cff'], ['#ff8a5b', '#ffd166'], ['#ffd6e8', '#fff4c2'], ['#0b3d2e', '#3fd68a'], ['#1b1f26', '#5a24a8']];
-    h += `<div class="sh-head"><h3>배경</h3></div><div class="ed-btns"><button type="button" class="chip-btn" data-bg="tier" aria-pressed="${doc.bg.type === 'tier'}">티어 색</button><button type="button" class="chip-btn" data-bg="dark" aria-pressed="${doc.bg.type === 'dark'}">다크</button><button type="button" class="chip-btn primary-chip" id="bgPhoto">📷 사진 배경</button></div>
+    h += `<div class="sh-head"><h3>바탕</h3></div><div class="ed-btns"><button type="button" class="chip-btn" data-bg="tier" aria-pressed="${doc.bg.type === 'tier'}">티어 색</button><button type="button" class="chip-btn" data-bg="dark" aria-pressed="${doc.bg.type === 'dark'}">다크</button></div>
       <span class="lbl sm">그라데이션</span><div class="qcs">${GR.map((g, i) => `<button type="button" class="qc grad" data-grad="${i}" aria-label="그라데이션 ${i + 1}" style="background:linear-gradient(135deg,${g[0]},${g[1]})"></button>`).join('')}</div><span class="lbl sm">단색</span>${chipsHTML()}`;
-    if (doc.bg.type === 'photo') h += (photos[doc.bg.pid] ? `<span class="lbl sm">배경 사진</span>` + photoEdHTML(doc.bg) : '') + range('bgZ', '확대', 100, 400, Math.round((doc.bg.pz || 1) * 100), '%') + '<p class="hint">빈 곳을 끌면 배경 사진이 움직여요</p>' + (photos[doc.bg.pid] ? '<div class="ed-btns"><button type="button" class="chip-btn" id="bgOut">꺼내기 · 움직이는 사진으로</button></div>' : '');
+    if (doc.bg.type === 'photo') h += '<p class="hint">지금 배경 사진이 깔려 있어요. 바꾸려면 사진 도구를 써요.</p>';
     P.dataset.grads = JSON.stringify(GR);
   } else if (mode === 'layers') {
     h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
-  } else h += `<p class="hint">오른쪽 도구로 텍스트·사진·스티커·기록 블록·배경을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p><div class="ed-btns"><button type="button" class="chip-btn" id="myOff" aria-pressed="${!MY().off}">내 스타일 기억 ${MY().off ? '꺼짐' : '켜짐'}</button><button type="button" class="chip-btn" id="myReset">내 스타일 초기화</button></div><p class="hint">마지막에 쓴 템플릿·형식·글꼴·색·테두리를 다음 기록에도 자동으로 써요</p>`;
+  } else h += `<p class="hint">아래 도구로 텍스트·사진·스티커·기록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p><div class="ed-btns"><button type="button" class="chip-btn" id="myOff" aria-pressed="${!MY().off}">내 스타일 기억 ${MY().off ? '꺼짐' : '켜짐'}</button><button type="button" class="chip-btn" id="myReset">내 스타일 초기화</button></div><p class="hint">마지막에 쓴 템플릿·형식·글꼴·색·테두리를 다음 기록에도 자동으로 써요</p>`;
   P.innerHTML = h; bindPanel(L);
   for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
   paintSelInfo();
@@ -1080,9 +1097,9 @@ function bindPanel(L) {
     b.replaceWith(inp); inp.focus(); inp.select(); let done = false; const fin = ok => { if (done) return; done = true; inp.replaceWith(b); if (ok && inp.value !== '' && !isNaN(+inp.value)) setR(id, +inp.value); b.querySelector('output').textContent = r.value + b.dataset.u; };
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') fin(true); if (e.key === 'Escape') fin(false); }); inp.addEventListener('blur', () => fin(true)); });
   on('pFill', 'click', () => { photoTarget = 'fill'; pickPhoto(); }); on('pRefill', 'click', () => { photoTarget = 'fill'; pickPhoto(); });
+  on('phAdd', 'click', () => { photoTarget = 'layer'; pickPhoto(); }); on('phBg', 'click', () => { photoTarget = 'bg'; pickPhoto(); });
   on('pAsBg', 'click', () => photoToBg(L)); on('bgOut', 'click', () => bgToLayer());
-  on('bgPhoto', 'click', () => { photoTarget = 'bg'; pickPhoto(); });
-  if (L && L.type === 'photo') bindPhotoEd(L); else if (!L && mode === 'bg' && doc.bg.type === 'photo') bindPhotoEd(doc.bg);
+  if (L && L.type === 'photo') bindPhotoEd(L); else if (!L && mode === 'photo' && doc.bg.type === 'photo') bindPhotoEd(doc.bg);
   if (L && (L.type === 'text' || L.type === 'stat')) bindFx(L);
   if (L && L.type === 'sticker') { for (const e of P.querySelectorAll('[data-df]')) { e.addEventListener('input', () => { L.f = { ...(L.f || {}), [e.dataset.df]: e.value }; changed(); }); e.addEventListener('change', () => commit()); }
     bindWx(L);
@@ -1105,8 +1122,9 @@ function bindPanel(L) {
     if (d.act) act(d.act);
     if (d.addstat) { if (d.addstat === 'top' && doc.layers.some(isTop)) { sel = doc.layers.find(isTop).id; mode = null; paintPanel(); paintOvl(); status('상위 %는 이미 있어요'); return; } addLayer(mk('stat', { stat: d.addstat, v: 0 })); }
     if (d.addcard) addLayer(mk('card', { v: +d.addcard, s: d.addcard === '0' ? .8 : 1 }));
+    if (d.stkcat) { stkCat = d.stkcat; paintPanel(); return; }
     if (d.addstk) addLayer(mk('sticker', { k: d.addstk, col: '#ffffff' }));
-    if (d.addin) { addLayer(mk('sticker', { k: d.addin, s: .6, f: { ...DATA_STK[d.addin].f }, x: 540, y: FH() * ({ data_weather: .3, data_course: .5, data_bib: .45, data_memo: .7 }[d.addin] || .5) })); setTimeout(() => { const ta = document.querySelector('#panel [data-df]'); if (ta) { ta.focus(); ta.select(); } }, 50); }
+    if (d.addin) { addLayer(mk('sticker', { k: d.addin, s: .6, f: { ...DATA_STK[d.addin].f }, x: 540, y: FH() * ({ data_weather: .3, data_course: .5, data_bib: .45, data_memo: .7 }[d.addin] || .5) })); setTimeout(() => { const ta = document.querySelector('#panel [data-df]'); if (ta) { ta.focus({ preventScroll: true }); ta.select(); } }, 50); }
     if (d.bg) { doc.bg = { type: d.bg }; changed(true); paintPanel(); }
     if (d.grad) { const g = JSON.parse(P.dataset.grads)[+d.grad]; doc.bg = { type: 'grad', c1: g[0], c2: g[1] }; changed(true); paintPanel(); }
     if (d.pick) { sel = d.pick; mode = null; paintPanel(); paintOvl(); }
@@ -1119,6 +1137,7 @@ function bindPanel(L) {
 const pxSig = cv => { const t = document.createElement('canvas'); t.width = 54; t.height = Math.round(54 * cv.height / cv.width); const g = t.getContext('2d'); g.drawImage(cv, 0, 0, t.width, t.height); const d = g.getImageData(0, 0, t.width, t.height).data; let a = []; for (let i = 0; i < d.length; i += 4) a.push((d[i] + d[i + 1] + d[i + 2]) / 3 | 0); return { w: cv.width, h: cv.height, a }; };
 window.__exportSig = async () => pxSig(await finalCanvas()); window.__previewSig = () => pxSig($('tplPreview'));
 async function finalCanvas() { commit(); const cv = await renderDoc(state.story, doc, photos); window.__lastStory = cv; return cv; }
+$('toEditor').addEventListener('click', () => { const card = document.querySelector('.card.tpl'); if (card) card.scrollIntoView({ block: 'start' }); });
 $('save').addEventListener('click', async () => {
   const b = $('save'); if (b.disabled || !state.story) return; b.disabled = true; const lbl = b.textContent; b.textContent = '저장 중…';
   try { const cv = await finalCanvas(); const how = await saveStory(cv, doc.log ? `hoohaa-${doc.log.tpl}.png` : `hoohaa-${state.story.key}.png`); b.textContent = how === 'cancelled' ? lbl : '저장했어요'; }
@@ -1253,7 +1272,8 @@ function renderResult(r) {
       const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
   }
   function pickLogTpl(b) { const f0 = doc.fmt || 'story', acc = b.dataset.lt && doc.tok && doc.log.tpl.split('-')[0] === b.dataset.lt.split('-')[0] ? doc.tok.acc : undefined;
-    if (b.dataset.lt) { doc = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc }); if (f0 !== 'thumb') relayout(doc, f0); }
+    const kept = b.dataset.lt ? userLayers(doc) : [];
+    if (b.dataset.lt) { doc = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc }); if (f0 !== 'thumb') relayout(doc, f0); if (kept.length) doc.layers.push(...kept); }
     else { const m = clone((LS('runtier:mytpl') || [])[+b.dataset.m]); delete m.n; doc = fillBindings(m, logCtx.vals); doc.log = { ...doc.log, id: logCtx.log && logCtx.log.id }; }
     const bgSeg = document.getElementById('lbBg'); if (bgSeg) for (const x of bgSeg.querySelectorAll('[data-v]')) x.setAttribute('aria-checked', String((x.dataset.v === 'photo') === (doc.bg.type === 'photo')));
     sel = null; mode = null; for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); }

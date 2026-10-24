@@ -70,31 +70,38 @@
 
 <!-- RESULT -->
 <section id="scrResult" class="screen" hidden aria-label="결과">
+  <div class="actions to-ed"><button type="button" id="toEditor" class="btn primary">이미지 만들기</button></div>
   <div id="resBody"></div>
-  <section class="card tpl" aria-labelledby="hTpl">
-    <h2 id="hTpl">공유 이미지</h2>
-    <div class="st-top"><button type="button" class="chip-btn" id="tplReset">템플릿으로 되돌리기</button><span class="sp"></span><button type="button" class="stp" id="undo" aria-label="실행취소">↶</button><button type="button" class="stp" id="redo" aria-label="다시실행">↷</button></div>
-    <div class="st-fmt"><div class="seg n4" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true">스토리 9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false">피드 4:5</button><button type="button" role="radio" data-v="square" aria-checked="false">1:1</button><button type="button" role="radio" data-v="thumb" aria-checked="false">3:4</button></div><button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">인스타 안전영역</button></div>
-    <div class="st-row" id="tplEd">
-      <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas><button type="button" class="bg-btn" id="bgBtn">📷 배경 사진</button>
-        <div class="mini" id="miniBar" hidden role="toolbar" aria-label="선택한 요소"><button type="button" data-mb="up" aria-label="앞으로" title="앞으로">↑<small>앞으로</small></button><button type="button" data-mb="down" aria-label="뒤로" title="뒤로">↓<small>뒤로</small></button><button type="button" data-mb="behind" aria-label="인물 뒤로" aria-pressed="false" hidden>👤<small>인물 뒤로</small></button><button type="button" data-mb="asbg" aria-label="배경으로" title="배경으로" hidden>🖼<small>배경으로</small></button><button type="button" data-mb="dup" aria-label="복제" title="복제">⧉<small>복제</small></button><button type="button" data-mb="del" aria-label="삭제" title="삭제">🗑<small>삭제</small></button></div><div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="behind" id="ctxBehind" role="menuitem" hidden>인물 뒤로</button><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
-      <div class="st-tools" id="tools" role="toolbar" aria-label="추가 도구" aria-orientation="vertical">
-        <button type="button" data-tool="text" aria-label="텍스트 추가"><b>Aa</b><small>텍스트</small></button>
-        <button type="button" data-tool="photo" aria-label="사진 추가"><b>📷</b><small>사진</small></button>
-        <button type="button" data-tool="sticker" aria-label="스티커" aria-pressed="false"><b>★</b><small>스티커</small></button>
-        <button type="button" data-tool="stat" aria-label="기록 블록" aria-pressed="false"><b>⏱</b><small>기록</small></button>
-        <button type="button" data-tool="bg" aria-label="배경" aria-pressed="false"><b>◐</b><small>배경</small></button>
-        <button type="button" data-tool="layers" aria-label="레이어" aria-pressed="false"><b>☰</b><small>레이어</small></button>
-      </div>
+  <section class="card tpl" id="tplCard" aria-labelledby="hTpl">
+    <h2 id="hTpl" class="sr">공유 이미지</h2>
+    <div class="st-chrome" id="stChrome">
+      <div class="tpl-list" id="tplList" role="radiogroup" aria-label="템플릿"></div>
+      <div class="seg n4" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true" aria-label="스토리 9:16">9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false" aria-label="피드 4:5">4:5</button><button type="button" role="radio" data-v="square" aria-checked="false" aria-label="정사각 1:1">1:1</button><button type="button" role="radio" data-v="thumb" aria-checked="false" aria-label="3:4">3:4</button></div>
+      <button type="button" class="stp" id="undo" aria-label="실행취소">↶</button>
+      <button type="button" class="stp" id="redo" aria-label="다시실행">↷</button>
+      <button id="save" class="btn primary st-act">저장</button>
+      <button id="share" class="btn secondary st-act">공유</button>
+      <button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">안전영역</button>
+      <button type="button" class="chip-btn" id="tplReset" aria-label="템플릿으로 되돌리기">되돌리기</button>
+      <button type="button" class="chip-btn" id="saveMyTpl" aria-label="내 템플릿 저장">내 템플릿</button>
+      <div id="barResult" class="actions" hidden><button id="again" class="btn ghost-btn">다른 기록 넣기</button></div>
     </div>
-    <input id="photo" type="file" accept="image/*" class="vh" tabindex="-1" aria-hidden="true">
+    <div class="st-fit" id="tplEd">
+      <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas>
+        <div class="mini" id="miniBar" hidden role="toolbar" aria-label="선택한 요소"><button type="button" data-mb="up" aria-label="앞으로" title="앞으로">↑<small>앞으로</small></button><button type="button" data-mb="down" aria-label="뒤로" title="뒤로">↓<small>뒤로</small></button><button type="button" data-mb="behind" aria-label="인물 뒤로" aria-pressed="false" hidden>👤<small>인물 뒤로</small></button><button type="button" data-mb="asbg" aria-label="배경 사진" title="배경 사진" hidden>🖼<small>배경 사진</small></button><button type="button" data-mb="dup" aria-label="복제" title="복제">⧉<small>복제</small></button><button type="button" data-mb="del" aria-label="삭제" title="삭제">🗑<small>삭제</small></button></div><div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="behind" id="ctxBehind" role="menuitem" hidden>인물 뒤로</button><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
+    </div>
     <p class="pv-hint" id="pvHint" role="status" aria-live="polite"></p>
+    <div class="st-tools" id="tools" role="toolbar" aria-label="편집 도구" aria-orientation="horizontal">
+      <button type="button" data-tool="text" aria-label="텍스트 추가"><b>Aa</b><small>텍스트</small></button>
+      <button type="button" data-tool="photo" aria-label="사진 추가"><b>📷</b><small>사진</small></button>
+      <button type="button" data-tool="sticker" aria-label="스티커" aria-pressed="false"><b>★</b><small>스티커</small></button>
+      <button type="button" data-tool="stat" aria-label="기록 블록" aria-pressed="false"><b>⏱</b><small>기록</small></button>
+      <button type="button" data-tool="bg" aria-label="바탕" aria-pressed="false"><b>◐</b><small>바탕</small></button>
+      <button type="button" data-tool="layers" aria-label="레이어" aria-pressed="false"><b>☰</b><small>레이어</small></button>
+    </div>
     <div class="panel" id="panel"></div>
     <div id="logBar" class="log-bar" hidden></div>
-    <span class="lbl sm tl">템플릿</span>
-    <div class="tpl-list" id="tplList" role="radiogroup" aria-label="템플릿"></div>
-    <div class="ed-btns"><button type="button" class="chip-btn" id="saveMyTpl">＋ 내 템플릿 저장</button></div>
-    <div id="barResult" class="actions" hidden><button id="save" class="btn primary">저장</button><button id="share" class="btn secondary">공유</button><button id="again" class="btn ghost-btn">다른 기록 넣기</button></div>
+    <input id="photo" type="file" accept="image/*" class="vh" tabindex="-1" aria-hidden="true">
   </section>
   <div class="cpick" id="cpick" role="group" aria-label="색 선택" hidden>
     <div class="cp-top"><span class="cp-chip" id="cpChip" aria-hidden="true"></span><input id="cpHex" class="cp-hex" maxlength="7" autocomplete="off" spellcheck="false" aria-label="HEX 색상 코드" value="#FFFFFF"></div>
