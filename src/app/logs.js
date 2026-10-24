@@ -20,24 +20,25 @@ export function mountLogs(env) {
   async function reload() { try { const a = await db.loadAll(); S = { profile: a.profile, logs: (a.logs || []).filter(SHOWN), races: a.races || [] }; } catch (e) { console.error(e); say('이 브라우저에서는 기기 저장소(IndexedDB)를 쓸 수 없어요'); } }
 
   const field = (id, label, input, hint = '') => `<div class="field"><label class="lbl sm" for="${id}">${label}</label>${input}${hint ? `<p class="hint">${hint}</p>` : ''}</div>`;
-  const photoField = () => field('lgPhoto', '사진', '<input id="lgPhoto" type="file" accept="image/*">', '사진은 이 기기에만 저장되고 서버로 보내지 않아요');
+  const photoField = () => field('lgPhoto', '사진 (선택)', '<input id="lgPhoto" type="file" accept="image/*">', '사진은 이 기기에만 저장되고 서버로 보내지 않아요');
+  const durInput = (id, ph) => `<input id="${id}" inputmode="numeric" autocomplete="off" placeholder="${ph}">`;
   function formHTML() {
     const today = isoToday(), dateF = field('lgDate', '날짜', `<input id="lgDate" type="date" value="${today}">`);
     if (type === 'run') {
-      return dateF + `<div class="lg-row">${field('lgDist', '거리', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="5.20"><span>km</span></div>')}${field('lgTime', '시간', '<input id="lgTime" inputmode="numeric" autocomplete="off" placeholder="29:38">')}</div>`
+      return dateF + `<div class="lg-row">${field('lgDist', '거리', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="5.20"><span>km</span></div>')}${field('lgTime', '시간', durInput('lgTime', '23:00'), '숫자만 입력하면 2300이 23:00이 돼요')}</div>`
         + `<p class="hint lg-pace">페이스 <b id="lgPace">–</b> <span>(거리와 시간으로 자동 계산)</span></p>`
         + field('lgWx', '날씨', '<div class="wxrow"><input id="lgWx" autocomplete="off" placeholder="예: 12°C 맑음"><button type="button" class="chip-btn" id="lgWxGo">📍 불러오기</button></div>', '위치는 날씨 조회에 한 번만 쓰이고 저장되지 않아요 (Open-Meteo)')
-        + field('lgNote', '메모', '<input id="lgNote" autocomplete="off" maxlength="40">') + photoField();
+        + field('lgNote', '메모 (선택)', '<input id="lgNote" autocomplete="off" maxlength="40">') + photoField();
     }
     if (type === 'race') return dateF + field('lgName', '대회명', '<input id="lgName" autocomplete="off" placeholder="○○ 마라톤 10K">')
       + `<div class="lg-row">${field('lgRDate', '대회 날짜', `<input id="lgRDate" type="date" value="${today}">`)}${field('lgDist', '거리', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="10"><span>km</span></div>')}</div>`
-      + `<div class="lg-row">${field('lgGoal', '목표 기록', '<input id="lgGoal" inputmode="numeric" autocomplete="off" placeholder="50:00">')}${field('lgRes', '결과 기록', '<input id="lgRes" inputmode="numeric" autocomplete="off" placeholder="대회 후 입력">')}</div>`
+      + `<div class="lg-row">${field('lgGoal', '목표 기록', durInput('lgGoal', '50:00'), '숫자만 입력하면 5000이 50:00이 돼요')}${field('lgRes', '결과 기록 (선택)', durInput('lgRes', '대회 후 입력'))}</div>`
       + '<p class="hint">결과 기록을 비우면 D-day 카드, 넣으면 결과 카드가 만들어져요</p>' + photoField();
     const now = new Date(), hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     return dateF + field('lgMeal', '식사', `<input id="lgMeal" list="lgMeals" autocomplete="off" placeholder="러닝 전"><datalist id="lgMeals">${MEALS.map(m => `<option value="${m}">`).join('')}</datalist>`)
       + field('lgMenu', '메뉴 메모', '<input id="lgMenu" autocomplete="off" maxlength="30" placeholder="오트밀과 커피">')
       + `<div class="lg-row">${field('lgClock', '시간', `<input id="lgClock" type="time" value="${hm}">`)}${field('lgDist', '이후 러닝', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="같은 날 러닝"><span>km</span></div>')}</div>`
-      + field('lgNote', '메모', '<input id="lgNote" autocomplete="off" maxlength="20" placeholder="가볍게">') + photoField();
+      + field('lgNote', '메모 (선택)', '<input id="lgNote" autocomplete="off" maxlength="20" placeholder="가볍게">') + photoField();
   }
   function summary(l) {
     const v = bindValues(l, ctx());
@@ -70,11 +71,14 @@ export function mountLogs(env) {
   }
   const val = id => { const e = $(id); return e ? e.value.trim() : ''; };
   function livePace() { const o = $('lgPace'); if (!o) return; const p = fmtPace(paceSec(num(val('lgDist')), parseDur(val('lgTime')))); o.textContent = p ? p + '/km' : '–'; }
+  // same digit entry as the home record field: 2300 → 23:00, 10203 → 1:02:03
+  function digitsToDisplay(d) { d = d.replace(/^0+(?=\d)/, ''); if (d.length <= 2) return d; if (d.length <= 4) return `${d.slice(0, -2)}:${d.slice(-2)}`; return `${d.slice(0, -4)}:${d.slice(-4, -2)}:${d.slice(-2)}`; }
+  function bindDur(id) { const el = $(id); if (!el) return; el.addEventListener('input', e => { let d = e.target.value.replace(/\D/g, ''); const prev = e.target.dataset.digits || ''; if (e.inputType === 'deleteContentBackward' && d === prev) d = d.slice(0, -1); d = d.slice(0, 6); e.target.dataset.digits = d; e.target.value = digitsToDisplay(d); if (id === 'lgTime') livePace(); }); }
   function bind() {
     const on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
     on('lgBack', 'click', () => navBack());
     on('lgType', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; type = b.dataset.v; msg = ''; paint(); });
-    on('lgDist', 'input', livePace); on('lgTime', 'input', livePace);
+    on('lgDist', 'input', livePace); bindDur('lgTime'); bindDur('lgGoal'); bindDur('lgRes');
     on('lgWxGo', 'click', async () => {
       say('날씨를 불러오는 중…');
       try { const { wxHere, fetchWeather } = await import('../net/weather.js'); const p = await wxHere(); const r = await fetchWeather(p.lat, p.lon, val('lgDate') || isoToday(), new Date().getHours()); $('lgWx').value = `${r.temp} ${r.label}`; say(''); }
