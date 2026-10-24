@@ -103,23 +103,36 @@ function restore() {
 }
 
 // ---------- screens ----------
-function show(name) {
+// Home stays the base history entry. The log form pushes one entry, and the card editor
+// opened from that form pushes another, so Safari back returns to the form. Other moves
+// replace the current entry. ?log=1 keeps a refresh on the log form.
+function applyScreen(name) {
   for (const [scr, bar] of [['scrInput', 'barInput'], ['scrResult', 'barResult'], ['scrLog', null]]) { if ($(scr)) $(scr).hidden = scr !== name; if (bar && $(bar)) $(bar).hidden = scr !== name; }
-  // history: one extra entry for any sub-screen; moves between sub-screens replace it (URL never changes)
-  try {
-    const url = location.pathname + location.search;
-    if (name !== 'scrInput') {
-      if (history.state && history.state.scr) history.replaceState({ scr: name }, '', url);
-      else history.pushState({ scr: name }, '', url);
-    }
-  } catch (e) {}
+  if (name === 'scrInput') document.body.classList.remove('log-mode');
   window.scrollTo(0, 0);
 }
+function screenUrl(name) {
+  const u = new URL(location.href);
+  const onLog = name === 'scrLog' || (name === 'scrResult' && document.body.classList.contains('log-mode'));
+  if (onLog) u.searchParams.set('log', '1'); else u.searchParams.delete('log');
+  return u.pathname + u.search;
+}
+function show(name) {
+  applyScreen(name);
+  const url = screenUrl(name);
+  try {
+    const cur = history.state && history.state.scr;
+    if (name === 'scrInput') { if (cur || location.pathname + location.search !== url) history.replaceState(null, '', url); }
+    else if (cur === 'scrLog' && name === 'scrResult') history.pushState({ scr: name }, '', url);
+    else if (cur) history.replaceState({ scr: name }, '', url);
+    else history.pushState({ scr: name }, '', url);
+  } catch (e) {}
+}
 // home: input screen at the top; saved inputs (localStorage) stay filled in. No focus (avoids opening the phone keyboard).
-function goHome() { show('scrInput'); window.scrollTo(0, 0); }
+function goHome() { show('scrInput'); }
 // in-app back (다시하기, ←) behaves like hardware/browser back
 function navBack() { if (history.state && history.state.scr) history.back(); else goHome(); }
-window.addEventListener('popstate', (e) => { if (!(e.state && e.state.scr)) goHome(); });
+window.addEventListener('popstate', (e) => { const scr = e.state && e.state.scr; applyScreen(scr === 'scrLog' || scr === 'scrResult' ? scr : 'scrInput'); });
 const MSG = { birthdate: '출생연도를 4자리로 입력해 주세요.', age_range: '10~100세까지 계산할 수 있어요. 출생연도를 확인해 주세요.', sex: '성별을 선택해 주세요.',
   distance_nonpositive: '거리(km)를 입력해 주세요.', distance_range: '거리는 1.5~100km 사이로 입력해 주세요.', time_nonpositive: '기록을 입력해 주세요.',
   faster_than_wr: '세계기록보다 빠른 기록이에요. 기록과 종목을 확인해 주세요.' };
@@ -156,16 +169,17 @@ $('go').addEventListener('click', async () => {
     else validate();
   }
 });
-$('again').addEventListener('click', () => { if (document.body.classList.contains('log-mode')) { openLogs(); return; } navBack(); });
+$('again').addEventListener('click', () => { if (document.body.classList.contains('log-mode') && history.state && history.state.scr === 'scrResult') { history.back(); return; } if (document.body.classList.contains('log-mode')) { openLogs(); return; } navBack(); });
 
 // ---------- 오늘 기록 남기기 (second entry path into the same editor: log data instead of tier data) ----------
 let logsP = null;
 const logs = () => logsP ||= import('./logs.js').then(m => m.mountLogs({ $, esc, show, navBack, openEditor: async () => { await Promise.all([enableCardCss(), ensureEditor()]); return ensureEditor(); } }));
 async function openLogs() { try { (await logs()).open(); } catch (e) { console.error(e); $('err').textContent = '기록 화면을 열지 못했어요. 다시 시도해 주세요.'; } }
 if ($('logGo')) $('logGo').addEventListener('click', openLogs);
-if (new URLSearchParams(location.search).has('log')) openLogs();
-// stale history entry after reload / deep link: state.last is gone, so stay home
-if (history.state && history.state.scr && !state.last) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+const wantLog = new URLSearchParams(location.search).has('log');
+// stale history entry after reload / deep link: state.last is gone, so stay home. ?log reopens the form.
+if (history.state && history.state.scr && !state.last && !wantLog) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+if (wantLog) openLogs();
 restore();
 // landing-page deep link: ?ev=5k|10k|half|full preselects the event
 { const q = { '5k': '5K', '10k': '10K', half: 'half', full: 'full' }[(new URLSearchParams(location.search).get('ev') || '').toLowerCase()]; if (q) { state.ev = q; applyEv(); validate(); } }

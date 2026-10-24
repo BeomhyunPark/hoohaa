@@ -273,15 +273,24 @@ function adjust(c, a) { if (!a || !(a.br || a.ct || a.sa || a.wa)) return c; con
   for (let i = 0; i < p.length; i += 4) { let r = p[i] + br, gg = p[i + 1] + br, b = p[i + 2] + br; r = (r - 128) * ct + 128; gg = (gg - 128) * ct + 128; b = (b - 128) * ct + 128;
     const l = .299 * r + .587 * gg + .114 * b; r = l + (r - l) * sa + wa; gg = l + (gg - l) * sa + wa * .25; b = l + (b - l) * sa - wa; p[i] = r; p[i + 1] = gg; p[i + 2] = b; }
   g.putImageData(id, 0, 0); return c; }
+// The silhouette stroke used to be clipped where the person meets the bitmap edge. Pad by the stroke width so it can extend outside, and stroke the photo rectangle in the same colour.
+function applyOutline(c, P) {
+  const w = Math.max(1, (P.ol.w || 12) * Math.max(c.width, c.height) / 1080), pad = Math.ceil(w);
+  const o = document.createElement('canvas'); o.width = c.width + pad * 2; o.height = c.height + pad * 2; const og = o.getContext('2d');
+  for (let i = 0; i < 32; i++) { const a = i / 32 * Math.PI * 2; og.drawImage(c, pad + Math.cos(a) * w, pad + Math.sin(a) * w); }
+  og.globalCompositeOperation = 'source-in'; og.fillStyle = P.ol.col || '#ffffff'; og.fillRect(0, 0, o.width, o.height);
+  og.globalCompositeOperation = 'source-over'; og.drawImage(c, pad, pad);
+  og.strokeStyle = P.ol.col || '#ffffff'; og.lineWidth = w * 2; og.lineJoin = 'round'; og.strokeRect(pad, pad, c.width, c.height);
+  o._olPad = pad; return o;
+}
 function photoSrc(photos, pid, P) { const im = photos[pid]; if (!im) return null; if (!hasPE(P)) return im;
   const mask = P.cut ? photos['mask:' + pid] : null, k = pid + peKey(P) + (mask ? 'm' : ''); if (pcache.has(k)) return pcache.get(k);
   let c = orient(im, P); c = adjust(filtered(c, P.filter, null), P.adj); if (c === im) { const t = document.createElement('canvas'); t.width = c.width; t.height = c.height; t.getContext('2d').drawImage(c, 0, 0); c = t; }
   if (mask) { const ms = document.createElement('canvas'); ms.width = im.width; ms.height = im.height; ms.getContext('2d').drawImage(mask, 0, 0, im.width, im.height);
     const mo = orient(ms, P), g = c.getContext('2d'); g.globalCompositeOperation = 'destination-in'; g.drawImage(mo, 0, 0); g.globalCompositeOperation = 'source-over';
-    if (P.ol && P.ol.on) { const w = Math.max(1, (P.ol.w || 12) * Math.max(c.width, c.height) / 1080), o = document.createElement('canvas'); o.width = c.width; o.height = c.height; const og = o.getContext('2d');
-      for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; og.drawImage(c, Math.cos(a) * w, Math.sin(a) * w); }
-      og.globalCompositeOperation = 'source-in'; og.fillStyle = P.ol.col || '#ffffff'; og.fillRect(0, 0, o.width, o.height); og.globalCompositeOperation = 'source-over'; og.drawImage(c, 0, 0); c = o; } }
+    if (P.ol && P.ol.on) c = applyOutline(c, P); }
   if (pcache.size > 16) pcache.clear(); pcache.set(k, c); return c; }
+window.__photoSrc = (pid, P) => photoSrc(photos, pid, P);
 const famOf = (k, ko) => k && FONTS[k] ? FONTS[k].fam : ko ? PRE_ : ARC_;
 const wOf = (k, w) => { if (!k || !FONTS[k]) return w; const ws = FONTS[k].ws; return ws.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a, ws[0]); };
 const HAN = /[\uac00-\ud7a3]/;
@@ -379,7 +388,7 @@ function layerGeom(c, L, d, doc, photos) {
     const w = 900, h = Math.round(900 / 1.586); return { w, h, draw: () => drawCard(c, { ...d, who: '' }, -w / 2, -h / 2, w, h) };
   }
   if (L.type === 'photo') {
-    const im = photoSrc(photos, L.pid, L); const ar = im ? im.width / im.height : 1, bw = L.bw || (ar >= 1 ? 640 : 640 * ar), bh = L.bh || (ar >= 1 ? 640 / ar : 640);
+    const im = photoSrc(photos, L.pid, L); const box = imContent(im), ar = im ? box.w / box.h : 1, bw = L.bw || (ar >= 1 ? 640 : 640 * ar), bh = L.bh || (ar >= 1 ? 640 / ar : 640);
     const pol = L.mask === 'polaroid', w = pol ? bw + 48 : bw, h = pol ? bh + 150 : bh;
     return { w, h, draw: () => {
       if (pol) { c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 30; c.shadowOffsetY = 12; c.fillStyle = '#fbfaf6'; c.fillRect(-w / 2, -h / 2, w, h); c.restore(); }
@@ -388,7 +397,7 @@ function layerGeom(c, L, d, doc, photos) {
       if (L.psh && !L.cut) { c.save(); c.shadowOffsetX = L.psh[0]; c.shadowOffsetY = L.psh[1]; c.shadowBlur = L.psh[2]; c.shadowColor = L.psh[3]; shp(); c.fillStyle = '#000'; c.fill(); c.restore(); }
       c.save(); c.beginPath(); if (L.cut) c.rect(ox - bw, oy - bh, bw * 3, bh * 3); else if (L.mask === 'circle') c.ellipse(0, oy + bh / 2, bw / 2, bh / 2, 0, 0, 7); else c.roundRect(ox, oy, bw, bh, L.mask === 'round' ? 48 : 0); c.clip();
       if (im) { const src = im, cz = Math.max(1, L.cz || 1), sc = Math.max(bw / im.width, bh / im.height) * cz, iw = im.width * sc, ih = im.height * sc;
-        const mx = (iw - bw) / 2, my = (ih - bh) / 2; if (L.cut) { const dw = bw * cz, dh = bh * cz; c.drawImage(src, ox + (bw - dw) / 2 + (L.cx || 0) * (dw - bw) / 2, oy + (bh - dh) / 2 + (L.cy || 0) * (dh - bh) / 2, dw, dh); } else c.drawImage(src, ox - mx + (L.cx || 0) * mx, oy - my + (L.cy || 0) * my, iw, ih); }
+        const mx = (iw - bw) / 2, my = (ih - bh) / 2; if (L.cut) { const pad = src._olPad || 0, cw = Math.max(1, src.width - pad * 2), ch = Math.max(1, src.height - pad * 2), dw = bw * cz * (src.width / cw), dh = bh * cz * (src.height / ch); c.drawImage(src, ox + (bw - dw) / 2 + (L.cx || 0) * (bw * cz - bw) / 2, oy + (bh - dh) / 2 + (L.cy || 0) * (bh * cz - bh) / 2, dw, dh); } else c.drawImage(src, ox - mx + (L.cx || 0) * mx, oy - my + (L.cy || 0) * my, iw, ih); }
       else { const g = c.createLinearGradient(ox, oy, ox + bw * .4, oy + bh); g.addColorStop(0, '#6f7a86'); g.addColorStop(1, '#2a323c'); c.fillStyle = pol ? '#dcd8cf' : g; c.fillRect(ox, oy, bw, bh); c.fillStyle = pol ? '#6b6a66' : 'rgba(255,255,255,.75)'; c.textAlign = 'center'; font(c, Math.max(28, Math.min(44, bw / 14)), 600, PRE_); c.fillText('사진 넣기', 0, oy + bh / 2 + 14); c.textAlign = 'left'; }
       c.restore(); if (L.bd && !L.cut) { c.save(); shp(); c.lineWidth = L.bd[0] * 2; c.strokeStyle = L.bd[1]; c.clip(); c.stroke(); c.restore(); } } };
   }
@@ -443,10 +452,13 @@ function imgOf(svg) { if (!simg.has(svg)) simg.set(svg, new Promise(res => { con
 const imgNow = svg => { const v = simg.get(svg); return v && !(v instanceof Promise) ? v : null; };
 const INK = '#1B1B1F', LIME = '#D7FF3A', ORG = '#FF7A3D', SKY = '#7FC8FF', YEL = '#FFD84A', PINK = '#FF8FB8';
 const SV = b => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">${b}</svg>`;
-const cloud = (cx, cy, sc = 1, fill = '#fff') => `<path transform="translate(${cx} ${cy}) scale(${sc})" d="M-80 40 a42 42 0 0 1 8 -82 a58 58 0 0 1 108 -6 a40 40 0 0 1 44 88z" fill="${fill}" stroke="${INK}" stroke-width="${(10 / sc).toFixed(1)}" stroke-linejoin="round"/>`;
-const sun = (cx, cy, r = 70) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${YEL}" stroke="${INK}" stroke-width="10"/>` + [...Array(8)].map((_, i) => { const a = i * Math.PI / 4; return `<path d="M${(cx + (r + 20) * Math.cos(a)).toFixed(0)} ${(cy + (r + 20) * Math.sin(a)).toFixed(0)} L${(cx + (r + 38) * Math.cos(a)).toFixed(0)} ${(cy + (r + 38) * Math.sin(a)).toFixed(0)}" stroke="${INK}" stroke-width="10" stroke-linecap="round"/>`; }).join('');
-const WICON = { sun: sun(160, 200, 58), cloud: cloud(175, 215, 1, '#EEF2F7'), partly: sun(140, 175, 42) + cloud(185, 240, .85), rain: cloud(175, 190, 1, '#E3EAF3') + [135, 180, 225].map(x => `<path d="M${x} 262 l-12 30" stroke="${SKY}" stroke-width="12" stroke-linecap="round"/>`).join(''), snow: cloud(175, 190, 1, '#fff') + [[135, 275], [180, 292], [225, 275]].map(([x, y]) => `<g transform="translate(${x} ${y})" stroke="${SKY}" stroke-width="7" stroke-linecap="round"><path d="M-12 0h24M-6 -10l12 20M6 -10l-12 20"/></g>`).join(''), night: `<path d="M175 110 a90 90 0 1 0 60 150 a75 75 0 1 1 -60 -150z" fill="${YEL}" stroke="${INK}" stroke-width="10" stroke-linejoin="round"/><path d="M90 130 l6 14 14 6 -14 6 -6 14 -6-14 -14-6 14-6z" fill="#fff" stroke="${INK}" stroke-width="4"/>` };
-const WBG = { sun: '#fff', cloud: '#fff', partly: '#fff', rain: '#F1F6FC', snow: '#F5F8FF', night: '#262B5E' };
+const cloud = (cx, cy, sc = 1, fill = '#fff') => `<path transform="translate(${cx} ${cy}) scale(${sc})" d="M-78 26 a34 34 0 0 1 12-64 a46 46 0 0 1 86-4 a30 30 0 0 1 46 36 a26 26 0 0 1-22 32 h-108 a28 28 0 0 1-14 0z" fill="${fill}" stroke="${INK}" stroke-width="${(8 / sc).toFixed(1)}" stroke-linejoin="round"/>`;
+const sun = (cx, cy, r = 52) => [...Array(8)].map((_, i) => { const a = i * Math.PI / 4, i0 = r + 12, i1 = r + 30; return `<line x1="${(cx + i0 * Math.cos(a)).toFixed(1)}" y1="${(cy + i0 * Math.sin(a)).toFixed(1)}" x2="${(cx + i1 * Math.cos(a)).toFixed(1)}" y2="${(cy + i1 * Math.sin(a)).toFixed(1)}" stroke="${YEL}" stroke-width="10" stroke-linecap="round"/>`; }).join('') + `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${YEL}" stroke="${INK}" stroke-width="8"/><circle cx="${(cx - r * .28).toFixed(1)}" cy="${(cy - r * .3).toFixed(1)}" r="${(r * .2).toFixed(1)}" fill="#fff" opacity=".75"/>`;
+const drop = (x, y) => `<path d="M${x} ${y} c7 12 14 20 14 28 a14 14 0 0 1-28 0 c0-8 7-16 14-28z" fill="${SKY}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>`;
+const flake = (x, y, r = 14) => [...Array(6)].map((_, i) => { const a = i * Math.PI / 3 - Math.PI / 2; return `<line x1="${x}" y1="${y}" x2="${(x + Math.cos(a) * r).toFixed(1)}" y2="${(y + Math.sin(a) * r).toFixed(1)}" stroke="#7EC8FF" stroke-width="5" stroke-linecap="round"/>`; }).join('') + `<circle cx="${x}" cy="${y}" r="3" fill="#fff"/>`;
+const NIGHT = '#1E2458';
+const WICON = { sun: sun(140, 188, 50), cloud: cloud(142, 196, 1.05, '#F7FAFC'), partly: sun(108, 162, 32) + cloud(158, 208, .86, '#F7FAFC'), rain: cloud(140, 162, .92, '#E7EEF6') + drop(104, 214) + drop(146, 228) + drop(186, 214), snow: cloud(140, 160, .92, '#fff') + flake(108, 250, 13) + flake(148, 272, 15) + flake(190, 250, 13), night: `<circle cx="128" cy="188" r="56" fill="#FFE38A" stroke="${INK}" stroke-width="8"/><circle cx="156" cy="164" r="44" fill="${NIGHT}"/><path d="M206 132 l4 10 10 4 -10 4 -4 10 -4-10 -10-4 10-4z" fill="#fff"/><path d="M78 146 l3 7 7 3 -7 3 -3 7 -3-7 -7-3 7-3z" fill="#fff" opacity=".9"/>` };
+const WBG = { sun: '#FFF4CC', cloud: '#EEF3F8', partly: '#FFF6D8', rain: '#E4F0FB', snow: '#F3F7FF', night: NIGHT };
 const WEATHER = [['sun', '맑음'], ['partly', '구름 조금'], ['cloud', '흐림'], ['rain', '비'], ['snow', '눈'], ['night', '밤']];
 const DATA_STK = { data_weather: { n: '날씨', f: { icon: 'sun', temp: '12°', label: '맑음 · 바람 약함' } }, data_course: { n: '코스', f: { dist: '10.0 km', name: '반포 → 잠수교' } }, data_bib: { n: '배번', f: { num: '1031', race: 'SEOUL 10K', color: PINK } }, data_memo: { n: '메모', f: { text1: '오늘은 그냥', text2: '기분 좋게 뛰었다 :)', date: '' } } };
 const COURSE = 'M100 380 C 120 260, 220 300, 230 200 S 360 120, 410 150 S 420 300, 340 330';
@@ -501,7 +513,8 @@ function bgDraw(c, doc, d, photos) {
   if (b.type === 'photo' && photos[b.pid] && b.cut) { const im = photoSrc(photos, b.pid, b); c.drawImage(im, ...bgRect(b, im)); } // 배경 지우기: only the person, over a plain tone
 }
 // bg photo geometry (shared by background + subject cut-out so they line up exactly)
-function bgRect(b, im) { const sc = Math.max(W_ / im.width, H_ / im.height) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (iw - W_) / 2, my = (ih - H_) / 2; return [-mx + Math.max(-1, Math.min(1, b.px || 0)) * mx, -my + Math.max(-1, Math.min(1, b.py || 0)) * my, iw, ih]; }
+function imContent(im) { const pad = im && im._olPad || 0; return { pad, w: Math.max(1, (im ? im.width : 1) - pad * 2), h: Math.max(1, (im ? im.height : 1) - pad * 2) }; }
+function bgRect(b, im) { const { pad, w, h } = imContent(im), sc = Math.max(W_ / w, H_ / h) * (b.pz || 1), iw = im.width * sc, ih = im.height * sc, mx = (w * sc - W_) / 2, my = (h * sc - H_) / 2; return [-mx + Math.max(-1, Math.min(1, b.px || 0)) * mx - pad * sc, -my + Math.max(-1, Math.min(1, b.py || 0)) * my - pad * sc, iw, ih]; }
 function subjectLayer(doc, photos) { const b = doc.bg, im = b.type === 'photo' && photos[b.pid], mk2 = im && photos['mask:' + b.pid]; if (!mk2) return null;
   const cut = photoSrc(photos, b.pid, { ...b, cut: true }); return [cut, bgRect(b, cut)]; }
 const PRE_FONTS = ['400 40px "OV Bebas"', '400 40px "OV Anton"', '800 40px "OV Playfair"', '700 40px "OV Mono"', '400 40px "OV BlackHan"', '800 40px "TC Archivo"', '300 40px "TC Archivo"', '600 40px "TC Archivo"', '700 40px "TC Pretendard"', '500 40px "TC Pretendard"', '600 40px "TC Pretendard"'];
@@ -718,7 +731,7 @@ function clampIn() { let mv = false; const H = FH();
     if (dx || dy) { L.x = b.x; delete L.ax; delete L.ay; L.y = b.y + dy; L.x += dx; mv = true; } }
   if (mv) needClamp = true; return mv; }
 window.__fmt = () => ({ fmt: doc.fmt || 'story', h: FH(), cw: $('tplPreview').width, ch: $('tplPreview').height });
-function placePhoto(pid, keepBg) { if (!pid || !photos[pid]) return; if (doc.bgT) { doc.bg = { type: 'photo', pid, pz: 1, filter: 'none', ...(keepBg && keepBg.pid === pid ? { filter: keepBg.filter, crop: keepBg.crop, rot: keepBg.rot, flip: keepBg.flip } : {}), ...clone(doc.bgT), px: doc.bgT.px || 0, py: doc.bgT.py || 0 }; }
+function placePhoto(pid, keepBg) { if (!pid || !photos[pid]) return; if (doc.bgT) { dropBgKeep(); doc.bg = { type: 'photo', pid, pz: 1, filter: 'none', ...(keepBg && keepBg.pid === pid ? { filter: keepBg.filter, crop: keepBg.crop, rot: keepBg.rot, flip: keepBg.flip } : {}), ...clone(doc.bgT), px: doc.bgT.px || 0, py: doc.bgT.py || 0 }; }
   else { const s0 = doc.layers.find(l => l.type === 'photo' && !l.pid); if (s0) s0.pid = pid; }
   if (doc.layers.some(l => l.behind) && doc.bg.type === 'photo') ensureMask(doc.bg.pid).then(ok => { if (!ok) doc.layers.forEach(l => l.behind = false); changed(true); }); }
 // ---- 내 스타일 기억: last template / format / fonts / colours / outline & text effects, applied to the next record and new sessions ----
@@ -756,6 +769,7 @@ $('tplReset').addEventListener('click', () => { if (doc.log) { const pid = doc.b
 $('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: doc.log ? doc.tpl : 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
 $('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); myPut({ fmt: f }); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.getAttribute('aria-label') || b.textContent} 형식으로 바꿨어요`); });
 $('safeBtn').addEventListener('click', e => { safeOn = !safeOn; e.currentTarget.setAttribute('aria-pressed', String(safeOn)); paintOvl(); status(safeOn ? '점선 영역은 인스타 스토리 UI에 가려질 수 있어요 (저장 이미지엔 안 나와요)' : '안전영역 가이드를 껐어요', 2600); });
+{ const b = $('stMore'); if (b) b.addEventListener('click', () => { const ex = $('stExtra'); if (!ex) return; const open = ex.hidden; ex.hidden = !open; b.setAttribute('aria-expanded', String(open)); }); }
 // ---- overlay: selection, handles, guides, trash (never part of the exported image) ----
 const corners = b => { const c = Math.cos(b.r || 0), s = Math.sin(b.r || 0), hw = b.w * b.s / 2, hh = b.h * b.s / 2; return [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(([x, y]) => [b.x + x * c - y * s, b.y + x * s + y * c]); };
 const HANDLE = 46;
@@ -837,7 +851,7 @@ const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.fin
       L.x = nx; L.y = ny; L.mv = 1; for (const [id, x0, y0] of g0.M || []) { const m = getL(id); if (m) { m.x = x0 + nx - g0.L.x; m.y = y0 + ny - g0.L.y; m.mv = 1; delete m.ax; delete m.ay; } }
       guides = { x: gx, y: gy }; trashHot = !multi.size && Math.hypot(P[0][0] - 540, P[0][1] - (HH - 130)) < 110; }
     else if (!g0.hit && doc.bg.type === 'photo' && photos[doc.bg.pid]) { if (P.length > 1) { const f = Math.hypot(P[0][0] - P[1][0], P[0][1] - P[1][1]) / Math.max(1, Math.hypot(g0.P[0][0] - g0.P[1][0], g0.P[0][1] - g0.P[1][1])); doc.bg.pz = Math.max(1, Math.min(4, (g0.bg.pz || 1) * f)); }
-      const im = bgImg(), HB = FH(), sc = Math.max(1080 / im.width, HB / im.height) * (doc.bg.pz || 1), mx = Math.max(1, (im.width * sc - 1080) / 2), my = Math.max(1, (im.height * sc - HB) / 2);
+      const im = bgImg(), HB = FH(), box = imContent(im), sc = Math.max(1080 / box.w, HB / box.h) * (doc.bg.pz || 1), mx = Math.max(1, (box.w * sc - 1080) / 2), my = Math.max(1, (box.h * sc - HB) / 2);
       doc.bg.moved = 1; doc.bg.px = Math.max(-1, Math.min(1, (g0.bg.px || 0) + dx / mx)); doc.bg.py = Math.max(-1, Math.min(1, (g0.bg.py || 0) + dy / my)); }
     changed();
   });
@@ -852,12 +866,15 @@ const snapR = r => { const t = Math.PI / 2, n = Math.round(r / t); return Math.a
 function showMenu(p) { const bh = $('ctxBehind'), L0 = getL(sel); if (bh) { bh.hidden = !canBehind(L0); bh.textContent = L0 && L0.behind ? '인물 앞으로' : '인물 뒤로'; } const m = $('ctxMenu'), r = $('ovl').getBoundingClientRect(), k = r.width / 1080, ky = r.height / FH(); m.hidden = false; m.style.left = Math.min(r.width - 200, Math.max(0, p[0] * k - 100)) + 'px'; m.style.top = Math.max(0, p[1] * ky - 60) + 'px'; }
 function hideMenu() { $('ctxMenu').hidden = true; }
 tapButtons($('ctxMenu'), '[data-act]', b => { hideMenu(); if (b.dataset.act === 'behind') { const L0 = getL(sel); if (L0) toggleBehind(L0); } else act(b.dataset.act); });
+const BG_PHOTO_KEYS = ['pid', 'filter', 'adj', 'crop', 'cr', 'rot', 'flip', 'pz', 'px', 'py', 'cut', 'ol', 'moved'];
+function parkBgPhoto() { const b = doc && doc.bg; if (!b || b.type !== 'photo' || !b.pid) return; const k = { type: 'photo' }; for (const f of BG_PHOTO_KEYS) if (b[f] !== undefined) k[f] = clone(b[f]); doc.bgKeep = k; }
+function dropBgKeep() { if (doc && doc.bgKeep) delete doc.bgKeep; }
 function photoToBg(L) { if (!L || !L.pid || !photos[L.pid]) return; const old = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null;
-  doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none', ...(L.adj ? { adj: clone(L.adj) } : {}), ...(L.crop ? { crop: clone(L.crop) } : {}), ...(L.rot ? { rot: L.rot } : {}), ...(L.flip ? { flip: L.flip } : {}) };
+  dropBgKeep(); doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none', ...(L.adj ? { adj: clone(L.adj) } : {}), ...(L.crop ? { crop: clone(L.crop) } : {}), ...(L.rot ? { rot: L.rot } : {}), ...(L.flip ? { flip: L.flip } : {}) };
   doc.layers = doc.layers.filter(l => l !== L); sel = null; multi.clear(); if (old) bgToLayer(old, true); else { changed(true); paintPanel(); } status(old ? '배경 사진과 맞바꿨어요' : '배경 사진으로 깔았어요'); }
 function bgToLayer(bg = doc.bg, keepBg = false) { if (bg.type !== 'photo' || !photos[bg.pid]) return; if (doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; }
   const L = mk('photo', { pid: bg.pid, mask: 'rect', filter: bg.filter || 'none', x: 540, y: FH() / 2, s: .7, ...(bg.adj ? { adj: clone(bg.adj) } : {}), ...(bg.crop ? { crop: clone(bg.crop) } : {}), ...(bg.rot ? { rot: bg.rot } : {}), ...(bg.flip ? { flip: bg.flip } : {}) });
-  if (!keepBg) { doc.bg = { type: 'tier' }; doc.layers.forEach(l => l.behind = false); } doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); if (!keepBg) status('배경 사진을 꺼냈어요 · 끌어서 옮겨 보세요'); }
+  if (!keepBg) { dropBgKeep(); doc.bg = { type: 'tier' }; doc.layers.forEach(l => l.behind = false); } doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); if (!keepBg) status('배경 사진을 꺼냈어요 · 끌어서 옮겨 보세요'); }
 window.__photoToBg = () => photoToBg(getL(sel)); window.__bgToLayer = () => bgToLayer();
 function delLayer(id) { const L = getL(id); if (!L) return; if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
 function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) return; const L = doc.layers[i];
@@ -876,7 +893,7 @@ let photoTarget = 'layer';
 const pickPhoto = () => { status('사진은 이 기기 안에서만 쓰여요', 2200); $('photo').click(); };
 $('photo').addEventListener('change', async e => {
   const fs = [...e.target.files]; e.target.value = ''; if (!fs.length) return;
-  if (photoTarget === 'bg') { const pid = await addPhotoFile(fs[0]); doc.bg = { type: 'photo', pid, pz: 1, px: 0, py: 0, filter: 'none', ...clone(doc.bgT || {}) }; if (doc.layers.some(l => l.behind)) { status('인물을 찾는 중이에요…', 8000); if (!(await ensureMask(pid))) { doc.layers.forEach(l => l.behind = false); status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000); } else status(''); } changed(true); paintPanel(); return; }
+  if (photoTarget === 'bg') { const pid = await addPhotoFile(fs[0]); dropBgKeep(); doc.bg = { type: 'photo', pid, pz: 1, px: 0, py: 0, filter: 'none', ...clone(doc.bgT || {}) }; if (doc.layers.some(l => l.behind)) { status('인물을 찾는 중이에요…', 8000); if (!(await ensureMask(pid))) { doc.layers.forEach(l => l.behind = false); status('이 사진에서는 인물을 찾지 못했어요 · 글자는 앞에 그대로 둘게요', 4000); } else status(''); } changed(true); paintPanel(); return; }
   if (photoTarget === 'fill') { const L = getL(sel); if (L) { L.pid = await addPhotoFile(fs[0]); L.cz = 1; L.cx = 0; L.cy = 0; changed(true); paintPanel(); } return; }
   let n = doc.layers.filter(l => l.type === 'photo').length;
   for (const f of fs) { if (n >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); break; } const pid = await addPhotoFile(f); n++; const L = mk('photo', { pid, mask: 'round', filter: 'none', x: 540 + (n % 3 - 1) * 60, y: 900 + (n % 3) * 40, s: .9 }); doc.layers.push(L); sel = L.id; }
@@ -891,7 +908,7 @@ const hsv2hex = ({ h, s, v }) => { const f = k => { const x = (k + h / 60) % 6; 
 let hsv = { h: 0, s: 0, v: 1 }, hsvCol = '';
 const adoptHex = hex => { const n = hex2hsv(hex); if (n.v === 0) n.s = hsv.s; if (n.s === 0 || n.v === 0) n.h = hsv.h; hsv = n; hsvCol = hex.toLowerCase(); };
 const hasBg = L => L.v === 2 || (L.box && L.box !== 'none');
-const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { doc.bg = c === '@tier' ? { type: 'tier' } : { type: 'solid', c1: c }; } } : (colMode === 'bg' && getL(sel) && ['text', 'stat'].includes(getL(sel).type)) ? { get: () => { const L = getL(sel); return L.bcol || (L.box === 'semi' ? '#000000' : L.col || '#ffffff'); }, set: c => { const L = getL(sel); if (!L) return; const first = !L.bcol; L.bcol = c; if (L.v !== 2 && (!L.box || L.box === 'none')) { L.box = 'full'; if (L.col == null) L.col = '#ffffff'; } if (first || !document.querySelector('#pBo')) setTimeout(paintPanel, 0); } }
+const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { parkBgPhoto(); doc.bg = c === '@tier' ? { type: 'tier' } : { type: 'solid', c1: c }; } } : (colMode === 'bg' && getL(sel) && ['text', 'stat'].includes(getL(sel).type)) ? { get: () => { const L = getL(sel); return L.bcol || (L.box === 'semi' ? '#000000' : L.col || '#ffffff'); }, set: c => { const L = getL(sel); if (!L) return; const first = !L.bcol; L.bcol = c; if (L.v !== 2 && (!L.box || L.box === 'none')) { L.box = 'full'; if (L.col == null) L.col = '#ffffff'; } if (first || !document.querySelector('#pBo')) setTimeout(paintPanel, 0); } }
   : { get: () => (getL(sel) || {}).col || '#ffffff', set: c => { const L = getL(sel); if (L) L.col = c; } };
 function setCol(hex, fromHsv) { if (hex === '@tier') { colTarget().set('@tier'); adoptHex(accentOf(state.story).toLowerCase()); paintPicker(); changed(); return; } hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex); { const L = getL(sel); if (L && L.type === 'stat' && L.v !== 4 && colMode !== 'bg' && mode !== 'bg') myPut({ col: hex }); } paintPicker(); changed(); }
 function paintPicker() { if (!$('cpick').isConnected || $('cpick').closest('[hidden]')) return; let c = colTarget().get(); if (c === '@tier') c = accentOf(state.story); if (c.toLowerCase() !== hsvCol) adoptHex(c);
@@ -900,7 +917,7 @@ function paintPicker() { if (!$('cpick').isConnected || $('cpick').closest('[hid
   $('cpHuek').style.left = `${hsv.h / 360 * 100}%`; $('cpHue').setAttribute('aria-valuenow', Math.round(hsv.h)); $('cpSV').setAttribute('aria-valuetext', `채도 ${Math.round(hsv.s * 100)}%, 밝기 ${Math.round(hsv.v * 100)}%`);
   for (const q of document.querySelectorAll('#panel .qc[data-c]')) q.setAttribute('aria-pressed', String(q.dataset.c === c.toLowerCase())); }
 function dragArea(el, fn) { const go = e => { const r = el.getBoundingClientRect(); fn(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))); };
-  el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); go(e); e.preventDefault(); }); el.addEventListener('pointermove', e => { if (el.hasPointerCapture(e.pointerId)) go(e); }); el.addEventListener('pointerup', () => commit()); }
+  el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); go(e); e.preventDefault(); }); el.addEventListener('pointermove', e => { if (el.hasPointerCapture(e.pointerId)) go(e); }); el.addEventListener('pointerup', () => { commit(); if (mode === 'bg' && doc.bgKeep && !$('bgBack')) paintPanel(); }); }
 dragArea($('cpSV'), (x, y) => { hsv = { ...hsv, s: x, v: 1 - y }; setCol(hsv2hex(hsv), true); });
 dragArea($('cpHue'), x => { hsv = { ...hsv, h: x * 360 }; if (hsv.s < .05) hsv.s = 1; if (hsv.v < .05) hsv.v = 1; setCol(hsv2hex(hsv), true); });
 $('cpSV').addEventListener('keydown', e => { const d = { ArrowLeft: [-.05, 0], ArrowRight: [.05, 0], ArrowUp: [0, .05], ArrowDown: [0, -.05] }[e.key]; if (!d) return; e.preventDefault(); hsv = { ...hsv, s: Math.min(1, Math.max(0, hsv.s + d[0])), v: Math.min(1, Math.max(0, hsv.v + d[1])) }; setCol(hsv2hex(hsv), true); });
@@ -947,12 +964,12 @@ let moreCol = false, moreTxt = false, colMode = 'fg';
 // ---- v4 photo tools (shared by photo layers and the background photo) ----
 const OLC = ['#ffffff', '#111111', '#3dc8f5', '#b9ecff', '#ffd166', '#ff8fd8', '#ff5a5f'];
 const colRow = (id, cur, tier = false) => `<div class="olc" id="${id}">${tier ? `<button type="button" class="qc" data-olc="@tier" aria-label="티어 색" aria-pressed="${cur === '@tier'}" style="--c:${accentOf(state.story)}"></button>` : ''}${OLC.map(c => `<button type="button" class="qc" data-olc="${c}" aria-label="${c}" aria-pressed="${(cur || '').toLowerCase() === c}" style="--c:${c}"></button>`).join('')}<input type="color" id="${id}Pick" value="${/^#[0-9a-f]{6}$/i.test(cur || '') ? cur : '#ffffff'}" aria-label="색 직접 고르기"></div>`;
-const fchips = (id, opts, cur) => `<div class="fchips" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
+const fchips = (id, opts, cur, cls = '') => `<div class="fchips${cls ? ' ' + cls : ''}" id="${id}" role="radiogroup">${opts.map(([v, n]) => `<button type="button" role="radio" data-v="${v}" aria-checked="${String(v) === String(cur)}">${n}</button>`).join('')}</div>`;
 const ADJ = [['br', '밝기'], ['ct', '대비'], ['sa', '채도'], ['wa', '따뜻함']];
 function photoEdHTML(P) { const a = P.adj || {}, ol = P.ol || {};
-  return `<div class="pe-row"><button type="button" class="chip-btn" id="peCrop" aria-pressed="${!!P.crop}">✂ 자르기</button><button type="button" class="chip-btn" id="peRot" aria-label="90도 회전">↻ 90°</button><button type="button" class="chip-btn" id="peFlip" aria-pressed="${!!P.flip}">⇋ 좌우 반전</button><button type="button" class="chip-btn" id="peCut" aria-pressed="${!!P.cut}">${P.cut ? '↺ 원본 사진' : '인물만 남기기'}</button></div>`
+  return `<span class="lbl sm">필터</span><p class="hint">필터는 여기서 바꿔요.</p>${fchips('peFilter', FILTERS, P.filter || 'none', 'hbar')}`
+    + `<div class="pe-row"><button type="button" class="chip-btn" id="peCrop" aria-pressed="${!!P.crop}">✂ 자르기</button><button type="button" class="chip-btn" id="peRot" aria-label="90도 회전">↻ 90°</button><button type="button" class="chip-btn" id="peFlip" aria-pressed="${!!P.flip}">⇋ 좌우 반전</button><button type="button" class="chip-btn" id="peCut" aria-pressed="${!!P.cut}">${P.cut ? '↺ 원본 사진' : '인물만 남기기'}</button></div>`
     + (P.cut ? `<div class="pe-row"><button type="button" class="chip-btn" id="peOl" aria-pressed="${!!ol.on}">누끼 테두리 ${ol.on ? '켜짐' : '꺼짐'}</button></div>` + (ol.on ? `<span class="lbl sm">테두리 색</span>${colRow('olCol', ol.col || '#ffffff')}` + range('olW', '테두리 두께', 2, 40, ol.w || 12, 'px') : '') : '')
-    + `<span class="lbl sm">필터</span>${fchips('peFilter', FILTERS, P.filter || 'none')}`
     + `<button type="button" class="acc" id="peMore" aria-expanded="${moreAdj}" aria-controls="peAdj"><span>밝기·대비·채도·따뜻함</span><i aria-hidden="true">${moreAdj ? '▴' : '▾'}</i></button><div id="peAdj" class="acc-body"${moreAdj ? '' : ' hidden'}>${ADJ.map(([k, n]) => range('pa_' + k, n, -100, 100, a[k] || 0)).join('')}<button type="button" class="chip-btn" id="peAdjReset">조정 초기화</button></div>`; }
 const CROPS = [['free', '자유'], ['9:16', '9:16'], ['4:5', '4:5'], ['1:1', '1:1'], ['3:4', '3:4']];
 function cropHTML() { return `<div class="sh-head"><h3>사진 자르기</h3></div>${fchips('crRatio', CROPS, cropSt.r)}<div class="crop"><div class="crop-box" id="crBox"><div class="crop-wrap"><canvas id="crCv"></canvas></div><div class="crop-r" id="crR"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div></div><p class="hint">모서리를 끌어 크기를, 안쪽을 끌어 위치를 바꿔요 · 원본은 그대로 남아 언제든 다시 자를 수 있어요</p><div class="ed-btns"><button type="button" class="chip-btn" id="crReset">전체</button><button type="button" class="chip-btn" id="crCancel">취소</button><button type="button" class="chip-btn primary-chip" id="crApply">적용</button></div>`; }
@@ -1040,7 +1057,7 @@ function paintPanel() {
     // block actions (앞으로/뒤로/인물 뒤로/복제/삭제) live in the on-canvas mini toolbar (#miniBar) for every block type
   } else if (mode === 'photo') {
     h += `<div class="sh-head"><h3>사진</h3></div><div class="ed-btns"><button type="button" class="chip-btn primary-chip" id="phAdd">사진 추가</button><button type="button" class="chip-btn" id="phBg">배경 사진</button></div><p class="hint">사진은 이 기기 안에서만 쓰여요. 템플릿의 빈 칸은 그 칸을 고른 뒤 사진 넣기로 채워요.</p>`;
-    if (doc.bg.type === 'photo') h += (photos[doc.bg.pid] ? `<span class="lbl sm">배경 사진</span>` + photoEdHTML(doc.bg) : '') + range('bgZ', '확대', 100, 400, Math.round((doc.bg.pz || 1) * 100), '%') + '<p class="hint">빈 곳을 끌면 배경 사진이 움직여요</p>' + (photos[doc.bg.pid] ? '<div class="ed-btns"><button type="button" class="chip-btn" id="bgOut">꺼내기 · 움직이는 사진으로</button></div>' : '');
+    if (doc.bg.type === 'photo' && photos[doc.bg.pid]) h += `<div class="bg-now"><span>배경 사진 사용 중</span><button type="button" class="chip-btn" id="bgOut" title="배경에서 빼서 움직이는 사진으로 만들어요">빼기</button></div>` + photoEdHTML(doc.bg) + range('bgZ', '확대', 100, 400, Math.round((doc.bg.pz || 1) * 100), '%') + '<p class="hint">빈 곳을 끌면 배경 사진이 움직여요</p>';
   } else if (mode === 'stat') {
     h += `<div class="sh-head"><h3>기록 블록 추가</h3></div><p class="hint lock">🔒 값은 계산 결과 그대로예요</p><div class="grid2">${Object.entries(STATS).filter(([k]) => k !== 'combo').map(([k, [n]]) => `<button type="button" class="pre" data-addstat="${k}"><b>${n}</b><small>${esc(statValue(state.story, doc, k))}</small></button>`).join('')}<button type="button" class="pre" data-addcard="0"><b>티어 카드</b><small>카드</small></button><button type="button" class="pre" data-addcard="1"><b>티어 배지</b><small>${esc(state.story.word)}</small></button></div>`;
   } else if (mode === 'sticker') {
@@ -1051,9 +1068,13 @@ function paintPanel() {
     h += `<div class="sh-head"><h3>스티커</h3></div>${tabs}<div class="grid3">${grid}</div>` + (stkCat === 'rec' ? '<p class="hint">기록 스티커는 내용을 직접 적어요</p>' : '');
   } else if (mode === 'bg') {
     const GR = [['#0F1620', '#14324a'], ['#3DC8F5', '#9b8cff'], ['#ff8a5b', '#ffd166'], ['#ffd6e8', '#fff4c2'], ['#0b3d2e', '#3fd68a'], ['#1b1f26', '#5a24a8']];
-    h += `<div class="sh-head"><h3>바탕</h3></div><div class="ed-btns"><button type="button" class="chip-btn" data-bg="tier" aria-pressed="${doc.bg.type === 'tier'}">티어 색</button><button type="button" class="chip-btn" data-bg="dark" aria-pressed="${doc.bg.type === 'dark'}">다크</button></div>
+    h += `<div class="sh-head"><h3>바탕</h3></div>`;
+    { const live = doc.bg.type === 'photo' ? doc.bg : null, remembered = !live && doc.bgKeep && doc.bgKeep.type === 'photo' ? doc.bgKeep : null, bgPhoto = live || remembered;
+      if (live) h += `<div class="bg-now"><span>배경 사진 사용 중</span><button type="button" class="chip-btn" id="bgOut" title="배경에서 빼서 움직이는 사진으로 만들어요">빼기</button></div>`;
+      if (remembered) h += `<div class="ed-btns"><button type="button" class="chip-btn primary-chip" id="bgBack">배경 사진으로 되돌리기</button></div>`;
+      if (bgPhoto) h += `<span class="lbl sm">배경 사진 필터</span><p class="hint">필터는 여기서 바꿔요.</p>${fchips('bgFilter', FILTERS, bgPhoto.filter || 'none', 'hbar')}` + (live ? `<div class="ed-btns"><button type="button" class="chip-btn" id="bgReplace">배경 사진 바꾸기</button></div>` : ''); }
+    h += `<div class="ed-btns"><button type="button" class="chip-btn" data-bg="tier" aria-pressed="${doc.bg.type === 'tier'}">티어 색</button><button type="button" class="chip-btn" data-bg="dark" aria-pressed="${doc.bg.type === 'dark'}">다크</button></div>
       <span class="lbl sm">그라데이션</span><div class="qcs">${GR.map((g, i) => `<button type="button" class="qc grad" data-grad="${i}" aria-label="그라데이션 ${i + 1}" style="background:linear-gradient(135deg,${g[0]},${g[1]})"></button>`).join('')}</div><span class="lbl sm">단색</span>${chipsHTML()}`;
-    if (doc.bg.type === 'photo') h += '<p class="hint">지금 배경 사진이 깔려 있어요. 바꾸려면 사진 도구를 써요.</p>';
     P.dataset.grads = JSON.stringify(GR);
   } else if (mode === 'layers') {
     h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
@@ -1084,7 +1105,7 @@ function bindPanel(L) {
   on('tText', 'input', e => { L.t = e.target.value; if (L.bind) delete L.bind; changed(); $('pName').textContent = lname(L); });
   on('raceIn', 'input', e => { doc.race = e.target.value; changed(); });
   const segOn = (id, f) => { const s = $(id); if (s) s.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { f(b.dataset.v); changed(true); paintPanel(); } }); };
-  segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pCT', v => { colMode = v; }); on('pBgNone', 'click', () => { if (L.v === 2) { delete L.bcol; delete L.bo; } else { L.box = 'none'; } changed(true); paintPanel(); }); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => doc.bg.filter = v);
+  segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pCT', v => { colMode = v; }); on('pBgNone', 'click', () => { if (L.v === 2) { delete L.bcol; delete L.bo; } else { L.box = 'none'; } changed(true); paintPanel(); }); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => { const target = doc.bg.type === 'photo' ? doc.bg : doc.bgKeep; if (target && target.type === 'photo') target.filter = v; });
   const rg = (id, f, u = '') => on(id, 'input', e => { f(+e.target.value); $(id + 'V').textContent = e.target.value + u; changed(); });
   rg('pS', v => { pinS(L); L.s = v / 100; }, '%'); rg('pR', v => L.r = v * Math.PI / 180, '°'); rg('pO', v => L.o = v / 100, '%'); rg('pBo', v => L.bo = v / 100, '%'); rg('pTs', v => L.size = v); rg('pLs', v => L.ls = v, 'px');
   rg('pCz', v => L.cz = v / 100, '%'); rg('pCx', v => L.cx = v / 100); rg('pCy', v => L.cy = v / 100); rg('bgZ', v => doc.bg.pz = v / 100, '%');
@@ -1099,6 +1120,8 @@ function bindPanel(L) {
   on('pFill', 'click', () => { photoTarget = 'fill'; pickPhoto(); }); on('pRefill', 'click', () => { photoTarget = 'fill'; pickPhoto(); });
   on('phAdd', 'click', () => { photoTarget = 'layer'; pickPhoto(); }); on('phBg', 'click', () => { photoTarget = 'bg'; pickPhoto(); });
   on('pAsBg', 'click', () => photoToBg(L)); on('bgOut', 'click', () => bgToLayer());
+  on('bgBack', 'click', () => { if (!doc.bgKeep || doc.bgKeep.type !== 'photo') return; doc.bg = clone(doc.bgKeep); dropBgKeep(); changed(true); paintPanel(); status('배경 사진으로 되돌렸어요'); });
+  on('bgReplace', 'click', () => { photoTarget = 'bg'; pickPhoto(); });
   if (L && L.type === 'photo') bindPhotoEd(L); else if (!L && mode === 'photo' && doc.bg.type === 'photo') bindPhotoEd(doc.bg);
   if (L && (L.type === 'text' || L.type === 'stat')) bindFx(L);
   if (L && L.type === 'sticker') { for (const e of P.querySelectorAll('[data-df]')) { e.addEventListener('input', () => { L.f = { ...(L.f || {}), [e.dataset.df]: e.value }; changed(); }); e.addEventListener('change', () => commit()); }
@@ -1113,8 +1136,8 @@ function bindPanel(L) {
   on('fCats', 'click', e => { const b = e.target.closest('[data-c]'); if (!b) return; fontCat = b.dataset.c; for (const x of $('fCats').children) x.setAttribute('aria-checked', String(x === b)); $('fList').innerHTML = libHTML(L); });
   on('eyedrop', 'click', () => { pickMode = true; status('캔버스에서 가져올 색을 탭해 주세요', 4000); });
   P.onclick = e => { const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
-    if (d.c && t.classList.contains('qc')) setCol(d.c);
-    if (d.tierc) setCol('@tier');
+    if (d.c && t.classList.contains('qc')) { setCol(d.c); if (mode === 'bg' && doc.bgKeep) paintPanel(); }
+    if (d.tierc) { setCol('@tier'); if (mode === 'bg' && doc.bgKeep) paintPanel(); }
     if (d.moreCol) { const host = $('cpHost'); host.hidden = !host.hidden; t.setAttribute('aria-expanded', String(!host.hidden)); if (!host.hidden) { host.appendChild($('cpick')); $('cpick').hidden = false; hsvCol = ''; paintPicker(); } }
     if (d.flib) openFontSheet();
     if (d.fk !== undefined && t.closest('#panel')) pickFont(d.fk || null);
@@ -1125,8 +1148,8 @@ function bindPanel(L) {
     if (d.stkcat) { stkCat = d.stkcat; paintPanel(); return; }
     if (d.addstk) addLayer(mk('sticker', { k: d.addstk, col: '#ffffff' }));
     if (d.addin) { addLayer(mk('sticker', { k: d.addin, s: .6, f: { ...DATA_STK[d.addin].f }, x: 540, y: FH() * ({ data_weather: .3, data_course: .5, data_bib: .45, data_memo: .7 }[d.addin] || .5) })); setTimeout(() => { const ta = document.querySelector('#panel [data-df]'); if (ta) { ta.focus({ preventScroll: true }); ta.select(); } }, 50); }
-    if (d.bg) { doc.bg = { type: d.bg }; changed(true); paintPanel(); }
-    if (d.grad) { const g = JSON.parse(P.dataset.grads)[+d.grad]; doc.bg = { type: 'grad', c1: g[0], c2: g[1] }; changed(true); paintPanel(); }
+    if (d.bg) { parkBgPhoto(); doc.bg = { type: d.bg }; changed(true); paintPanel(); }
+    if (d.grad) { parkBgPhoto(); const g = JSON.parse(P.dataset.grads)[+d.grad]; doc.bg = { type: 'grad', c1: g[0], c2: g[1] }; changed(true); paintPanel(); }
     if (d.pick) { sel = d.pick; mode = null; paintPanel(); paintOvl(); }
     if (d.vis) { const l = getL(d.vis); l.hidden = !l.hidden; changed(true); paintPanel(); }
   };

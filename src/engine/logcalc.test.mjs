@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { parseDur, fmtDur, fmtPace, paceSec, dayN, ddayLabel, bindValues, startDateOf, defaultTemplate, sortLogs } from './logcalc.js';
 
-assert.equal(parseDur('29:38'), 1778); assert.equal(parseDur('2938'), 1778); assert.equal(parseDur('1:02:03'), 3723); assert.equal(parseDur('5:70'), null); assert.equal(parseDur(''), null);
+assert.equal(parseDur('29:38'), 1778); assert.equal(parseDur('2938'), 1778); assert.equal(parseDur('2300'), 1380); assert.equal(parseDur('23:00'), 1380); assert.equal(parseDur('1:02:03'), 3723); assert.equal(parseDur('5:70'), null); assert.equal(parseDur(''), null);
 assert.equal(fmtDur(1778), '29:38'); assert.equal(fmtDur(3723), '1:02:03');
 assert.equal(fmtPace(paceSec(5.2, 1778)), '5:42'); assert.equal(fmtPace(359.6), '6:00');
 assert.equal(dayN('2026-09-05', '2026-09-05'), 1); assert.equal(dayN('2026-10-23', '2026-09-05'), 49); assert.equal(dayN('2026-03-30', '2026-03-28'), 3);
