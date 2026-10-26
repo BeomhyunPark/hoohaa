@@ -734,11 +734,9 @@ window.__fmt = () => ({ fmt: doc.fmt || 'story', h: FH(), cw: $('tplPreview').wi
 function placePhoto(pid, keepBg) { if (!pid || !photos[pid]) return; if (doc.bgT) { dropBgKeep(); doc.bg = { type: 'photo', pid, pz: 1, filter: 'none', ...(keepBg && keepBg.pid === pid ? { filter: keepBg.filter, crop: keepBg.crop, rot: keepBg.rot, flip: keepBg.flip } : {}), ...clone(doc.bgT), px: doc.bgT.px || 0, py: doc.bgT.py || 0 }; }
   else { const s0 = doc.layers.find(l => l.type === 'photo' && !l.pid); if (s0) s0.pid = pid; }
   if (doc.layers.some(l => l.behind) && doc.bg.type === 'photo') ensureMask(doc.bg.pid).then(ok => { if (!ok) doc.layers.forEach(l => l.behind = false); changed(true); }); }
-// ---- 내 스타일 기억: last template / format / fonts / colours / outline & text effects, applied to the next record and new sessions ----
-const MY = () => LS('runtier:mystyle') || {}; const myPut = o => { if (MY().off) return; LS('runtier:mystyle', { ...MY(), ...o }); };
-function newDoc(t) { const m = MY(), f = m.off ? 'story' : m.fmt || 'story', d = templateDoc(TEMPLATES.some(x => x[0] === (t || m.tpl)) ? (t || m.tpl) : 'nrc', state.story, f);
-  if (!m.off) for (const L of d.layers) { if (L.type === 'stat' && L.v !== 4) { if (m.font !== undefined) L.font = m.font; if (m.col && (!L.col || /^#fff(fff)?$/i.test(L.col))) L.col = m.col; if (m.fx) Object.assign(L, clone(m.fx)); } }
-  if (!m.off && m.ol) d.olPref = m.ol; needClamp = true; clampN = 0; return d; }
+try { localStorage.removeItem('runtier:mystyle'); } catch { /* old 내 스타일 data: feature removed */ }
+function newDoc(t, f = 'story') { const d = templateDoc(TEMPLATES.some(x => x[0] === t) ? t : 'nrc', state.story, f);
+  needClamp = true; clampN = 0; return d; }
 async function refreshTpl() { // called from renderResult
   if (!state.story) return;
   if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : newDoc(); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
@@ -759,7 +757,7 @@ $('tplList').addEventListener('click', e => { const del = e.target.closest('[dat
   const kept = b.dataset.t ? userLayers(doc) : [];
   const slot = doc.layers.find(l => l.sid && l.type === 'photo' && l.pid && photos[l.pid]);
   const keepPid = keepBg ? keepBg.pid : (slot || {}).pid;
-  doc = b.dataset.t ? (myPut({ tpl: b.dataset.t }), newDoc(b.dataset.t)) : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined };
+  doc = b.dataset.t ? newDoc(b.dataset.t, doc.fmt || 'story') : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined };
   if (!b.dataset.t) relayout(doc, f0); else if ((doc.fmt || 'story') !== f0) relayout(doc, f0);
   if (kept.length) doc.layers.push(...kept);
   doc.race = race; placePhoto(keepPid, keepBg); sel = null; mode = null;
@@ -767,7 +765,7 @@ $('tplList').addEventListener('click', e => { const del = e.target.closest('[dat
 $('tplReset').addEventListener('click', () => { if (doc.log) { const pid = doc.bg.type === 'photo' ? doc.bg.pid : null; const f0 = doc.fmt; doc = setLogBg(buildLogDoc(doc.log.tpl, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc: doc.tok.acc }), pid); if (f0 !== 'thumb') relayout(doc, f0 || 'story'); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); return; }
   const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc'), f0); doc.race = race; placePhoto(keepBg && keepBg.pid, keepBg); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
 $('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: doc.log ? doc.tpl : 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
-$('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); myPut({ fmt: f }); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.getAttribute('aria-label') || b.textContent} 형식으로 바꿨어요`); });
+$('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.getAttribute('aria-label') || b.textContent} 형식으로 바꿨어요`); });
 $('safeBtn').addEventListener('click', e => { safeOn = !safeOn; e.currentTarget.setAttribute('aria-pressed', String(safeOn)); paintOvl(); status(safeOn ? '점선 영역은 인스타 스토리 UI에 가려질 수 있어요 (저장 이미지엔 안 나와요)' : '안전영역 가이드를 껐어요', 2600); });
 { const b = $('stMore'); if (b) b.addEventListener('click', () => { const ex = $('stExtra'); if (!ex) return; const open = ex.hidden; ex.hidden = !open; b.setAttribute('aria-expanded', String(open)); }); }
 // ---- overlay: selection, handles, guides, trash (never part of the exported image) ----
@@ -910,7 +908,7 @@ const adoptHex = hex => { const n = hex2hsv(hex); if (n.v === 0) n.s = hsv.s; if
 const hasBg = L => L.v === 2 || (L.box && L.box !== 'none');
 const colTarget = () => mode === 'bg' ? { get: () => doc.bg.c1 || '#0f1620', set: c => { parkBgPhoto(); doc.bg = c === '@tier' ? { type: 'tier' } : { type: 'solid', c1: c }; } } : (colMode === 'bg' && getL(sel) && ['text', 'stat'].includes(getL(sel).type)) ? { get: () => { const L = getL(sel); return L.bcol || (L.box === 'semi' ? '#000000' : L.col || '#ffffff'); }, set: c => { const L = getL(sel); if (!L) return; const first = !L.bcol; L.bcol = c; if (L.v !== 2 && (!L.box || L.box === 'none')) { L.box = 'full'; if (L.col == null) L.col = '#ffffff'; } if (first || !document.querySelector('#pBo')) setTimeout(paintPanel, 0); } }
   : { get: () => (getL(sel) || {}).col || '#ffffff', set: c => { const L = getL(sel); if (L) L.col = c; } };
-function setCol(hex, fromHsv) { if (hex === '@tier') { colTarget().set('@tier'); adoptHex(accentOf(state.story).toLowerCase()); paintPicker(); changed(); return; } hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex); { const L = getL(sel); if (L && L.type === 'stat' && L.v !== 4 && colMode !== 'bg' && mode !== 'bg') myPut({ col: hex }); } paintPicker(); changed(); }
+function setCol(hex, fromHsv) { if (hex === '@tier') { colTarget().set('@tier'); adoptHex(accentOf(state.story).toLowerCase()); paintPicker(); changed(); return; } hex = hex.toLowerCase(); if (fromHsv) hsvCol = hex; else adoptHex(hex); colTarget().set(hex);  paintPicker(); changed(); }
 function paintPicker() { if (!$('cpick').isConnected || $('cpick').closest('[hidden]')) return; let c = colTarget().get(); if (c === '@tier') c = accentOf(state.story); if (c.toLowerCase() !== hsvCol) adoptHex(c);
   $('cpChip').style.background = c; if (document.activeElement !== $('cpHex')) $('cpHex').value = c.toUpperCase();
   $('cpSV').style.setProperty('--hue', `hsl(${hsv.h} 100% 50%)`); $('cpSVk').style.left = `${hsv.s * 100}%`; $('cpSVk').style.top = `${(1 - hsv.v) * 100}%`; $('cpSVk').style.background = c;
@@ -938,7 +936,7 @@ function libHTML(L) { const q = ($('fSearch') || {}).value || '', fv = favs(), r
   return ks.length ? ks.map(k => `<div class="frow"><button type="button" class="fopt${L.font === k ? ' on' : ''}" data-fk="${k}" aria-pressed="${L.font === k}" style="font-family:${previewFam(k).replace(/"/g, "'")};font-weight:${nearW(k, 700)}"><b>${L.font === k ? '<i class="ck" aria-hidden="true">✓</i>' : ''}${smp}</b><small>${FONTS[k].ko ? '<em class="kob">한글</em>' : ''}${esc(FONTS[k].n)}</small></button><button type="button" class="star" data-star="${k}" aria-pressed="${fv.includes(k)}" aria-label="${esc(FONTS[k].n)} 즐겨찾기">${fv.includes(k) ? '★' : '☆'}</button></div>`).join('') : `<p class="hint">${fontCat === 'fav' ? '☆를 눌러 즐겨찾기에 추가해 보세요' : '맞는 글꼴이 없어요'}</p>`; }
 async function pickFont(k) { const L = getL(sel); if (!L) return; const bs = document.querySelectorAll(`[data-fk="${k || ''}"]`); bs.forEach(b => b.classList.add('loading'));
   const ok = k ? await loadFont(k) : true; bs.forEach(b => b.classList.remove('loading')); if (!ok) { status('글꼴을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'); return; }
-  if (k) LS('runtier:fontrecent', [k, ...recents().filter(x => x !== k)].slice(0, 8)); L.font = k || null; if (L.type === 'stat' && L.v !== 4) myPut({ font: L.font }); changed(true); paintPanel(); }
+  if (k) LS('runtier:fontrecent', [k, ...recents().filter(x => x !== k)].slice(0, 8)); L.font = k || null; changed(true); paintPanel(); }
 // ---- font bottom sheet: tap applies live, sheet stays open until 완료 ----
 function fontSheetHTML(L) { return `<div class="fs-card" role="dialog" aria-modal="true" aria-labelledby="fsT"><div class="sh-head"><h3 id="fsT">글꼴 ${Object.keys(FONTS).filter(PICKABLE).length}</h3><button type="button" class="chip-btn primary-chip" id="fsDone">완료</button></div>
   <input id="fSearch" type="search" autocomplete="off" placeholder="글꼴 검색 (예: 손글씨, 모노, Bebas)" aria-label="글꼴 검색"><div class="fcats" id="fCats" role="radiogroup" aria-label="글꼴 분류">${[['all', '전체'], ['recent', '최근'], ['fav', '★'], ...FONT_CATS].map(([k, n]) => `<button type="button" role="radio" data-c="${k}" aria-checked="${k === fontCat}">${n}</button>`).join('')}</div>
@@ -996,11 +994,11 @@ function bindPhotoEd(P) { const on = (id, f) => { const e = $(id); if (e) e.addE
   on('peFlip', () => { P.flip = !P.flip; if (P.crop) P.crop = { ...P.crop, x: +(1 - P.crop.x - P.crop.w).toFixed(4) }; changed(true); paintPanel(); });
   on('peCut', async e => { if (P.cut) { P.cut = false; changed(true); paintPanel(); status('원본 사진으로 돌렸어요'); return; }
     const b = e.currentTarget; b.classList.add('loading'); b.disabled = true; b.setAttribute('aria-busy', 'true'); b.textContent = segP ? '인물 찾는 중…' : '인식 모델 준비 중…'; status((segP ? '인물을 남기는 중이에요…' : '인물 인식 모델을 준비하고 있어요 (처음 한 번만)…') + ' 사진은 기기 밖으로 나가지 않아요', 15000);
-    const ok = await ensureMask(P.pid); if (ok) { P.cut = true; if (!P.ol) P.ol = { on: false, col: '#ffffff', w: 12, ...(MY().ol || {}), on: false }; status('인물만 남겼어요 · 원본 사진으로 언제든 돌릴 수 있어요'); } else status(segFailMsg('사진은 그대로 둘게요'), 5000);
+    const ok = await ensureMask(P.pid); if (ok) { P.cut = true; if (!P.ol) P.ol = { on: false, col: '#ffffff', w: 12}; status('인물만 남겼어요 · 원본 사진으로 언제든 돌릴 수 있어요'); } else status(segFailMsg('사진은 그대로 둘게요'), 5000);
     changed(true); paintPanel(); });
-  on('peOl', () => { P.ol = { col: '#ffffff', w: 12, ...(P.ol || {}), on: !(P.ol && P.ol.on) }; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(true); paintPanel(); });
-  const olc = $('olCol'); if (olc) { olc.addEventListener('click', e => { const b = e.target.closest('[data-olc]'); if (!b) return; P.ol.col = b.dataset.olc; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(true); paintPanel(); }); $('olColPick').addEventListener('input', e => { P.ol.col = e.target.value; changed(); }); $('olColPick').addEventListener('change', () => { myPut({ ol: { col: P.ol.col, w: P.ol.w } }); commit(); }); }
-  const w = $('olW'); if (w) w.addEventListener('input', e => { P.ol.w = +e.target.value; $('olWV').textContent = e.target.value + 'px'; myPut({ ol: { col: P.ol.col, w: P.ol.w } }); changed(); });
+  on('peOl', () => { P.ol = { col: '#ffffff', w: 12, ...(P.ol || {}), on: !(P.ol && P.ol.on) }; changed(true); paintPanel(); });
+  const olc = $('olCol'); if (olc) { olc.addEventListener('click', e => { const b = e.target.closest('[data-olc]'); if (!b) return; P.ol.col = b.dataset.olc; changed(true); paintPanel(); }); $('olColPick').addEventListener('input', e => { P.ol.col = e.target.value; changed(); }); $('olColPick').addEventListener('change', () => { commit(); }); }
+  const w = $('olW'); if (w) w.addEventListener('input', e => { P.ol.w = +e.target.value; $('olWV').textContent = e.target.value + 'px'; changed(); });
   const f = $('peFilter'); if (f) f.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; P.filter = b.dataset.v; changed(true); paintPanel(); });
   on('peMore', e => { moreAdj = !moreAdj; const b = e.currentTarget; b.setAttribute('aria-expanded', moreAdj); b.querySelector('i').textContent = moreAdj ? '▴' : '▾'; $('peAdj').hidden = !moreAdj; });
   for (const [k] of ADJ) { const r = $('pa_' + k); if (r) r.addEventListener('input', e => { P.adj = { ...(P.adj || {}), [k]: +e.target.value }; if (!Object.values(P.adj).some(Boolean)) delete P.adj; $('pa_' + k + 'V').textContent = e.target.value; changed(); }); }
@@ -1009,14 +1007,13 @@ function bindPhotoEd(P) { const on = (id, f) => { const e = $(id); if (e) e.addE
 function fxHTML(L) { return `<button type="button" class="acc" id="pMoreFx" aria-expanded="${moreFx}" aria-controls="pFxAcc"><span>효과 (그림자·외곽선·글로우)</span><i aria-hidden="true">${moreFx ? '▴' : '▾'}</i></button><div id="pFxAcc" class="acc-body"${moreFx ? '' : ' hidden'}><div class="pe-row"><button type="button" class="chip-btn" id="fxSh" aria-pressed="${!!L.fsh}">그림자</button><button type="button" class="chip-btn" id="fxOl" aria-pressed="${!!L.fol}">외곽선</button><button type="button" class="chip-btn" id="fxGl" aria-pressed="${!!L.fgl}">글로우</button></div>`
   + (L.fol ? `<span class="lbl sm">외곽선 색</span>${colRow('folCol', L.fol.col, true)}${range('folW', '외곽선 두께', 1, 30, L.fol.w || 6, 'px')}` : '')
   + (L.fgl ? `<span class="lbl sm">글로우 색</span>${colRow('fglCol', L.fgl.col || '#3dc8f5', true)}${range('fglR', '글로우 세기', 5, 100, L.fgl.r ?? 30, '%')}` : '') + `</div>`; }
-const fxSave = L => { if (L.type === 'stat' && L.v !== 4) myPut({ fx: { fsh: L.fsh || undefined, fol: L.fol || undefined, fgl: L.fgl || undefined } }); };
 function bindFx(L) { const on = (id, f) => { const e = $(id); if (e) e.addEventListener('click', f); };
   on('pMoreFx', e => { moreFx = !moreFx; const b = e.currentTarget; b.setAttribute('aria-expanded', moreFx); b.querySelector('i').textContent = moreFx ? '▴' : '▾'; $('pFxAcc').hidden = !moreFx; });
-  on('fxSh', () => { if (L.fsh) delete L.fsh; else L.fsh = 1; fxSave(L); changed(true); paintPanel(); });
-  on('fxOl', () => { if (L.fol) delete L.fol; else L.fol = { col: '#111111', w: 6 }; fxSave(L); changed(true); paintPanel(); });
-  on('fxGl', () => { if (L.fgl) delete L.fgl; else L.fgl = { col: '#3dc8f5', r: 30 }; fxSave(L); changed(true); paintPanel(); });
-  for (const [id, key] of [['folCol', 'fol'], ['fglCol', 'fgl']]) { const e = $(id); if (!e) continue; e.addEventListener('click', ev => { const b = ev.target.closest('[data-olc]'); if (!b) return; L[key].col = b.dataset.olc; fxSave(L); changed(true); paintPanel(); }); $(id + 'Pick').addEventListener('input', ev => { L[key].col = ev.target.value; changed(); }); $(id + 'Pick').addEventListener('change', () => { fxSave(L); commit(); }); }
-  for (const [id, key, f, u] of [['folW', 'fol', 'w', 'px'], ['fglR', 'fgl', 'r', '%']]) { const e = $(id); if (e) e.addEventListener('input', ev => { L[key][f] = +ev.target.value; $(id + 'V').textContent = ev.target.value + u; fxSave(L); changed(); }); } }
+  on('fxSh', () => { if (L.fsh) delete L.fsh; else L.fsh = 1; changed(true); paintPanel(); });
+  on('fxOl', () => { if (L.fol) delete L.fol; else L.fol = { col: '#111111', w: 6 }; changed(true); paintPanel(); });
+  on('fxGl', () => { if (L.fgl) delete L.fgl; else L.fgl = { col: '#3dc8f5', r: 30 }; changed(true); paintPanel(); });
+  for (const [id, key] of [['folCol', 'fol'], ['fglCol', 'fgl']]) { const e = $(id); if (!e) continue; e.addEventListener('click', ev => { const b = ev.target.closest('[data-olc]'); if (!b) return; L[key].col = b.dataset.olc; changed(true); paintPanel(); }); $(id + 'Pick').addEventListener('input', ev => { L[key].col = ev.target.value; changed(); }); $(id + 'Pick').addEventListener('change', () => { commit(); }); }
+  for (const [id, key, f, u] of [['folW', 'fol', 'w', 'px'], ['fglR', 'fgl', 'r', '%']]) { const e = $(id); if (e) e.addEventListener('input', ev => { L[key][f] = +ev.target.value; $(id + 'V').textContent = ev.target.value + u; changed(); }); } }
 // ---- user-input stickers: plain text layers (editable, styleable like any text) ----
 const WX = ['☀️', '⛅', '☁️', '🌧️', '❄️', '🌬️', '🌙'];
 const INSTK = { weather: ['날씨', { t: '☀️ 18°C', size: 72, font: null, w: 700 }], place: ['코스·장소', { t: '📍 한강 반포', size: 60, font: null, w: 600 }], bib: ['배번', { t: '1234', size: 150, font: 'anton', col: '#111111', box: 'full', bcol: '#ffffff', bo: 1, ls: 4 }], memo: ['메모 (손글씨)', { t: '오늘도 완주!', size: 96, font: 'nanumpen', w: 400 }] };
@@ -1078,7 +1075,7 @@ function paintPanel() {
     P.dataset.grads = JSON.stringify(GR);
   } else if (mode === 'layers') {
     h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
-  } else h += `<p class="hint">아래 도구로 텍스트·사진·스티커·기록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p><div class="ed-btns"><button type="button" class="chip-btn" id="myOff" aria-pressed="${!MY().off}">내 스타일 기억 ${MY().off ? '꺼짐' : '켜짐'}</button><button type="button" class="chip-btn" id="myReset">내 스타일 초기화</button></div><p class="hint">마지막에 쓴 템플릿·형식·글꼴·색·테두리를 다음 기록에도 자동으로 써요</p>`;
+  } else h += `<p class="hint">아래 도구로 텍스트·사진·스티커·기록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p>`;
   P.innerHTML = h; bindPanel(L);
   for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
   paintSelInfo();
@@ -1129,8 +1126,6 @@ function bindPanel(L) {
     on('dfIcon', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; L.f = { ...(L.f || {}), icon: b.dataset.v }; changed(true); paintPanel(); });
     on('dfCol', 'click', e => { const b = e.target.closest('[data-olc]'); if (!b) return; L.f = { ...(L.f || {}), color: b.dataset.olc }; changed(true); paintPanel(); }); const cp = $('dfColPick'); if (cp) cp.addEventListener('input', e => { L.f = { ...(L.f || {}), color: e.target.value }; changed(); }); }
   on('wxIcons', 'click', e => { const b = e.target.closest('[data-wx]'); if (!b) return; L.t = b.dataset.wx + ' ' + String(L.t || '').replace(/^\S*\p{Extended_Pictographic}\S*\s*/u, ''); changed(true); paintPanel(); });
-  on('myReset', 'click', () => { localStorage.removeItem('runtier:mystyle'); status('내 스타일을 지웠어요 · 다음 기록은 기본 설정으로 시작해요', 3000); paintPanel(); });
-  on('myOff', 'click', () => { const m = MY(); if (m.off) LS('runtier:mystyle', {}); else LS('runtier:mystyle', { off: true }); paintPanel(); });
   on('fClose', 'click', () => { libOpen = false; paintPanel(); });
   on('fSearch', 'input', () => { $('fList').innerHTML = libHTML(L); });
   on('fCats', 'click', e => { const b = e.target.closest('[data-c]'); if (!b) return; fontCat = b.dataset.c; for (const x of $('fCats').children) x.setAttribute('aria-checked', String(x === b)); $('fList').innerHTML = libHTML(L); });
