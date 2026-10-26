@@ -25,6 +25,8 @@ const rr = bindValues({ type: 'race', date: '2026-11-09', data: { name: 'x', dis
 assert.equal(rr.result, '52:14'); assert.equal(rr.pace, '5:13'); assert.equal(rr.dateMD, '11.09'); assert.equal(rr.dday, 'D-DAY');
 const dt = bindValues({ type: 'diet', date: '2026-10-23', data: { meal: '러닝 전', menu: '오트밀과 커피', time: '06:40' } }, { logs });
 assert.equal(dt.distance, '5.20'); assert.equal(dt.meal, '러닝 전');
-assert.equal(defaultTemplate({ type: 'run', photoIds: [] }), 'run-solid'); assert.equal(defaultTemplate({ type: 'race', data: { result: '52:14' } }), 'race-result');
+assert.equal(defaultTemplate({ type: 'run', photoIds: [] }), 'va-run-solid'); assert.equal(defaultTemplate({ type: 'race', data: { result: '52:14' } }), 'va-race-result');
+assert.equal(defaultTemplate({ type: 'race', data: {} }), 'va-race-result'); assert.equal(defaultTemplate({ type: 'diet' }), 'vc-diet');
+assert.equal(defaultTemplate({ type: 'run', photoIds: ['p'] }), 'va-run-photo'); assert.equal(defaultTemplate({ type: 'run', photoIds: [] }, { defaultTemplateId: 'run-photo' }), 'va-run-photo'); assert.equal(defaultTemplate({ type: 'run' }, { defaultTemplateId: 'vd-run-solid' }), 'vd-run-solid');
 assert.deepEqual(sortLogs(logs).map(l => l.id), ['b', 'c', 'a']);
 console.log('logcalc ok');

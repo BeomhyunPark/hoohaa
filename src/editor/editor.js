@@ -1,7 +1,7 @@
 import { LS, idb } from '../storage/device.js';
 import { fetchWeather, searchPlace, wxHere, isoDay } from '../net/weather.js';
 import { paceGuide, parseWeekly } from './workout.js';
-import { LOG_TPLS, TOKENS, ICON_NAMES, iconSVG, buildLogDoc, fillBindings, setLogBg, LOG_H } from './logtpl.js';
+import { LOG_TPLS, TOKENS, ICON_NAMES, iconSVG, buildLogDoc, fillBindings, setLogBg, LOG_H, kindOf } from './logtpl.js';
 
 export async function mountEditor(env) {
   const { $, esc, state, EVN } = env;
@@ -1294,7 +1294,7 @@ function renderResult(r) {
     for (const b of $('tplList').querySelectorAll('.tpl-btn')) { let d2; if (b.dataset.lt) { d2 = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, acc: doc.tok.acc }); if (f0 !== 'thumb') relayout(d2, f0); } else d2 = fillBindings(clone(all[+b.dataset.m]), logCtx.vals);
       const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
   }
-  function pickLogTpl(b) { const f0 = doc.fmt || 'story', acc = b.dataset.lt && doc.tok && doc.log.tpl.split('-')[0] === b.dataset.lt.split('-')[0] ? doc.tok.acc : undefined;
+  function pickLogTpl(b) { const f0 = doc.fmt || 'story', acc = b.dataset.lt && doc.tok && kindOf(doc.log.tpl) === kindOf(b.dataset.lt) ? doc.tok.acc : undefined;
     const kept = b.dataset.lt ? userLayers(doc) : [];
     if (b.dataset.lt) { doc = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc }); if (f0 !== 'thumb') relayout(doc, f0); if (kept.length) doc.layers.push(...kept); }
     else { const m = clone((LS('runtier:mytpl') || [])[+b.dataset.m]); delete m.n; doc = fillBindings(m, logCtx.vals); doc.log = { ...doc.log, id: logCtx.log && logCtx.log.id }; }

@@ -1,11 +1,11 @@
-// 오늘 기록 → 3:4 썸네일 템플릿 6종 (Figma 5WrYjnAWMYdtlhPXvRRYal · page 12-2).
+// 오늘 기록 → 3:4 썸네일 템플릿 8종 (Figma 5WrYjnAWMYdtlhPXvRRYal · page 31-2, v3 vertical).
 // Converted by hand from the design into the editor's layer JSON: every element is a normal, editable layer
 // (text / shape / sticker), nothing is flattened. Positions are ratios on the 1080x1440 frame
 // (rx = ink-left x / 1080, ry = baseline y / 1440 for text, top-left for shapes/icons).
 
 export const LOG_W = 1080, LOG_H = 1440;
 export const TOKENS = { bg: '#17181B', text: '#ECEBE6', 'accent-run': '#B5C96A', 'accent-race': '#E08A62', 'accent-gear': '#7FA8C9', 'accent-diet': '#6FB894' };
-export const LOG_TPLS = [['run-photo', '러닝 · 사진'], ['run-solid', '러닝 · 단색'], ['race-dday', '대회 D-day'], ['race-result', '대회 결과'], ['diet', '식단']];
+export const LOG_TPLS = [['va-run-photo', '스택 · 사진'], ['va-run-solid', '스택 · 단색'], ['va-race-result', '스택 · 대회'], ['vc-run-photo', '페이드 · 사진'], ['vc-run-solid', '페이드 · 단색'], ['vc-race-result', '페이드 · 대회'], ['vc-diet', '페이드 · 식단'], ['vd-run-solid', '레일 · 단색']];
 export const BIND_KEYS = ['dayN', 'date', 'distance', 'time', 'pace', 'weather', 'note', 'raceName', 'dday', 'result', 'meal', 'menu'];
 
 // Phosphor Icons (MIT) · duotone · timer, medal, sneaker-move, bowl-food. Colour is applied at render time.
@@ -20,34 +20,74 @@ export function iconSVG(k, col = TOKENS.text) { const b = PH[String(k).replace(/
 
 // ---- design metrics (px on 1080x1440). Baselines follow Figma's fixed line boxes:
 // baseline = top + (lineHeight − (asc+desc)·size)/2 + asc·size  (Archivo 878/210, Noto Sans KR 1160/288, upm 1000)
-const M = 72, COLS = [72, 392, 712];
-const BL = { hero: 1054.8 /* box y888–1088, lh 200 */, title: 1159.5 /* y1112, lh 56 */, label: 1243.3 /* y1216, lh 32 */, value: 1306.7 /* y1256, lh 64 */ };
-const LINE = { x: 72, y: 1192, w: 80, h: 4 };
-const SCRIM = { 'run-photo': [.45, .75], 'race-dday': [.6, .85], diet: [.45, .75] };
+// Figma 5WrYjnAWMYdtlhPXvRRYal · page 31-2 "Post Templates v3 — vertical": V-A stack · V-C soft-fade panel · V-D editorial rail.
+const M = 72, BOTTOM = 1350;
+const blA = (top, size, lh) => top + (lh - 1.088 * size) / 2 + .878 * size;
+const blK = (top, size, lh) => top + (lh - 1.448 * size) / 2 + 1.16 * size;
 const ACC = { run: 'accent-run', race: 'accent-race', diet: 'accent-diet' };
-const kindOf = t => t.split('-')[0];
+// legacy ids (saved cards / profiles) → current recipes; race-dday was removed from the design
+export const TPL_ALIAS = { 'run-photo': 'va-run-photo', 'run-solid': 'va-run-solid', 'race-result': 'va-race-result', 'race-dday': 'va-race-result', diet: 'vc-diet' };
+export const normTpl = id => TPL_ALIAS[id] || id;
+export const kindOf = t => { t = normTpl(String(t || '')); return /race/.test(t) ? 'race' : /diet/.test(t) ? 'diet' : 'run'; };
 
 let seq = 0;
 const lid = () => 'G' + Date.now().toString(36) + (seq++);
 const base = p => ({ id: lid(), x: 540, y: 720, s: 1, r: 0, o: 1, af: false, lt: 1, ...p });
 const T = (sid, t, o) => base({ type: 'text', sid, t, col: TOKENS.text, al: 'left', ...o, rx: o.x / LOG_W, ry: o.bl / LOG_H, x: undefined, bl: undefined });
-const num = (sid, bind, x, unit) => T(sid, '', { bind, font: 'archivo', w: 600, size: 56, x, bl: BL.value, unit, ug: unit && unit[0] === '/' ? 2 : 8 });
-const krVal = (sid, bind, x) => T(sid, '', { bind, font: 'notokr', w: 500, size: 56, x, bl: BL.value });
-const label = (sid, t, x) => T(sid, t, { k: 'label', font: 'notokr', w: 400, size: 26, ga: .6, x, bl: BL.label });
-const hero = (bind) => T('hero', '', { bind, font: 'archivo', w: 700, size: 200, ls: -4, x: M, bl: BL.hero });
-const titleKr = (bind) => T('title', '', { bind, font: 'notokr', w: 700, size: 44, x: M, bl: BL.title });
-const titleNum = (bind) => T('title', '', { bind, font: 'archivo', w: 600, size: 44, x: M, bl: BL.title });
-const title2 = (bind, font) => T('title2', '', { bind, font, w: font === 'archivo' ? 500 : 400, size: 44, ga: .6, x: M, bl: BL.title, flow: 'title', gap: 16 });
+const box = (sid, x, y, w, h, fill) => base({ type: 'shape', k: 'box', sid, rx: x / LOG_W, ry: y / LOG_H, w, h, fill });
+const ug = u => u && u[0] === '/' ? 2 : 8;
+// text atoms (top = Figma box top)
+const dateT = (top, bind = 'date') => T('date', '', { bind, font: 'archivo', w: 500, size: 40, ga: .68, x: M, bl: blA(top, 40, 48) });
+const heroT = (bind, top, size, unit, x = M) => T('hero', '', { bind, font: 'archivo', w: 700, size, ls: -4, x, bl: blA(top, size, Math.round(size * 1.087)), unit, ug: ug(unit) });
+const titleT = (bind, top, kr, sid = 'title') => T(sid, '', { bind, font: kr ? 'notokr' : 'archivo', w: kr ? 700 : 600, size: 56, x: M, bl: kr ? blK(top, 56, 64) : blA(top, 56, 64) });
+const subT = (bind, top) => T('title2', '', { bind, font: 'notokr', w: 400, size: 44, ga: .68, x: M, bl: blK(top, 44, 56) });
+const lbl = (sid, t, x, top) => T(sid, t, { k: 'label', font: 'notokr', w: 400, size: 40, ga: .68, x, bl: blK(top, 40, 56) });
+const val = (sid, bind, x, top, size, unit, kr) => kr ? T(sid, '', { bind, font: 'notokr', w: 500, size: size * .8, x, bl: blK(top, size * .8, size * 1.18) })
+  : T(sid, '', { bind, font: 'archivo', w: 600, size, x, bl: blA(top, size, Math.round(size * 1.18)), unit, ug: ug(unit) });
+// stat = [label, bind, unit?, kr?]
+const STAT_H = 56 + 6 + 104, STAT_GAP = 32;
+const vstats = (stats, top, x = M) => stats.flatMap(([l, b, u, kr], i) => { const y = top + i * (STAT_H + STAT_GAP); return [lbl('l' + (i + 1), l, x, y), val('v' + (i + 1), b, x, y + 62, 88, u, kr)]; });
+const ROW_H = 96;
+const rows = (stats, top) => stats.flatMap(([l, b, u, kr], i) => { const y = top + i * ROW_H; return [lbl('l' + (i + 1), l, M, y + 16), val('v' + (i + 1), b, 360, y, 64, u, kr)]; });
+const RUN3 = [['거리', 'distance', 'km'], ['페이스', 'pace', '/km'], ['시간', 'time']];
+const RACE2 = [['거리', 'distance', 'km'], ['페이스', 'pace', '/km']];
+
+// V-A: bottom-weighted stack — date · hero · title · accent · vertical stats, laid out upward from BOTTOM
+function stackA({ hero, size, unit, title, kr, stats }) {
+  const sTop = BOTTOM - (stats.length * STAT_H + (stats.length - 1) * STAT_GAP), aTop = sTop - 32, tTop = aTop - 34 - 64, lh = Math.round(size * 1.087), hTop = tTop - 28 - lh, dTop = hTop - 28 - 48;
+  return { line: [M, aTop, 96, 4], els: [dateT(dTop), heroT(hero, hTop, size, unit), titleT(title, tTop, kr), ...vstats(stats, sTop)] };
+}
+// V-C: soft-fade panel from y≈620; content stack from y900 (optional hero in the upper area)
+function panelC({ hero, size = 240, unit, head, headKr, sub, stats }) {
+  let y = 900; const els = [];
+  if (hero) els.push(heroT(hero, 503, size, unit));
+  if (head === 'date') { els.push(dateT(y)); y += 48 + 16; }
+  if (sub && head !== 'date') { els.push(titleT(head, y, headKr)); y += 64 + 12; els.push(subT(sub, y)); y += 56; }
+  else { els.push(titleT(sub || head, y, headKr)); y += 64; }
+  const aTop = y + 24; return { line: [M, aTop, 96, 4], scrim: [620, 820, .94], els: [...els, ...rows(stats, aTop + 28)] };
+}
+// V-D: editorial rail — left rail, divider, right key metric, bottom giant hero
+function railD() {
+  const els = [dateT(168), titleT('dayN', 232, false), ...vstats(RACE2, 352),
+    box('divider', 632, 72, 2, 680, 'rgba(236,235,230,.24)'),
+    lbl('kl', '시간', 672, 72), T('key', '', { bind: 'time', font: 'archivo', w: 600, size: 120, x: 672, bl: blA(136, 120, 131) }),
+    heroT('distance', 1100, 240, 'km')];
+  return { line: [M, 320, 96, 4], els };
+}
 
 const SPEC = {
-  'run-photo': { icon: 'timer', photo: 1, els: () => [titleNum('dayN'), title2('date', 'archivo'), label('l1', '거리', COLS[0]), num('v1', 'distance', COLS[0], 'km'), label('l2', '페이스', COLS[1]), num('v2', 'pace', COLS[1], '/km'), label('l3', '시간', COLS[2]), num('v3', 'time', COLS[2])] },
-  'run-solid': { icon: 'timer', els: () => [hero('dayN'), titleNum('date'), label('l1', '거리', COLS[0]), num('v1', 'distance', COLS[0], 'km'), label('l2', '페이스', COLS[1]), num('v2', 'pace', COLS[1], '/km'), label('l3', '시간', COLS[2]), num('v3', 'time', COLS[2])] },
-  'race-dday': { icon: 'medal', photo: 1, els: () => [hero('dday'), titleKr('raceName'), label('l1', '날짜', COLS[0]), { ...num('v1', 'date', COLS[0]), bf: 'md' }, label('l2', '거리', COLS[1]), num('v2', 'distance', COLS[1], 'km'), label('l3', '목표 기록', COLS[2]), num('v3', 'time', COLS[2])] },
-  'race-result': { icon: 'medal', els: () => [hero('result'), titleKr('raceName'), label('l1', '날짜', COLS[0]), { ...num('v1', 'date', COLS[0]), bf: 'md' }, label('l2', '거리', COLS[1]), num('v2', 'distance', COLS[1], 'km'), label('l3', '페이스', COLS[2]), num('v3', 'pace', COLS[2], '/km')] },
-  diet: { icon: 'bowl-food', photo: 1, els: () => [titleKr('meal'), title2('menu', 'notokr'), label('l1', '시간', COLS[0]), num('v1', 'time', COLS[0]), label('l2', '이후 러닝', COLS[1]), num('v2', 'distance', COLS[1], 'km'), label('l3', '메모', COLS[2]), krVal('v3', 'note', COLS[2])] },
+  'va-run-photo': { icon: 'timer', photo: 1, scrim: [1440 * .55, 1440 * .45, .8], ...stackA({ hero: 'distance', size: 168, unit: 'km', title: 'dayN', stats: RUN3 }) },
+  'va-run-solid': { icon: 'timer', ...stackA({ hero: 'distance', size: 220, unit: 'km', title: 'dayN', stats: RUN3 }) },
+  'va-race-result': { icon: 'medal', ...stackA({ hero: 'result', size: 200, title: 'raceName', kr: 1, stats: RACE2 }) },
+  'vc-run-photo': { icon: 'timer', photo: 1, ...panelC({ head: 'date', sub: 'dayN', stats: RUN3 }) },
+  'vc-run-solid': { icon: 'timer', ...panelC({ hero: 'distance', unit: 'km', head: 'date', sub: 'dayN', stats: RUN3 }) },
+  'vc-race-result': { icon: 'medal', ...panelC({ hero: 'result', size: 200, head: 'date', sub: 'raceName', headKr: 1, stats: RACE2 }) },
+  'vc-diet': { icon: 'bowl-food', photo: 1, ...panelC({ head: 'meal', headKr: 1, sub: 'menu', stats: [['시간', 'time'], ['메모', 'note', null, 1]] }) },
+  'vd-run-solid': { icon: 'timer', ...railD() },
 };
-export const tplHasPhotoSlot = id => !!(SPEC[id] && SPEC[id].photo);
-export const bindKeysOf = id => SPEC[id] ? SPEC[id].els().filter(l => l.bind).map(l => l.bind) : [];
+const specOf = id => SPEC[normTpl(id)];
+export const tplHasPhotoSlot = id => !!(specOf(id) && specOf(id).photo);
+export const bindKeysOf = id => specOf(id) ? specOf(id).els.filter(l => l.bind).map(l => l.bind) : [];
 
 // value for one bound layer ('–' keeps an empty field visible and editable)
 export const bindText = (L, V) => { const v = L.bf === 'md' && L.bind === 'date' ? V.dateMD : V[L.bind]; return v == null || v === '' ? '–' : String(v); };
@@ -56,15 +96,14 @@ export function fillBindings(doc, V) { for (const L of doc.layers) if (L.bind) L
 
 // doc: same shape as the editor's other docs (bg + ordered layers), plus log/tok metadata
 export function buildLogDoc(id, V, o = {}) {
-  const S = SPEC[id] || SPEC['run-solid'], kind = kindOf(id), photo = !!o.pid && (!!S.photo || !!o.forcePhoto); // solid designs start solid; the 배경 switch can still turn the photo on
+  id = normTpl(id); const S = SPEC[id] || SPEC['va-run-solid'], kind = kindOf(id), photo = !!o.pid && (!!S.photo || !!o.forcePhoto); // solid designs start solid; the 배경 switch can still turn the photo on
   const tok = { bg: TOKENS.bg, text: TOKENS.text, acc: o.acc || TOKENS[ACC[kind]] };
-  const layers = [];
-  const [sh, sa] = SCRIM[id] || [.45, .75];
-  // scrim exists on every template so the background switch (사진 ↔ 단색) can flip it; hidden on solid
-  layers.push(base({ type: 'shape', k: 'box', sid: 'scrim', nh: 1, rx: 0, ry: 1 - sh, rw: 1, rh: sh, w: LOG_W, h: Math.round(LOG_H * sh), fill: { t: 'lin', a: 180, st: [[0, 'rgba(23,24,27,0)'], [1, `rgba(23,24,27,${sa})`]] }, hidden: !photo }));
-  layers.push(base({ type: 'sticker', k: 'ph:' + S.icon, sid: 'icon', col: TOKENS.text, s: 56 / 512, rx: M / LOG_W, ry: M / LOG_H }));
-  layers.push(base({ type: 'shape', k: 'box', sid: 'accent', rx: LINE.x / LOG_W, ry: LINE.y / LOG_H, w: LINE.w, h: LINE.h, fill: '@acc' }));
-  for (const L of S.els()) layers.push(L);
+  const layers = [], src = S.els, [sy, sh, sa] = S.scrim || [1440 * .55, 1440 * .45, .75], soft = sy === 620;
+  // scrim (V-C: the soft-fade panel) exists on every template so the background switch (사진 ↔ 단색) can flip it; hidden on solid
+  layers.push(base({ type: 'shape', k: 'box', sid: 'scrim', nh: 1, rx: 0, ry: sy / LOG_H, rw: 1, rh: sh / LOG_H, w: LOG_W, h: Math.round(sh), fill: { t: 'lin', a: 180, st: soft ? [[0, 'rgba(23,24,27,0)'], [.34, `rgba(23,24,27,${sa * .8})`], [1, `rgba(23,24,27,${sa})`]] : [[0, 'rgba(23,24,27,0)'], [1, `rgba(23,24,27,${sa})`]] }, hidden: !photo }));
+  layers.push(base({ type: 'sticker', k: 'ph:' + S.icon, sid: 'icon', col: '@acc', s: 64 / 512, rx: M / LOG_W, ry: M / LOG_H }));
+  const [lx, ly, lw, lh] = S.line; layers.push(box('accent', lx, ly, lw, lh, '@acc'));
+  for (const L of src) layers.push({ ...L, id: lid() });
   const doc = { tpl: 'log:' + id, log: { id: o.logId || null, tpl: id, type: o.type || kind }, tok, fmt: o.fmt || 'thumb', race: '',
     bg: photo ? { type: 'photo', pid: o.pid, pz: 1, filter: 'none' } : { type: 'solid', c1: tok.bg }, layers };
   return fillBindings(doc, V || {});

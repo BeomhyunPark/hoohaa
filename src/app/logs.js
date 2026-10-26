@@ -1,6 +1,6 @@
 // 오늘 기록 남기기: run / race / diet records on this device (IndexedDB) → 3:4 thumbnail cards.
 import * as db from '../storage/logdb.js';
-import { bindValues, defaultTemplate, sortLogs, parseDur, fmtPace, paceSec, num, isoToday, startDateOf, dayN, TPL_IDS } from '../engine/logcalc.js';
+import { bindValues, defaultTemplate, sortLogs, parseDur, fmtPace, paceSec, num, isoToday, startDateOf, dayN, TPL_IDS, normTplId } from '../engine/logcalc.js';
 
 const TYPES = [['run', '러닝'], ['race', '대회'], ['diet', '식단']];
 const TNAME = Object.fromEntries(TYPES);
@@ -8,7 +8,7 @@ const TNAME = Object.fromEntries(TYPES);
 const SHOWN = l => l && Object.prototype.hasOwnProperty.call(TNAME, l.type);
 const ACCENTS = [['#B5C96A', '러닝'], ['#E08A62', '대회'], ['#6FB894', '식단']];
 const MEALS = ['아침', '점심', '저녁', '간식', '러닝 전', '러닝 후'];
-const TPL_KO = { 'run-photo': '러닝 · 사진', 'run-solid': '러닝 · 단색' };
+const TPL_KO = { 'va-run-photo': '스택 · 사진', 'va-run-solid': '스택 · 단색', 'vc-run-photo': '페이드 · 사진', 'vc-run-solid': '페이드 · 단색', 'vd-run-solid': '레일 · 단색' };
 
 export function mountLogs(env) {
   const { $, esc, show, openEditor } = env;
@@ -57,7 +57,7 @@ export function mountLogs(env) {
       ${field('lgStartDate', '시작일 (Day 1)', `<input id="lgStartDate" type="date" value="${esc(p.startDate || '')}">`, sd ? `오늘은 Day ${n}` : '시작일을 정하면 러닝 카드에 Day N이 자동으로 들어가요')}
       <div class="field"><span class="lbl sm" id="lgModeL">Day 계산 기준</span><div class="seg n2" id="lgMode" role="radiogroup" aria-labelledby="lgModeL"><button type="button" role="radio" data-v="custom" aria-checked="${p.dayCountMode !== 'first-log'}">직접 정한 시작일</button><button type="button" role="radio" data-v="first-log" aria-checked="${p.dayCountMode === 'first-log'}">첫 러닝 기록일</button></div></div>
       ${field('lgHandle', '핸들', `<input id="lgHandle" autocomplete="off" maxlength="30" placeholder="@my_runs" value="${esc(p.handle || '')}">`)}
-      ${field('lgDefTpl', '러닝 기본 템플릿', `<select id="lgDefTpl"><option value="">사진 있으면 사진, 없으면 단색</option>${['run-photo', 'run-solid'].map(t => `<option value="${t}"${p.defaultTemplateId === t ? ' selected' : ''}>${TPL_KO[t]}</option>`).join('')}</select>`)}
+      ${field('lgDefTpl', '러닝 기본 템플릿', `<select id="lgDefTpl"><option value="">사진 있으면 사진, 없으면 단색</option>${Object.keys(TPL_KO).map(t => `<option value="${t}"${normTplId(p.defaultTemplateId) === t ? ' selected' : ''}>${TPL_KO[t]}</option>`).join('')}</select>`)}
       <div class="field"><span class="lbl sm">백업</span><div class="ed-btns"><button type="button" class="chip-btn" id="lgExport">백업 내보내기 (zip)</button><button type="button" class="chip-btn" id="lgImportB">백업 가져오기</button></div><input id="lgImport" type="file" accept=".zip,application/zip" class="vh" tabindex="-1" aria-hidden="true"><p class="hint">기록과 사진이 zip 파일 하나에 담겨요. 서버에는 아무것도 올라가지 않아요.</p></div>
     </details>`;
   }
@@ -122,7 +122,7 @@ export function mountLogs(env) {
   // reopening a record always regenerates its card from the stored data
   async function openCard(log) {
     await reload();
-    const vals = bindValues(log, ctx()), tpl = TPL_IDS.includes(log.templateId) ? log.templateId : defaultTemplate(log, S.profile);
+    const vals = bindValues(log, ctx()), tpl = TPL_IDS.includes(normTplId(log.templateId)) ? normTplId(log.templateId) : defaultTemplate(log, S.profile);
     const pidRec = log.photoIds && log.photoIds[0] ? await db.get('photos', log.photoIds[0]) : null;
     editor = await openEditor(); cur = log;
     const d = await editor.openLog({ log, vals, tpl, photo: pidRec ? { id: pidRec.id, blob: pidRec.blob } : null });
