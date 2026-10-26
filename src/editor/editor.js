@@ -760,7 +760,7 @@ $('tplList').addEventListener('click', e => { const del = e.target.closest('[dat
   doc = b.dataset.t ? newDoc(b.dataset.t, doc.fmt || 'story') : { ...clone((LS('runtier:mytpl') || [])[+b.dataset.m]), n: undefined };
   if (!b.dataset.t) relayout(doc, f0); else if ((doc.fmt || 'story') !== f0) relayout(doc, f0);
   if (kept.length) doc.layers.push(...kept);
-  doc.race = race; placePhoto(keepPid, keepBg); sel = null; mode = null;
+  doc.race = race; placePhoto(keepPid, keepBg); sel = null; mode = 'tpl';
   for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); });
 $('tplReset').addEventListener('click', () => { if (doc.log) { const pid = doc.bg.type === 'photo' ? doc.bg.pid : null; const f0 = doc.fmt; doc = setLogBg(buildLogDoc(doc.log.tpl, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc: doc.tok.acc }), pid); if (f0 !== 'thumb') relayout(doc, f0 || 'story'); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); return; }
   const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc'), f0); doc.race = race; placePhoto(keepBg && keepBg.pid, keepBg); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
@@ -1025,6 +1025,7 @@ function paintPanel() {
   { const L0 = sel && getL(sel), b = L0 && (L0.ax || L0.ay) && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; delete L0.ay; } }
   const P = $('panel'); $('cpick').hidden = true; document.body.appendChild($('cpick')); const L = sel && getL(sel);
   for (const b of $('tools').querySelectorAll('[data-tool]')) b.setAttribute('aria-pressed', String(b.dataset.tool === mode && !L));
+  { const tp = $('stTpls'); if (tp) tp.hidden = !(mode === 'tpl' && !L); } // template tool: big thumbnails + ratio live in this static panel
   let h = '';
   if (cropSt && photos[cropSt.pid]) { P.innerHTML = cropHTML(); bindCrop(); return; } cropSt = null;
   if (L) {
@@ -1075,7 +1076,7 @@ function paintPanel() {
     P.dataset.grads = JSON.stringify(GR);
   } else if (mode === 'layers') {
     h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
-  } else h += `<p class="hint">아래 도구로 텍스트·사진·스티커·기록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p>`;
+  } else if (mode === 'tpl') { /* #stTpls shown above */ } else h += `<p class="hint">아래 도구로 템플릿을 고르거나 텍스트·사진·스티커·기록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p>`;
   P.innerHTML = h; bindPanel(L);
   for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
   paintSelInfo();
@@ -1294,7 +1295,7 @@ function renderResult(r) {
     if (b.dataset.lt) { doc = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc }); if (f0 !== 'thumb') relayout(doc, f0); if (kept.length) doc.layers.push(...kept); }
     else { const m = clone((LS('runtier:mytpl') || [])[+b.dataset.m]); delete m.n; doc = fillBindings(m, logCtx.vals); doc.log = { ...doc.log, id: logCtx.log && logCtx.log.id }; }
     const bgSeg = document.getElementById('lbBg'); if (bgSeg) for (const x of bgSeg.querySelectorAll('[data-v]')) x.setAttribute('aria-checked', String((x.dataset.v === 'photo') === (doc.bg.type === 'photo')));
-    sel = null; mode = null; for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); }
+    sel = null; mode = 'tpl'; for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); }
   window.__logDoc = () => doc && doc.log ? clone(doc) : null;
   return { renderResult, openLog, applyLogVals, setAccent, setLogBackground, exportCanvas: finalCanvas };
 }
