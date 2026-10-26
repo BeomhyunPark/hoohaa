@@ -441,3 +441,13 @@ body.log-mode .st-fit{flex:none;height:min(48dvh,480px)}
 .lg-prev[hidden]{display:none}
 .lg-prev img{width:48px;height:64px;object-fit:cover;border-radius:8px;flex:none}
 .lg-prev span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+/* template strip (story-app style): big thumbnails with names right above the tools, scrolls sideways inside itself */
+.st-tpls{flex:none;display:flex;flex-direction:column;gap:2px;margin:2px 0 4px;min-width:0}
+.st-tpls .st-tl{font-size:12px;font-weight:700;color:var(--t2);padding-left:2px}
+.st-tpls .tpl-list{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:4px 4px 2px;margin:0;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.st-tpls .tpl-list::-webkit-scrollbar{display:none}
+.st-tpls .tpl-btn,.st-tpls .tpl-mine{flex:0 0 58px;width:58px;min-width:58px;gap:3px}
+.st-tpls .tpl-btn canvas{width:58px;height:auto;aspect-ratio:auto;border-radius:8px;outline-width:3px}
+.st-tpls .tpl-btn .tn{font-size:11px;max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-tpls .tpl-del{width:24px;height:24px;top:-2px;right:-4px;font-size:12px}
+.st-chrome .st-row2 .seg{flex:1 1 auto}.st-chrome .st-row2 .seg button{flex:1 1 0}
