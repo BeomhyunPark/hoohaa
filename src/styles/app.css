@@ -437,3 +437,7 @@ html.standalone .web-only{display:none!important}
 .card.tpl .panel{flex:0 1 auto;max-height:35dvh;overflow:auto;min-height:0;margin:0;-webkit-overflow-scrolling:touch}
 body.log-mode .card.tpl{height:auto;max-height:none;overflow:visible}
 body.log-mode .st-fit{flex:none;height:min(48dvh,480px)}
+.lg-prev{display:flex;align-items:center;gap:10px;margin-top:8px}
+.lg-prev[hidden]{display:none}
+.lg-prev img{width:48px;height:64px;object-fit:cover;border-radius:8px;flex:none}
+.lg-prev span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
