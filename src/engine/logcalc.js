@@ -41,9 +41,9 @@ export function ddayLabel(raceDate, from) { const a = dayNum(raceDate), b = dayN
 export const fmtDate = iso => (iso || '').replaceAll('-', '.');           // 2026.10.23
 export const fmtMD = iso => (iso || '').slice(5).replace('-', '.');        // 10.23
 
-export const TPL_IDS = ['va-run-photo', 'va-run-solid', 'va-race-result', 'vc-run-photo', 'vc-run-solid', 'vc-race-result', 'vc-diet', 'vd-run-solid'];
-// legacy ids from saved logs / profiles (race-dday was removed from the design → race result card)
-export const TPL_ALIAS = { 'run-photo': 'va-run-photo', 'run-solid': 'va-run-solid', 'race-result': 'va-race-result', 'race-dday': 'va-race-result', diet: 'vc-diet' };
+export const TPL_IDS = ['run-photo', 'run-solid', 'race-dday', 'race-result', 'diet', 'va-run-photo', 'va-run-solid', 'va-race-result', 'vc-run-photo', 'vc-run-solid', 'vc-race-result', 'vc-diet', 'vd-run-solid'];
+// 가로 (run-photo / run-solid / race-dday / race-result / diet) ids are real templates again → no remapping
+export const TPL_ALIAS = {};
 export const normTplId = id => TPL_ALIAS[id] || id;
 export function defaultTemplate(log, profile) {
   if (log.type === 'run') { const d = normTplId(profile && profile.defaultTemplateId); if (TPL_IDS.includes(d) && /run/.test(d)) return d; return (log.photoIds || []).length ? 'va-run-photo' : 'va-run-solid'; }

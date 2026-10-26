@@ -27,6 +27,16 @@ const dt = bindValues({ type: 'diet', date: '2026-10-23', data: { meal: '러닝 
 assert.equal(dt.distance, '5.20'); assert.equal(dt.meal, '러닝 전');
 assert.equal(defaultTemplate({ type: 'run', photoIds: [] }), 'va-run-solid'); assert.equal(defaultTemplate({ type: 'race', data: { result: '52:14' } }), 'va-race-result');
 assert.equal(defaultTemplate({ type: 'race', data: {} }), 'va-race-result'); assert.equal(defaultTemplate({ type: 'diet' }), 'vc-diet');
-assert.equal(defaultTemplate({ type: 'run', photoIds: ['p'] }), 'va-run-photo'); assert.equal(defaultTemplate({ type: 'run', photoIds: [] }, { defaultTemplateId: 'run-photo' }), 'va-run-photo'); assert.equal(defaultTemplate({ type: 'run' }, { defaultTemplateId: 'vd-run-solid' }), 'vd-run-solid');
+assert.equal(defaultTemplate({ type: 'run', photoIds: ['p'] }), 'va-run-photo'); assert.equal(defaultTemplate({ type: 'run', photoIds: [] }, { defaultTemplateId: 'run-photo' }), 'run-photo'); assert.equal(defaultTemplate({ type: 'run' }, { defaultTemplateId: 'vd-run-solid' }), 'vd-run-solid');
 assert.deepEqual(sortLogs(logs).map(l => l.id), ['b', 'c', 'a']);
 console.log('logcalc ok');
+// 가로 + 세로 템플릿 모두 실제 템플릿 (옛 id 는 세로로 바뀌지 않음)
+import { TPL_IDS, normTplId } from './logcalc.js';
+import { LOG_TPLS, buildLogDoc, kindOf, normTpl } from '../editor/logtpl.js';
+assert.deepEqual(LOG_TPLS.map(t => t[0]), TPL_IDS);
+for (const id of ['run-photo', 'run-solid', 'race-dday', 'race-result', 'diet']) { assert.equal(normTplId(id), id); assert.equal(normTpl(id), id); }
+for (const id of TPL_IDS) { const d = buildLogDoc(id, { distance: '5.20', pace: '5:42', time: '29:38', dayN: 'Day 1', date: '2026.10.23' }, { pid: 'p' }); assert.equal(d.log.tpl, id); assert.ok(d.layers.length > 5); }
+const h = buildLogDoc('run-solid', {}); assert.deepEqual(h.layers.filter(l => /^v\d$/.test(l.sid)).map(l => Math.round(l.rx * 1080)), [72, 392, 712]);
+assert.equal(kindOf('race-dday'), 'race'); assert.equal(kindOf('diet'), 'diet'); assert.equal(kindOf('vc-diet'), 'diet'); assert.equal(kindOf('va-race-result'), 'race'); assert.equal(kindOf('run-photo'), 'run');
+assert.equal(defaultTemplate({ type: 'run' }, { defaultTemplateId: 'run-solid' }), 'run-solid');
+console.log('logtpl ok');

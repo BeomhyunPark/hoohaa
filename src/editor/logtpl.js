@@ -1,11 +1,11 @@
-// 오늘 기록 → 3:4 썸네일 템플릿 8종 (Figma 5WrYjnAWMYdtlhPXvRRYal · page 31-2, v3 vertical).
+// 오늘 기록 → 3:4 썸네일 템플릿: 가로 스탯 5종 (page 12-2, pre-v3 layout) + v3 세로 8종 (Figma 5WrYjnAWMYdtlhPXvRRYal · page 31-2).
 // Converted by hand from the design into the editor's layer JSON: every element is a normal, editable layer
 // (text / shape / sticker), nothing is flattened. Positions are ratios on the 1080x1440 frame
 // (rx = ink-left x / 1080, ry = baseline y / 1440 for text, top-left for shapes/icons).
 
 export const LOG_W = 1080, LOG_H = 1440;
 export const TOKENS = { bg: '#17181B', text: '#ECEBE6', 'accent-run': '#B5C96A', 'accent-race': '#E08A62', 'accent-gear': '#7FA8C9', 'accent-diet': '#6FB894' };
-export const LOG_TPLS = [['va-run-photo', '스택 · 사진'], ['va-run-solid', '스택 · 단색'], ['va-race-result', '스택 · 대회'], ['vc-run-photo', '페이드 · 사진'], ['vc-run-solid', '페이드 · 단색'], ['vc-race-result', '페이드 · 대회'], ['vc-diet', '페이드 · 식단'], ['vd-run-solid', '레일 · 단색']];
+export const LOG_TPLS = [['run-photo', '가로 · 사진'], ['run-solid', '가로 · 단색'], ['race-dday', '가로 · D-day'], ['race-result', '가로 · 대회'], ['diet', '가로 · 식단'], ['va-run-photo', '스택 · 사진'], ['va-run-solid', '스택 · 단색'], ['va-race-result', '스택 · 대회'], ['vc-run-photo', '페이드 · 사진'], ['vc-run-solid', '페이드 · 단색'], ['vc-race-result', '페이드 · 대회'], ['vc-diet', '페이드 · 식단'], ['vd-run-solid', '레일 · 단색']];
 export const BIND_KEYS = ['dayN', 'date', 'distance', 'time', 'pace', 'weather', 'note', 'raceName', 'dday', 'result', 'meal', 'menu'];
 
 // Phosphor Icons (MIT) · duotone · timer, medal, sneaker-move, bowl-food. Colour is applied at render time.
@@ -25,8 +25,8 @@ const M = 72, BOTTOM = 1350;
 const blA = (top, size, lh) => top + (lh - 1.088 * size) / 2 + .878 * size;
 const blK = (top, size, lh) => top + (lh - 1.448 * size) / 2 + 1.16 * size;
 const ACC = { run: 'accent-run', race: 'accent-race', diet: 'accent-diet' };
-// legacy ids (saved cards / profiles) → current recipes; race-dday was removed from the design
-export const TPL_ALIAS = { 'run-photo': 'va-run-photo', 'run-solid': 'va-run-solid', 'race-result': 'va-race-result', 'race-dday': 'va-race-result', diet: 'vc-diet' };
+// horizontal (가로) ids are real templates again; nothing needs remapping right now
+export const TPL_ALIAS = {};
 export const normTpl = id => TPL_ALIAS[id] || id;
 export const kindOf = t => { t = normTpl(String(t || '')); return /race/.test(t) ? 'race' : /diet/.test(t) ? 'diet' : 'run'; };
 
@@ -75,7 +75,27 @@ function railD() {
   return { line: [M, 320, 96, 4], els };
 }
 
+// 가로 스탯 (pre-v3): 거리/페이스/시간 as three columns at the bottom
+const COLS = [72, 392, 712];
+const BL = { hero: 1054.8, title: 1159.5, label: 1243.3, value: 1306.7 };
+const H_LINE = [72, 1192, 80, 4], H_ICON = { col: TOKENS.text, size: 56 };
+const hScrim = (h, a) => [LOG_H * (1 - h), LOG_H * h, a];
+const hNum = (sid, bind, x, unit) => T(sid, '', { bind, font: 'archivo', w: 600, size: 56, x, bl: BL.value, unit, ug: ug(unit) });
+const hKrVal = (sid, bind, x) => T(sid, '', { bind, font: 'notokr', w: 500, size: 56, x, bl: BL.value });
+const hLabel = (sid, t, x) => T(sid, t, { k: 'label', font: 'notokr', w: 400, size: 26, ga: .6, x, bl: BL.label });
+const hHero = bind => T('hero', '', { bind, font: 'archivo', w: 700, size: 200, ls: -4, x: M, bl: BL.hero });
+const hTitleKr = bind => T('title', '', { bind, font: 'notokr', w: 700, size: 44, x: M, bl: BL.title });
+const hTitleNum = bind => T('title', '', { bind, font: 'archivo', w: 600, size: 44, x: M, bl: BL.title });
+const hTitle2 = (bind, font) => T('title2', '', { bind, font, w: font === 'archivo' ? 500 : 400, size: 44, ga: .6, x: M, bl: BL.title, flow: 'title', gap: 16 });
+const hRun3 = () => [hLabel('l1', '거리', COLS[0]), hNum('v1', 'distance', COLS[0], 'km'), hLabel('l2', '페이스', COLS[1]), hNum('v2', 'pace', COLS[1], '/km'), hLabel('l3', '시간', COLS[2]), hNum('v3', 'time', COLS[2])];
+const horiz = (els, sc = [.45, .75]) => ({ line: H_LINE, iconStyle: H_ICON, scrim: hScrim(...sc), els });
+
 const SPEC = {
+  'run-photo': { icon: 'timer', photo: 1, ...horiz([hTitleNum('dayN'), hTitle2('date', 'archivo'), ...hRun3()]) },
+  'run-solid': { icon: 'timer', ...horiz([hHero('dayN'), hTitleNum('date'), ...hRun3()]) },
+  'race-dday': { icon: 'medal', photo: 1, ...horiz([hHero('dday'), hTitleKr('raceName'), hLabel('l1', '날짜', COLS[0]), { ...hNum('v1', 'date', COLS[0]), bf: 'md' }, hLabel('l2', '거리', COLS[1]), hNum('v2', 'distance', COLS[1], 'km'), hLabel('l3', '목표 기록', COLS[2]), hNum('v3', 'time', COLS[2])], [.6, .85]) },
+  'race-result': { icon: 'medal', ...horiz([hHero('result'), hTitleKr('raceName'), hLabel('l1', '날짜', COLS[0]), { ...hNum('v1', 'date', COLS[0]), bf: 'md' }, hLabel('l2', '거리', COLS[1]), hNum('v2', 'distance', COLS[1], 'km'), hLabel('l3', '페이스', COLS[2]), hNum('v3', 'pace', COLS[2], '/km')]) },
+  diet: { icon: 'bowl-food', photo: 1, ...horiz([hTitleKr('meal'), hTitle2('menu', 'notokr'), hLabel('l1', '시간', COLS[0]), hNum('v1', 'time', COLS[0]), hLabel('l2', '이후 러닝', COLS[1]), hNum('v2', 'distance', COLS[1], 'km'), hLabel('l3', '메모', COLS[2]), hKrVal('v3', 'note', COLS[2])]) },
   'va-run-photo': { icon: 'timer', photo: 1, scrim: [1440 * .55, 1440 * .45, .8], ...stackA({ hero: 'distance', size: 168, unit: 'km', title: 'dayN', stats: RUN3 }) },
   'va-run-solid': { icon: 'timer', ...stackA({ hero: 'distance', size: 220, unit: 'km', title: 'dayN', stats: RUN3 }) },
   'va-race-result': { icon: 'medal', ...stackA({ hero: 'result', size: 200, title: 'raceName', kr: 1, stats: RACE2 }) },
@@ -101,7 +121,7 @@ export function buildLogDoc(id, V, o = {}) {
   const layers = [], src = S.els, [sy, sh, sa] = S.scrim || [1440 * .55, 1440 * .45, .75], soft = sy === 620;
   // scrim (V-C: the soft-fade panel) exists on every template so the background switch (사진 ↔ 단색) can flip it; hidden on solid
   layers.push(base({ type: 'shape', k: 'box', sid: 'scrim', nh: 1, rx: 0, ry: sy / LOG_H, rw: 1, rh: sh / LOG_H, w: LOG_W, h: Math.round(sh), fill: { t: 'lin', a: 180, st: soft ? [[0, 'rgba(23,24,27,0)'], [.34, `rgba(23,24,27,${sa * .8})`], [1, `rgba(23,24,27,${sa})`]] : [[0, 'rgba(23,24,27,0)'], [1, `rgba(23,24,27,${sa})`]] }, hidden: !photo }));
-  layers.push(base({ type: 'sticker', k: 'ph:' + S.icon, sid: 'icon', col: '@acc', s: 64 / 512, rx: M / LOG_W, ry: M / LOG_H }));
+  layers.push(base({ type: 'sticker', k: 'ph:' + S.icon, sid: 'icon', col: (S.iconStyle && S.iconStyle.col) || '@acc', s: ((S.iconStyle && S.iconStyle.size) || 64) / 512, rx: M / LOG_W, ry: M / LOG_H }));
   const [lx, ly, lw, lh] = S.line; layers.push(box('accent', lx, ly, lw, lh, '@acc'));
   for (const L of src) layers.push({ ...L, id: lid() });
   const doc = { tpl: 'log:' + id, log: { id: o.logId || null, tpl: id, type: o.type || kind }, tok, fmt: o.fmt || 'thumb', race: '',

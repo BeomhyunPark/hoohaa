@@ -8,7 +8,7 @@ const TNAME = Object.fromEntries(TYPES);
 const SHOWN = l => l && Object.prototype.hasOwnProperty.call(TNAME, l.type);
 const ACCENTS = [['#B5C96A', '러닝'], ['#E08A62', '대회'], ['#6FB894', '식단']];
 const MEALS = ['아침', '점심', '저녁', '간식', '러닝 전', '러닝 후'];
-const TPL_KO = { 'va-run-photo': '스택 · 사진', 'va-run-solid': '스택 · 단색', 'vc-run-photo': '페이드 · 사진', 'vc-run-solid': '페이드 · 단색', 'vd-run-solid': '레일 · 단색' };
+const TPL_KO = { 'run-photo': '가로 · 사진', 'run-solid': '가로 · 단색', 'va-run-photo': '스택 · 사진', 'va-run-solid': '스택 · 단색', 'vc-run-photo': '페이드 · 사진', 'vc-run-solid': '페이드 · 단색', 'vd-run-solid': '레일 · 단색' };
 
 export function mountLogs(env) {
   const { $, esc, show, openEditor } = env;
