@@ -15,12 +15,33 @@ export function mountLogs(env) {
   const navBack = env.navBack || (() => show('scrInput'));
   const root = $('logRoot');
   let S = { profile: db.PROFILE0, logs: [], races: [] }, type = 'run', msg = '', editor = null, cur = null;
+  // per-tab drafts (memory only): typed values + picked photo survive tab switches and re-paints; a full reload starts fresh
+  const drafts = { run: {}, race: {}, diet: {} }, draft = () => (drafts[type] || (drafts[type] = {}));
+  let prevURL = '';
+  function capture() {
+    const form = $('lgForm'); if (!form || form.dataset.t !== type) return; const d = draft(); d.v = {};
+    form.querySelectorAll('input[id]:not([type=file]), select[id]').forEach(e => { d.v[e.id] = { value: e.value, digits: e.dataset.digits || '' }; });
+  }
+  function restore() {
+    const d = draft();
+    if (d.v) for (const [id, o] of Object.entries(d.v)) { const e = $(id); if (!e) continue; e.value = o.value; if (o.digits) e.dataset.digits = o.digits; }
+    paintPhoto();
+  }
+  function paintPhoto() {
+    const box = $('lgPhotoPrev'), inp = $('lgPhoto'), f = draft().file; if (!box) return;
+    if (prevURL) { URL.revokeObjectURL(prevURL); prevURL = ''; }
+    if (!f) { box.hidden = true; box.innerHTML = ''; return; }
+    if (inp && !(inp.files && inp.files[0])) { try { const dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files; } catch { /* preview + draft still hold it */ } }
+    prevURL = URL.createObjectURL(f);
+    box.hidden = false; box.innerHTML = `<img src="${prevURL}" alt="고른 사진 미리보기"><span>${esc(f.name || '사진')}</span><button type="button" class="chip-btn quiet" id="lgPhotoClr">사진 빼기</button>`;
+    $('lgPhotoClr').addEventListener('click', () => { draft().file = null; if (inp) inp.value = ''; paintPhoto(); });
+  }
   const ctx = () => ({ profile: S.profile, logs: S.logs, races: S.races });
   const say = t => { msg = t; const m = $('lgMsg'); if (m) m.textContent = t; };
   async function reload() { try { const a = await db.loadAll(); S = { profile: a.profile, logs: (a.logs || []).filter(SHOWN), races: a.races || [] }; } catch (e) { console.error(e); say('이 브라우저에서는 기기 저장소(IndexedDB)를 쓸 수 없어요'); } }
 
   const field = (id, label, input, hint = '') => `<div class="field"><label class="lbl sm" for="${id}">${label}</label>${input}${hint ? `<p class="hint">${hint}</p>` : ''}</div>`;
-  const photoField = () => field('lgPhoto', '사진 (선택)', '<input id="lgPhoto" type="file" accept="image/*">', '사진은 이 기기에만 저장되고 서버로 보내지 않아요');
+  const photoField = () => field('lgPhoto', '사진 (선택)', '<input id="lgPhoto" type="file" accept="image/*"><div id="lgPhotoPrev" class="lg-prev" hidden></div>', '사진은 이 기기에만 저장되고 서버로 보내지 않아요');
   const durInput = (id, ph) => `<input id="${id}" inputmode="numeric" autocomplete="off" placeholder="${ph}">`;
   function formHTML() {
     const today = isoToday(), dateF = field('lgDate', '날짜', `<input id="lgDate" type="date" value="${today}">`);
@@ -62,12 +83,13 @@ export function mountLogs(env) {
     </details>`;
   }
   function paint() {
+    capture();
     root.innerHTML = `<header class="top lg-top"><button type="button" class="icon-btn" id="lgBack" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 id="hLog">오늘 기록 남기기</h1></header>
       <section class="card"><div class="seg n3" id="lgType" role="radiogroup" aria-label="기록 종류">${TYPES.map(([k, n]) => `<button type="button" role="radio" data-v="${k}" aria-checked="${k === type}">${n}</button>`).join('')}</div>
-      <form id="lgForm" class="lg-form" autocomplete="off">${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">저장하고 카드 만들기</button></div></form></section>
+      <form id="lgForm" data-t="${type}" class="lg-form" autocomplete="off">${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">저장하고 카드 만들기</button></div></form></section>
       <section class="card" aria-labelledby="hLgList"><h2 id="hLgList">기록</h2>${listHTML()}</section>
       ${settingsHTML()}`;
-    bind();
+    bind(); restore(); livePace();
   }
   const val = id => { const e = $(id); return e ? e.value.trim() : ''; };
   function livePace() { const o = $('lgPace'); if (!o) return; const p = fmtPace(paceSec(num(val('lgDist')), parseDur(val('lgTime')))); o.textContent = p ? p + '/km' : '–'; }
@@ -77,8 +99,9 @@ export function mountLogs(env) {
   function bind() {
     const on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
     on('lgBack', 'click', () => navBack());
-    on('lgType', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; type = b.dataset.v; msg = ''; paint(); });
-    on('lgDist', 'input', livePace); bindDur('lgTime'); bindDur('lgGoal'); bindDur('lgRes');
+    on('lgType', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; capture(); type = b.dataset.v; msg = ''; paint(); });
+    on('lgDist', 'input', livePace);
+    on('lgPhoto', 'change', e => { const f = e.target.files && e.target.files[0]; draft().file = f || null; paintPhoto(); }); bindDur('lgTime'); bindDur('lgGoal'); bindDur('lgRes');
     on('lgWxGo', 'click', async () => {
       say('날씨를 불러오는 중…');
       try { const { wxHere, fetchWeather } = await import('../net/weather.js'); const p = await wxHere(); const r = await fetchWeather(p.lat, p.lon, val('lgDate') || isoToday(), new Date().getHours()); $('lgWx').value = `${r.temp} ${r.label}`; say(''); }
@@ -97,7 +120,7 @@ export function mountLogs(env) {
     on('lgImport', 'change', async e => { const f = e.target.files && e.target.files[0]; if (!f) return; try { const n = await db.importZip(f); await reload(); paint(); alert(`가져왔어요 · 기록 ${n.logs}개, 사진 ${n.photos}장`); } catch (err) { console.error(err); alert('가져오지 못했어요: ' + (err.message || err)); } });
   }
   async function saveForm() {
-    const date = val('lgDate') || isoToday(), f = $('lgPhoto') && $('lgPhoto').files[0], photoIds = [];
+    const date = val('lgDate') || isoToday(), f = ($('lgPhoto') && $('lgPhoto').files[0]) || draft().file, photoIds = [];
     let data;
     if (type === 'run') {
       const km = num(val('lgDist')), sec = parseDur(val('lgTime'));
@@ -117,7 +140,7 @@ export function mountLogs(env) {
     const log = { id: db.uid('log'), type, date, dayN: null, data, photoIds, templateId: '', createdAt: Date.now() };
     await reload(); const sd = startDateOf(S.profile, [...S.logs, log]); log.dayN = sd ? dayN(date, sd) : null;
     log.templateId = defaultTemplate(log, S.profile);
-    await db.put('logs', log); await reload(); msg = ''; paint(); return log;
+    await db.put('logs', log); await reload(); msg = ''; drafts[type] = {}; $('lgForm').remove(); paint(); return log;
   }
   // reopening a record always regenerates its card from the stored data
   async function openCard(log) {

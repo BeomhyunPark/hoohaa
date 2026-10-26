@@ -78,20 +78,9 @@
       <div class="st-row">
         <button type="button" class="stp" id="undo" aria-label="실행취소">↶</button>
         <button type="button" class="stp" id="redo" aria-label="다시실행">↷</button>
-        <div id="barResult" class="actions" hidden><button id="again" class="btn ghost-btn">다른 기록 넣기</button></div>
         <span class="st-gap"></span>
         <button id="save" class="btn primary st-act">저장</button>
         <button id="share" class="btn secondary st-act">공유</button>
-      </div>
-      <div class="st-row st-row2">
-        <div class="tpl-list" id="tplList" role="radiogroup" aria-label="템플릿"></div>
-        <div class="seg n4" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true" aria-label="스토리 9:16">9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false" aria-label="피드 4:5">4:5</button><button type="button" role="radio" data-v="square" aria-checked="false" aria-label="정사각 1:1">1:1</button><button type="button" role="radio" data-v="thumb" aria-checked="false" aria-label="3:4">3:4</button></div>
-        <button type="button" class="chip-btn" id="stMore" aria-expanded="false" aria-controls="stExtra">더보기</button>
-      </div>
-      <div class="st-extra" id="stExtra" hidden>
-        <button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">안전영역</button>
-        <button type="button" class="chip-btn" id="tplReset" aria-label="템플릿으로 되돌리기">되돌리기</button>
-        <button type="button" class="chip-btn" id="saveMyTpl" aria-label="내 템플릿 저장">내 템플릿</button>
       </div>
     </div>
     <div class="st-fit" id="tplEd">
@@ -100,6 +89,7 @@
     </div>
     <p class="pv-hint" id="pvHint" role="status" aria-live="polite"></p>
     <div class="st-tools" id="tools" role="toolbar" aria-label="편집 도구" aria-orientation="horizontal">
+      <button type="button" data-tool="tpl" aria-label="템플릿" aria-pressed="false"><b>▦</b><small>템플릿</small></button>
       <button type="button" data-tool="text" aria-label="텍스트 추가"><b>Aa</b><small>텍스트</small></button>
       <button type="button" data-tool="photo" aria-label="사진 추가"><b>📷</b><small>사진</small></button>
       <button type="button" data-tool="sticker" aria-label="스티커" aria-pressed="false"><b>★</b><small>스티커</small></button>
@@ -107,6 +97,7 @@
       <button type="button" data-tool="bg" aria-label="바탕" aria-pressed="false"><b>◐</b><small>바탕</small></button>
       <button type="button" data-tool="layers" aria-label="레이어" aria-pressed="false"><b>☰</b><small>레이어</small></button>
     </div>
+    <div class="st-tpls" id="stTpls" hidden><div class="seg n4" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true" aria-label="스토리 9:16">9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false" aria-label="피드 4:5">4:5</button><button type="button" role="radio" data-v="square" aria-checked="false" aria-label="정사각 1:1">1:1</button><button type="button" role="radio" data-v="thumb" aria-checked="false" aria-label="3:4">3:4</button></div><div class="tpl-list" id="tplList" role="radiogroup" aria-label="템플릿"></div><div class="st-extra" id="stExtra"><div id="barResult" class="actions" hidden><button id="again" class="btn ghost-btn">다른 기록 넣기</button></div> <button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">안전영역</button> <button type="button" class="chip-btn" id="tplReset" aria-label="템플릿으로 되돌리기">되돌리기</button> <button type="button" class="chip-btn" id="saveMyTpl" aria-label="내 템플릿 저장">내 템플릿</button></div></div>
     <div class="panel" id="panel"></div>
     <div id="logBar" class="log-bar" hidden></div>
     <input id="photo" type="file" accept="image/*" class="vh" tabindex="-1" aria-hidden="true">

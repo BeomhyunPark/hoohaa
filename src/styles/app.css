@@ -95,7 +95,7 @@ details.method summary{color:var(--t3);font-size:13px}
 .deco-in{padding:0 16px 16px}
 .dnote{margin:0 0 4px;color:var(--t3);font-size:13px}
 .dfield{margin-top:14px}
-.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;clip-path:inset(50%)}
 .photo-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .pick{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--border2);color:var(--t1);font-weight:600;font-size:15px;cursor:pointer}
 .photo-row:focus-within .pick{outline:2px solid var(--focus)}
@@ -437,3 +437,23 @@ html.standalone .web-only{display:none!important}
 .card.tpl .panel{flex:0 1 auto;max-height:35dvh;overflow:auto;min-height:0;margin:0;-webkit-overflow-scrolling:touch}
 body.log-mode .card.tpl{height:auto;max-height:none;overflow:visible}
 body.log-mode .st-fit{flex:none;height:min(48dvh,480px)}
+.lg-prev{display:flex;align-items:center;gap:10px;margin-top:8px}
+.lg-prev[hidden]{display:none}
+.lg-prev img{width:48px;height:64px;object-fit:cover;border-radius:8px;flex:none}
+.lg-prev span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+/* template strip (story-app style): big thumbnails with names right above the tools, scrolls sideways inside itself */
+.st-tpls{flex:none;display:flex;flex-direction:column;gap:6px;margin:6px 0 2px;min-width:0}
+.st-tpls[hidden]{display:none}
+.st-tpls .seg{display:flex;gap:2px;padding:2px;width:100%}.st-tpls .seg button{flex:1 1 0;min-height:40px;padding:0;font-size:13px}
+.st-tpls .st-extra{display:flex;flex-wrap:wrap;gap:6px;padding:0}.st-tpls .chip-btn{flex:none;white-space:nowrap;padding:0 10px;min-height:40px}
+.st-tpls #barResult.actions{display:flex;flex-direction:row;width:auto;margin:0}.st-tpls #barResult[hidden]{display:none}.st-tpls #barResult .ghost-btn{width:auto;min-height:40px;white-space:nowrap;text-decoration:none;border:1px solid var(--border2);border-radius:12px;padding:0 10px;font-size:13px}
+.st-tpls .tpl-list{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:4px 4px 2px;margin:0;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.st-tpls .tpl-list::-webkit-scrollbar{display:none}
+.st-tpls .tpl-btn,.st-tpls .tpl-mine{flex:0 0 58px;width:58px;min-width:58px;gap:3px}
+.st-tpls .tpl-btn canvas{width:58px;height:auto;aspect-ratio:auto;border-radius:8px;outline-width:3px}
+.st-tpls .tpl-btn .tn{font-size:11px;max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-tpls .tpl-del{width:24px;height:24px;top:-2px;right:-4px;font-size:12px}
+.card.tpl .panel:empty{display:none}
+/* no accidental double-tap zoom while tapping editor/log controls fast (pinch-zoom of the page stays available outside the canvas) */
+#tplCard,#tplCard button,#tplCard input,#tplCard select,#tplCard label,.cpick,.cpick button,#logRoot button,#logRoot .seg{touch-action:manipulation}
+#tplCard input:not([type=range]):not([type=color]):not([type=checkbox]):not([type=file]):not(.vh),#tplCard select,#tplCard textarea{font-size:max(16px,1em)}
