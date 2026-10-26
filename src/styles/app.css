@@ -95,7 +95,7 @@ details.method summary{color:var(--t3);font-size:13px}
 .deco-in{padding:0 16px 16px}
 .dnote{margin:0 0 4px;color:var(--t3);font-size:13px}
 .dfield{margin-top:14px}
-.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;clip-path:inset(50%)}
 .photo-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .pick{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--border2);color:var(--t1);font-weight:600;font-size:15px;cursor:pointer}
 .photo-row:focus-within .pick{outline:2px solid var(--focus)}
@@ -454,3 +454,6 @@ body.log-mode .st-fit{flex:none;height:min(48dvh,480px)}
 .st-tpls .tpl-btn .tn{font-size:11px;max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .st-tpls .tpl-del{width:24px;height:24px;top:-2px;right:-4px;font-size:12px}
 .card.tpl .panel:empty{display:none}
+/* no accidental double-tap zoom while tapping editor/log controls fast (pinch-zoom of the page stays available outside the canvas) */
+#tplCard,#tplCard button,#tplCard input,#tplCard select,#tplCard label,.cpick,.cpick button,#logRoot button,#logRoot .seg{touch-action:manipulation}
+#tplCard input:not([type=range]):not([type=color]):not([type=checkbox]):not([type=file]):not(.vh),#tplCard select,#tplCard textarea{font-size:max(16px,1em)}

@@ -810,6 +810,8 @@ const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.fin
 // ---- gestures: tap select · drag move (snap) · pinch scale+rotate · corner handle · long-press menu · drag to trash ----
 {
   const st = $('stage'), ov = $('ovl'), pts = new Map(); let g0 = null, lp = 0, moved = false;
+  // iOS Safari: a two-finger pinch on the canvas should scale the element (pointer events above), not zoom the page
+  for (const ev of ['gesturestart', 'gesturechange']) st.addEventListener(ev, e => e.preventDefault(), { passive: false });
   const cv = e => { const r = ov.getBoundingClientRect(); return [(e.clientX - r.left) * 1080 / r.width, (e.clientY - r.top) * FH() / r.height]; };
   const ang = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]);
   const start = () => { const P = [...pts.values()], L = sel && getL(sel); pinXY(L); for (const id of multi) pinXY(getL(id)); if (L && P.length > 1) pinS(L); g0 = { P: P.map(p => [...p]), L: L ? clone(L) : null, bg: clone(doc.bg), M: [...multi].map(id => { const m = getL(id); return m && [id, m.x, m.y]; }).filter(Boolean) }; };
