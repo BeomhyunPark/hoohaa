@@ -710,7 +710,7 @@ let needClamp = false, clampN = 0;
 function fitStage() { const h = FH(), pv = $('tplPreview'), o = $('ovl'); if (pv.height !== h) { pv.height = h; o.height = h; } $('stage').style.setProperty('--ar', `1080/${h}`); $('stage').style.setProperty('--arn', String(1080 / h));
   for (const b of document.querySelectorAll('#fmtSeg [data-v]')) b.setAttribute('aria-checked', String(b.dataset.v === (doc.fmt || 'story'))); $('safeBtn').hidden = (doc.fmt || 'story') !== 'story'; }
 // re-lay out proportionally: positions + sizes follow the height ratio, edge anchors stay at the margins; template blocks re-fit (auto-fit), everything kept inside the safe margins
-const CARRY = ['font', 'col', 'bcol', 'bo', 'box', 'fsh', 'fol', 'fgl', 'o', 'lab', 't', 'hidden', 'behind', 'pid', 'crop', 'cr', 'rot', 'flip', 'filter', 'adj', 'cut', 'ol', 'f', 'k', 'ls', 'lh'];
+const CARRY = ['font', 'col', 'bcol', 'bo', 'box', 'fsh', 'fol', 'fgl', 'o', 'lab', 't', 'hidden', 'behind', 'pid', 'crop', 'cr', 'rot', 'flip', 'filter', 'adj', 'cut', 'ol', 'f', 'k', 'ls', 'lh', 'lk'];
 function relayout(d, to) { if (d.log) { const h0 = fmtH(d.fmt), k = fmtH(to) / h0; d.fmt = to === 'story' ? undefined : to; for (const L of d.layers) if (L.mv || L.rx == null) { L.y *= k; } needClamp = true; clampN = 0; return d; }
   if (d.tpl && TEMPLATES.some(t => t[0] === d.tpl) && d.layers.some(l => l.sid)) return specRelayout(d, to); return propRelayout(d, to); }
 function specRelayout(d, to) { const h0 = fmtH(d.fmt), h1 = fmtH(to), nd = templateDoc(d.tpl, state.story, to), k = h1 / h0, used = new Set(), out = [];
@@ -778,7 +778,8 @@ function paintOvl() {
   for (const id of multi) { const mb = boxes.find(x => x.id === id); if (!mb) continue; const p = corners(mb); g.strokeStyle = '#3DC8F5'; g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]); }
   const b = sel && boxes.find(x => x.id === sel);
   if (b) { const p = corners(b); g.strokeStyle = '#3DC8F5'; g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]);
-    if (!fineP) { const [hx, hy] = p[2]; g.fillStyle = '#3DC8F5'; g.beginPath(); g.arc(hx, hy, HANDLE, 0, 7); g.fill(); g.fillStyle = '#0F1620'; g.font = '700 52px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('⤡', hx, hy + 2); } }
+    if (getL(sel) && getL(sel).lk) { const [hx, hy] = p[2]; g.fillStyle = 'rgba(15,22,32,.82)'; g.beginPath(); g.arc(hx, hy, 30, 0, 7); g.fill(); g.strokeStyle = '#F4F6F8'; g.lineWidth = 4; g.beginPath(); g.arc(hx, hy - 6, 9, Math.PI, 0); g.stroke(); g.fillStyle = '#F4F6F8'; g.fillRect(hx - 13, hy - 6, 26, 20); }
+    else if (!fineP) { const [hx, hy] = p[2]; g.fillStyle = '#3DC8F5'; g.beginPath(); g.arc(hx, hy, HANDLE, 0, 7); g.fill(); g.fillStyle = '#0F1620'; g.font = '700 52px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('⤡', hx, hy + 2); } }
   placeMini(b);
   if (dragging) { g.fillStyle = trashHot ? 'rgba(255,90,95,.95)' : 'rgba(15,22,32,.75)'; g.beginPath(); const ty = H - 130; g.arc(540, ty, trashHot ? 96 : 80, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 6; g.beginPath(); g.rect(510, ty - 25, 60, 70); g.moveTo(495, ty - 25); g.lineTo(585, ty - 25); g.moveTo(525, ty - 40); g.lineTo(555, ty - 40); g.stroke(); }
 }
@@ -786,6 +787,7 @@ function paintOvl() {
 function placeMini(b) { const m = $('miniBar'); if (!m) return; const L = b && getL(b.id);
   if (!L || dragging || pickMode) { m.hidden = true; return; }
   m.querySelector('[data-mb=behind]').hidden = !canBehind(L); const bh = m.querySelector('[data-mb=behind]'); bh.setAttribute('aria-pressed', !!L.behind); bh.title = L.behind ? '인물 앞으로' : '인물 뒤로'; bh.setAttribute('aria-label', bh.title); bh.querySelector('small').textContent = bh.title;
+  const lk = m.querySelector('[data-mb=lock]'); if (lk) { lk.setAttribute('aria-pressed', !!L.lk); lk.title = L.lk ? '잠금 해제' : '잠금'; lk.setAttribute('aria-label', lk.title); lk.querySelector('small').textContent = L.lk ? '잠김' : '잠금'; lk.querySelector('.lk-open').style.display = L.lk ? 'none' : ''; lk.querySelector('.lk-shut').style.display = L.lk ? '' : 'none'; }
   m.querySelectorAll('[data-mb=dup],[data-mb=del]').forEach(e => e.hidden = isTop(L)); m.querySelector('[data-mb=asbg]').hidden = !(L.type === 'photo' && L.pid && photos[L.pid]) || multi.size > 0; m.hidden = false;
   const r = $('ovl').getBoundingClientRect(), kx = r.width / 1080, ky = r.height / FH(), c = corners(b), xs = c.map(q => q[0] * kx), ys = c.map(q => q[1] * ky);
   const bw = m.offsetWidth, bhh = m.offsetHeight, top = Math.min(...ys), bot = Math.max(...ys), cx = (Math.min(...xs) + Math.max(...xs)) / 2;
@@ -799,11 +801,11 @@ function tapButtons(el, sel_, run) { let down = null, last = 0;
   el.addEventListener('pointerup', e => { stop(e); const b = e.target.closest(sel_); if (b && b === down && !b.hidden) { last = Date.now(); e.preventDefault(); run(b); } down = null; });
   el.addEventListener('pointercancel', () => { down = null; });
   el.addEventListener('click', e => { stop(e); const b = e.target.closest(sel_); if (b && Date.now() - last > 700) run(b); }); }
-tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(sel); if (!L) return; if (a === 'behind') toggleBehind(L); else if (a === 'asbg') photoToBg(L); else act(a); });
+tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(sel); if (!L) return; if (a === 'lock') { if (L.lk) delete L.lk; else L.lk = 1; changed(true); paintOvl(); status(L.lk ? '잠갔어요 · 위치와 크기가 고정돼요' : '잠금을 풀었어요'); } else if (a === 'behind') toggleBehind(L); else if (a === 'asbg') photoToBg(L); else act(a); });
 const toLocal = (b, x, y) => { const c = Math.cos(-(b.r || 0)), s = Math.sin(-(b.r || 0)), dx = x - b.x, dy = y - b.y; return [(dx * c - dy * s) / b.s, (dx * s + dy * c) / b.s]; };
 function hitAt(x, y) { for (let i = boxes.length - 1; i >= 0; i--) { const b = boxes[i]; if (b.hidden || b.nh) continue; const [lx, ly] = toLocal(b, x, y), pad = Math.max(0, 30 / b.s - 0); if (Math.abs(lx) <= b.w / 2 + pad && Math.abs(ly) <= b.h / 2 + pad) return b; } return null; }
 window.__hitAt = (x, y) => (hitAt(x, y) || {}).id;
-const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.find(q => q.id === sel); if (!b) return false; const [hx, hy] = corners(b)[2]; if (Math.hypot(x - hx, y - hy) >= HANDLE * 1.3) return false;
+const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.find(q => q.id === sel); if (!b || (getL(sel) || {}).lk) return false; const [hx, hy] = corners(b)[2]; if (Math.hypot(x - hx, y - hy) >= HANDLE * 1.3) return false;
   const [lx, ly] = toLocal(b, x, y); if (Math.abs(lx) < b.w * .3 && Math.abs(ly) < b.h * .3) return false; // small text: a finger on its middle moves it, never resizes
   // a finger on another element's body grabs that element, not the selected one's resize handle
   return !boxes.some(q => q.id !== b.id && !q.hidden && !q.nh && (q.type === 'text' || q.type === 'stat') && (([qx, qy]) => Math.abs(qx) <= q.w / 2 && Math.abs(qy) <= q.h / 2)(toLocal(q, x, y))); };
@@ -836,6 +838,7 @@ const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.fin
     const c0 = g0.P.reduce((a, q) => [a[0] + q[0] / g0.P.length, a[1] + q[1] / g0.P.length], [0, 0]), c1 = P.reduce((a, q) => [a[0] + q[0] / P.length, a[1] + q[1] / P.length], [0, 0]);
     const dx = c1[0] - c0[0], dy = c1[1] - c0[1]; if (!moved && Math.hypot(dx, dy) < 14 && P.length === 1) return; moved = true; clearTimeout(lp);
     const L = g0.L && getL(g0.L.id);
+    if (L && L.lk && (g0.scale || g0.handle || g0.hit || P.length > 1)) return; // locked: no move / resize / rotate
     if (g0.scale && L) { const b0 = g0.L, d0 = Math.hypot(g0.P[0][0] - b0.x, g0.P[0][1] - b0.y), d1 = Math.hypot(P[0][0] - b0.x, P[0][1] - b0.y); pinS(L); L.s = Math.max(.08, Math.min(8, b0.s * d1 / Math.max(20, d0))); }
     else if (g0.handle && L) { const b0 = g0.L, a0 = ang([b0.x, b0.y], g0.P[0]), a1 = ang([b0.x, b0.y], P[0]), d0 = Math.hypot(g0.P[0][0] - b0.x, g0.P[0][1] - b0.y), d1 = Math.hypot(P[0][0] - b0.x, P[0][1] - b0.y);
       pinS(L); L.s = Math.max(.08, Math.min(8, b0.s * d1 / Math.max(1, d0))); L.r = snapR(b0.r + a1 - a0); }
@@ -848,7 +851,7 @@ const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.fin
       const best = (n, tg, h, mg) => { let m = null; if (Math.abs(n - tg[0][0]) < T) return { n: tg[0][0], line: tg[0][0] }; for (const [t, o] of tg) for (const off of o === null ? [-h, 0, h] : [o]) { const d = Math.abs(n + off - t); if (d < T && (!m || d < m.d)) m = { d, n: t - off, line: t }; } if (!m) for (const [t, line] of mg) if (Math.abs(n - t) < T) { m = { n: t, line }; break; } return m; };
       const mx_ = best(nx, tx, hw, [[60 + hw, 60], [1020 - hw, 1020]]); if (mx_) { nx = mx_.n; gx.push(mx_.line); }
       const my_ = best(ny, ty, hh, [[sz[0] + hh, sz[0]], [sz[1] - hh, sz[1]]]); if (my_) { ny = my_.n; gy.push(my_.line); }
-      L.x = nx; L.y = ny; L.mv = 1; for (const [id, x0, y0] of g0.M || []) { const m = getL(id); if (m) { m.x = x0 + nx - g0.L.x; m.y = y0 + ny - g0.L.y; m.mv = 1; delete m.ax; delete m.ay; } }
+      L.x = nx; L.y = ny; L.mv = 1; for (const [id, x0, y0] of g0.M || []) { const m = getL(id); if (m && !m.lk) { m.x = x0 + nx - g0.L.x; m.y = y0 + ny - g0.L.y; m.mv = 1; delete m.ax; delete m.ay; } }
       guides = { x: gx, y: gy }; trashHot = !multi.size && Math.hypot(P[0][0] - 540, P[0][1] - (HH - 130)) < 110; }
     else if (!g0.hit && doc.bg.type === 'photo' && photos[doc.bg.pid]) { if (P.length > 1) { const f = Math.hypot(P[0][0] - P[1][0], P[0][1] - P[1][1]) / Math.max(1, Math.hypot(g0.P[0][0] - g0.P[1][0], g0.P[0][1] - g0.P[1][1])); doc.bg.pz = Math.max(1, Math.min(4, (g0.bg.pz || 1) * f)); }
       const im = bgImg(), HB = FH(), box = imContent(im), sc = Math.max(1080 / box.w, HB / box.h) * (doc.bg.pz || 1), mx = Math.max(1, (box.w * sc - 1080) / 2), my = Math.max(1, (box.h * sc - HB) / 2);
@@ -858,7 +861,7 @@ const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.fin
   const up = e => { if (!pts.has(e.pointerId)) return; pts.delete(e.pointerId); clearTimeout(lp);
     if (!pts.size) { if (dragging && trashHot && sel) delLayer(sel); dragging = false; trashHot = false; guides = null; g0 = null; paintOvl(); if (moved) commit(); if (sel) paintPanel(); } else start(); };
   ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
-  ov.addEventListener('wheel', e => { const L = sel && getL(sel); if (!L) return; e.preventDefault(); pinS(L); L.s = Math.max(.08, Math.min(8, L.s * Math.exp(-e.deltaY / 500))); changed(); }, { passive: false });
+  ov.addEventListener('wheel', e => { const L = sel && getL(sel); if (!L) return; e.preventDefault(); if (L.lk) return; pinS(L); L.s = Math.max(.08, Math.min(8, L.s * Math.exp(-e.deltaY / 500))); changed(); }, { passive: false });
   // no page scroll / zoom while touching the canvas (iOS needs non-passive handlers)
   for (const el of [st, $('cpSV'), $('cpHue')]) { const block = e => { if (e.target.closest && e.target.closest('.mini, .bg-btn, .ctx')) return; e.preventDefault(); }; el.addEventListener('touchstart', block, { passive: false }); el.addEventListener('touchmove', block, { passive: false }); }
 }
