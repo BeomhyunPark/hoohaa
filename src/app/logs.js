@@ -84,7 +84,7 @@ export function mountLogs(env) {
   }
   function paint() {
     capture();
-    root.innerHTML = `<header class="top lg-top"><button type="button" class="icon-btn" id="lgBack" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 id="hLog">오늘 기록 남기기</h1></header>
+    root.innerHTML = `<header class="top lg-top"><button type="button" class="icon-btn" id="lgBack" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 id="hLog">오늘 훈련일지</h1></header>
       <section class="card"><div class="seg n3" id="lgType" role="radiogroup" aria-label="기록 종류">${TYPES.map(([k, n]) => `<button type="button" role="radio" data-v="${k}" aria-checked="${k === type}">${n}</button>`).join('')}</div>
       <form id="lgForm" data-t="${type}" class="lg-form" autocomplete="off">${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">저장하고 카드 만들기</button></div></form></section>
       <section class="card" aria-labelledby="hLgList"><h2 id="hLgList">기록</h2>${listHTML()}</section>

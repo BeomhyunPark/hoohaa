@@ -174,11 +174,11 @@ $('go').addEventListener('click', async () => {
 });
 $('again').addEventListener('click', () => { if (document.body.classList.contains('log-mode') && history.state && history.state.scr === 'scrResult') { history.back(); return; } if (document.body.classList.contains('log-mode')) { openLogs(); return; } navBack(); });
 
-// ---------- 오늘 기록 남기기 (second entry path into the same editor: log data instead of tier data) ----------
+// ---------- 오늘 훈련일지 (second entry path into the same editor: log data instead of tier data) ----------
 let logsP = null;
 const logs = () => logsP ||= import('./logs.js').then(m => m.mountLogs({ $, esc, show, navBack, openEditor: async () => { await Promise.all([enableCardCss(), ensureEditor()]); return ensureEditor(); } }));
 async function openLogs() { try { (await logs()).open(); } catch (e) { console.error(e); $('err').textContent = '기록 화면을 열지 못했어요. 다시 시도해 주세요.'; } }
-if ($('logGo')) $('logGo').addEventListener('click', openLogs);
+if ($('logGo')) $('logGo').addEventListener('click', (e) => { e.preventDefault(); openLogs(); });
 const wantLog = new URLSearchParams(location.search).has('log') || /^\/log\/?$/.test(location.pathname);
 const wantResult = /^\/result\/?$/.test(location.pathname);
 // /log/, /result/ and old ?log=1 links: keep home (/) as the base entry (old ?log=1 is dropped silently), then open the screen
