@@ -228,11 +228,8 @@ main{max-width:760px}
 /* in-flow primary actions (no sticky bars) */
 .actions{display:flex;flex-direction:column;gap:8px;margin:16px 0 8px}
 .res-share{margin:12px 0 4px}
-.to-ed{margin:12px 0 4px;text-align:center}
-.ed-link{background:none;border:0;color:#3DC8F5;font:inherit;font-size:14px;text-decoration:underline;min-height:44px;padding:0 12px;cursor:pointer}
 .res-toast{position:absolute;left:50%;transform:translateX(-50%);top:0;opacity:0;pointer-events:none;background:#1F2B3B;color:#F4F6F8;border:1px solid #2A3748;border-radius:10px;padding:10px 14px;font-size:14px;transition:opacity .2s;z-index:50}
 .res-toast.on{opacity:1}
-body.log-mode .to-ed{display:none!important}
 /* ===== share editor v3 (story-style; everything in page flow, no sticky/fixed) ===== */
 .st-top{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}.st-top .sp{flex:1}
 .st-top .st-act{width:auto;flex:none;min-height:44px;padding:0 16px;font-size:15px;border-radius:12px}
