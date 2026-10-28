@@ -114,7 +114,11 @@ function applyScreen(name) {
 function screenUrl(name) {
   const u = new URL(location.href);
   const onLog = name === 'scrLog' || (name === 'scrResult' && document.body.classList.contains('log-mode'));
-  if (onLog) u.searchParams.set('log', '1'); else u.searchParams.delete('log');
+  // readable paths on the site: / (home) and /log/ (오늘 기록). /app/ (PWA) keeps ?log=1.
+  const site = u.pathname === '/' || u.pathname === '/log/' || u.pathname === '/log';
+  u.searchParams.delete('log');
+  if (site) u.pathname = onLog ? '/log/' : '/';
+  else if (onLog) u.searchParams.set('log', '1');
   return u.pathname + u.search;
 }
 function show(name) {
@@ -176,7 +180,9 @@ let logsP = null;
 const logs = () => logsP ||= import('./logs.js').then(m => m.mountLogs({ $, esc, show, navBack, openEditor: async () => { await Promise.all([enableCardCss(), ensureEditor()]); return ensureEditor(); } }));
 async function openLogs() { try { (await logs()).open(); } catch (e) { console.error(e); $('err').textContent = '기록 화면을 열지 못했어요. 다시 시도해 주세요.'; } }
 if ($('logGo')) $('logGo').addEventListener('click', openLogs);
-const wantLog = new URLSearchParams(location.search).has('log');
+const wantLog = new URLSearchParams(location.search).has('log') || /^\/log\/?$/.test(location.pathname);
+// /log/ and old /?log=1 links: keep home (/) as the base entry, then open the form at /log/
+if (wantLog && /^\/(log\/?)?$/.test(location.pathname)) { try { const u = new URL(location.href); u.searchParams.delete('log'); history.replaceState(null, '', '/' + u.search); } catch (e) {} }
 // stale history entry after reload / deep link: state.last is gone, so stay home. ?log reopens the form.
 if (history.state && history.state.scr && !state.last && !wantLog) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
 if (wantLog) openLogs();
