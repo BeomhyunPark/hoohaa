@@ -105,7 +105,8 @@ function restore() {
 // ---------- screens ----------
 // Home stays the base history entry. The log form pushes one entry, and the card editor
 // opened from that form pushes another, so Safari back returns to the form. Other moves
-// replace the current entry. ?log=1 keeps a refresh on the log form.
+// replace the current entry. /log/ keeps a refresh on the log form; /result/ recomputes from saved inputs.
+const SITE = /^\/((log|result)\/?)?$/;
 function applyScreen(name) {
   for (const [scr, bar] of [['scrInput', 'barInput'], ['scrResult', 'barResult'], ['scrLog', null]]) { if ($(scr)) $(scr).hidden = scr !== name; if (bar && $(bar)) $(bar).hidden = scr !== name; }
   if (name === 'scrInput') document.body.classList.remove('log-mode');
@@ -114,11 +115,9 @@ function applyScreen(name) {
 function screenUrl(name) {
   const u = new URL(location.href);
   const onLog = name === 'scrLog' || (name === 'scrResult' && document.body.classList.contains('log-mode'));
-  // readable paths on the site: / (home) and /log/ (오늘 기록). /app/ (PWA) keeps ?log=1.
-  const site = u.pathname === '/' || u.pathname === '/log/' || u.pathname === '/log';
+  // readable paths on the site: / (home), /result/ (티어 결과), /log/ (오늘 기록). /app/ (PWA) keeps its own path.
   u.searchParams.delete('log');
-  if (site) u.pathname = onLog ? '/log/' : '/';
-  else if (onLog) u.searchParams.set('log', '1');
+  if (SITE.test(u.pathname)) u.pathname = onLog ? '/log/' : name === 'scrResult' ? '/result/' : '/';
   return u.pathname + u.search;
 }
 function show(name) {
@@ -181,12 +180,16 @@ const logs = () => logsP ||= import('./logs.js').then(m => m.mountLogs({ $, esc,
 async function openLogs() { try { (await logs()).open(); } catch (e) { console.error(e); $('err').textContent = '기록 화면을 열지 못했어요. 다시 시도해 주세요.'; } }
 if ($('logGo')) $('logGo').addEventListener('click', openLogs);
 const wantLog = new URLSearchParams(location.search).has('log') || /^\/log\/?$/.test(location.pathname);
-// /log/ and old /?log=1 links: keep home (/) as the base entry, then open the form at /log/
-if (wantLog && /^\/(log\/?)?$/.test(location.pathname)) { try { const u = new URL(location.href); u.searchParams.delete('log'); history.replaceState(null, '', '/' + u.search); } catch (e) {} }
-// stale history entry after reload / deep link: state.last is gone, so stay home. ?log reopens the form.
-if (history.state && history.state.scr && !state.last && !wantLog) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+const wantResult = /^\/result\/?$/.test(location.pathname);
+// /log/, /result/ and old ?log=1 links: keep home (/) as the base entry (old ?log=1 is dropped silently), then open the screen
+if ((wantLog || wantResult) && SITE.test(location.pathname)) { try { const u = new URL(location.href); u.searchParams.delete('log'); history.replaceState(null, '', '/' + u.search); } catch (e) {} }
+else if (wantLog) { try { const u = new URL(location.href); u.searchParams.delete('log'); history.replaceState(null, '', u.pathname + u.search); } catch (e) {} }
+// stale history entry after reload / deep link: state.last is gone, so stay home.
+if (history.state && history.state.scr && !state.last && !wantLog && !wantResult) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
 if (wantLog) openLogs();
 restore();
+// /result/ opened directly: recompute from the inputs saved on this device; nothing saved → stay on home input
+if (wantResult && !wantLog && validate()) $('go').click();
 // landing-page deep link: ?ev=5k|10k|half|full preselects the event
 { const q = { '5k': '5K', '10k': '10K', half: 'half', full: 'full' }[(new URLSearchParams(location.search).get('ev') || '').toLowerCase()]; if (q) { state.ev = q; applyEv(); validate(); } }
 
