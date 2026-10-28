@@ -1161,7 +1161,6 @@ function bindPanel(L) {
 const pxSig = cv => { const t = document.createElement('canvas'); t.width = 54; t.height = Math.round(54 * cv.height / cv.width); const g = t.getContext('2d'); g.drawImage(cv, 0, 0, t.width, t.height); const d = g.getImageData(0, 0, t.width, t.height).data; let a = []; for (let i = 0; i < d.length; i += 4) a.push((d[i] + d[i + 1] + d[i + 2]) / 3 | 0); return { w: cv.width, h: cv.height, a }; };
 window.__exportSig = async () => pxSig(await finalCanvas()); window.__previewSig = () => pxSig($('tplPreview'));
 async function finalCanvas() { commit(); const cv = await renderDoc(state.story, doc, photos); window.__lastStory = cv; return cv; }
-$('toEditor').addEventListener('click', () => { const card = document.querySelector('.card.tpl'); if (card) card.scrollIntoView({ block: 'start' }); });
 $('save').addEventListener('click', async () => {
   const b = $('save'); if (b.disabled || !state.story) return; b.disabled = true; const lbl = b.textContent; b.textContent = '저장 중…';
   try { const cv = await finalCanvas(); const how = await saveStory(cv, doc.log ? `hoohaa-${doc.log.tpl}.png` : `hoohaa-${state.story.key}.png`); b.textContent = how === 'cancelled' ? lbl : '저장했어요'; }
