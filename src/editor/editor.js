@@ -1202,11 +1202,46 @@ let weeklyKm = '';
 const METHOD = '입력한 기록으로 달리기 능력 점수(VDOT)를 구하고, 같은 점수를 다른 거리에 적용한 것(잭 다니엘스 공식). 그 거리에 맞는 훈련을 했을 때 기준이라, 특히 풀코스는 장거리 훈련이 부족하면 실제로는 더 걸릴 수 있어요.';
 
 function resToast(msg) { let t = $('resToast'); if (!t) { t = document.createElement('div'); t.id = 'resToast'; t.className = 'res-toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite'); document.body.appendChild(t); } t.textContent = msg; t.style.top = (window.scrollY + window.innerHeight - 120) + 'px'; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1800); }
-async function shareResult(p) {
-  if (navigator.share) { try { await navigator.share(p); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; } }
-  try { await navigator.clipboard.writeText(`${p.text}\n${p.url}`); resToast('결과 링크를 복사했어요'); return 'copied'; }
-  catch (e) { resToast('복사하지 못했어요. 다시 시도해 주세요'); return 'failed'; }
+// 결과 공유: #resBody(티어 카드~훈련 페이스)를 PNG로 렌더해 기기 공유 시트로 보냄. 공유하기 버튼·편집기는 제외.
+let h2iP = null;
+function loadH2I() { return h2iP || (h2iP = new Promise((ok, no) => { if (window.htmlToImage) return ok(window.htmlToImage); const s = document.createElement('script'); s.src = '/src/vendor/html-to-image.js'; s.onload = () => ok(window.htmlToImage); s.onerror = () => { h2iP = null; no(new Error('h2i load')); }; document.head.appendChild(s); })); }
+let resImg = null, resImgP = null; // cached {blob,file} for the current result
+function resCaptureNode() {
+  const src = $('resBody'), w = Math.min(430, Math.max(340, src.clientWidth || 390));
+  const box = document.createElement('div'); box.className = 'res-cap'; box.setAttribute('aria-hidden', 'true'); box.inert = true;
+  box.style.cssText = `position:fixed;left:-10000px;top:0;width:${w}px;padding:20px 16px 18px;background:var(--bg);color:var(--t1);box-sizing:border-box`;
+  const c = src.cloneNode(true); c.removeAttribute('id');
+  for (const el of c.querySelectorAll('[id]')) el.removeAttribute('id');
+  for (const el of c.querySelectorAll('.res-share, .info, .more, .wk, .chev, .exp, .pace-foot')) el.remove();
+  const lad = c.querySelector('.lad'); if (lad) { lad.style.maxHeight = 'none'; lad.style.overflow = 'visible';
+    const li = [...lad.children], i = li.findIndex(x => x.classList.contains('me')); li.forEach((x, j) => { if (i >= 0 && Math.abs(j - i) > 2) x.remove(); }); }
+  const ft = document.createElement('div'); ft.textContent = 'hoohaa.run'; ft.style.cssText = 'text-align:center;color:var(--t3);font-size:13px;margin-top:14px;letter-spacing:.04em';
+  box.append(c, ft); document.body.appendChild(box); return box;
 }
+async function buildResultImage() {
+  const h = await loadH2I(); const node = resCaptureNode();
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const o = { pixelRatio: 2, backgroundColor: '#0F1620', cacheBust: false, style: { position: 'static', left: '0', top: '0', margin: '0' } };
+    await h.toBlob(node, o).catch(() => {}); // Safari: 첫 렌더는 폰트/이미지가 빠질 때가 있어 한 번 예열
+    const blob = await h.toBlob(node, o); if (!blob) throw new Error('blob');
+    return { blob, file: new File([blob], 'hoohaa-result.png', { type: 'image/png' }) };
+  } finally { node.remove(); }
+}
+function prepResultImage() { resImg = null; const p = resImgP = new Promise(r => setTimeout(r, 400)).then(buildResultImage).then(x => { if (p === resImgP) resImg = x; return x; }).catch(() => null); return p; }
+function downloadBlob(blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hoohaa-result.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+async function shareResult() {
+  // iOS는 사용자 탭 직후 share를 불러야 해서, 미리 만들어 둔 이미지를 바로 씀
+  let img = resImg; if (!img) { resToast('이미지를 만드는 중이에요…'); img = await (resImgP || prepResultImage()); if (!img) img = await buildResultImage().catch(() => null); }
+  if (!img) { resToast('이미지를 만들지 못했어요. 다시 시도해 주세요'); return 'failed'; }
+  const d = { files: [img.file], title: 'hoohaa 러닝 티어' };
+  if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [img.file] }))) {
+    try { await navigator.share(d); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; }
+  }
+  try { downloadBlob(img.blob); resToast('결과 이미지를 저장했어요'); return 'downloaded'; }
+  catch (e) { resToast('공유하지 못했어요. 다시 시도해 주세요'); return 'failed'; }
+}
+window.__resultImage = () => buildResultImage().then(x => x.blob);
 function renderResult(r) {
   if (doc && doc.log) { doc = null; sel = null; logCtx = null; document.body.classList.remove('log-mode'); }
   const ts = tierStyle(r.tier), nx = r.nextTier;
@@ -1261,10 +1296,7 @@ function renderResult(r) {
   state.story = { key: ts.key, tierKo: r.tier, word: ts.key.toUpperCase(), roman: ts.roman, long: LONG.has(ts.key),
     title: `${evName} 성적표`, recLine: `${evName} ${short(r.input.time)} · ${r.pace}`, who: pubWho, topLabel: r.topPercentLabel, headline: r.topPercentLabel, time: short(r.input.time), pace: r.pace, vdot: r.vdot.toFixed(1),
     nextLine: nx ? `${nx.tier}까지 ${evName} ${nx.gapText} 단축` : '최고 티어 챌린저 달성!' };
-  const pr = ['5K', '10K', 'half', 'full'].map(k => `${({ half: '하프', full: '풀' })[k] || k} ${short(r.predicted[k])}`).join(' · ');
-  const shareText = `내 러닝 티어: ${r.tier} (${r.topPercentLabel})\n${evName} ${short(r.input.time)} · ${r.pace}\nVDOT ${r.vdot.toFixed(1)}\n예상 기록: ${pr}\nE ${r.trainingPaces.E} · T ${r.trainingPaces.T}`;
-  window.__sharePayload = { title: 'hoohaa 러닝 티어', text: shareText, url: 'https://hoohaa.run/result/' };
-  $('resShare').addEventListener('click', () => shareResult(window.__sharePayload));
+  $('resShare').addEventListener('click', () => shareResult()); prepResultImage();
   requestAnimationFrame(() => { const l = $('ladder'), me = $('ladMe'); if (l && me) l.scrollTop = me.offsetTop - l.clientHeight / 2 + me.offsetHeight / 2; });
   refreshTpl();
   for (const b of $('resBody').querySelectorAll('.info, .prow')) b.addEventListener('click', () => {
