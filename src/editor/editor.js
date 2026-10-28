@@ -1202,6 +1202,12 @@ const PACE_ROWS = [['E', '이지'], ['M', '마라톤'], ['T', '역치'], ['I', '
 let weeklyKm = '';
 const METHOD = '입력한 기록으로 달리기 능력 점수(VDOT)를 구하고, 같은 점수를 다른 거리에 적용한 것(잭 다니엘스 공식). 그 거리에 맞는 훈련을 했을 때 기준이라, 특히 풀코스는 장거리 훈련이 부족하면 실제로는 더 걸릴 수 있어요.';
 
+function resToast(msg) { let t = $('resToast'); if (!t) { t = document.createElement('div'); t.id = 'resToast'; t.className = 'res-toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite'); document.body.appendChild(t); } t.textContent = msg; t.style.top = (window.scrollY + window.innerHeight - 120) + 'px'; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1800); }
+async function shareResult(p) {
+  if (navigator.share) { try { await navigator.share(p); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; } }
+  try { await navigator.clipboard.writeText(`${p.text}\n${p.url}`); resToast('결과 링크를 복사했어요'); return 'copied'; }
+  catch (e) { resToast('복사하지 못했어요. 다시 시도해 주세요'); return 'failed'; }
+}
 function renderResult(r) {
   if (doc && doc.log) { doc = null; sel = null; logCtx = null; document.body.classList.remove('log-mode'); }
   const ts = tierStyle(r.tier), nx = r.nextTier;
@@ -1233,6 +1239,7 @@ function renderResult(r) {
       <div class="tc-name${LONG.has(ts.key) ? ' long' : ''}" aria-hidden="true"><span class="w">${ts.key.toUpperCase()}</span>${ts.roman ? `<span class="n" data-d="${ts.roman}"><i></i>${ts.roman}</span>` : ''}</div>
       <div class="tc-meta"><span class="rec">${esc(evName)} ${short(r.input.time)} · ${r.pace}</span><span class="rank"><span class="tc-ko" id="tierName">${esc(r.tier.replace(/\s*[123]$/, ''))}${ts.roman ? ` <span class="dv">${ts.roman}</span>` : ''}</span> · <b>${esc(r.topPercentLabel)}</b></span></div>
     </section>
+    <div class="actions res-share"><button type="button" id="resShare" class="btn primary">공유하기</button></div>
     <figure class="tc-quote" style="--qc:${TK.tier[ts.key].text}"><span class="ql">이 티어 러너는</span><p id="tierCmt">${esc(tierComment(ts.key, ts.roman))}</p></figure>
     <p class="who-line" id="topPct">${who} <b>${esc(r.topPercentLabel)}</b></p>
     ${prog}
@@ -1255,6 +1262,10 @@ function renderResult(r) {
   state.story = { key: ts.key, tierKo: r.tier, word: ts.key.toUpperCase(), roman: ts.roman, long: LONG.has(ts.key),
     title: `${evName} 성적표`, recLine: `${evName} ${short(r.input.time)} · ${r.pace}`, who: pubWho, topLabel: r.topPercentLabel, headline: r.topPercentLabel, time: short(r.input.time), pace: r.pace, vdot: r.vdot.toFixed(1),
     nextLine: nx ? `${nx.tier}까지 ${evName} ${nx.gapText} 단축` : '최고 티어 챌린저 달성!' };
+  const pr = ['5K', '10K', 'half', 'full'].map(k => `${({ half: '하프', full: '풀' })[k] || k} ${short(r.predicted[k])}`).join(' · ');
+  const shareText = `내 러닝 티어: ${r.tier} (${r.topPercentLabel})\n${evName} ${short(r.input.time)} · ${r.pace}\nVDOT ${r.vdot.toFixed(1)}\n예상 기록: ${pr}\nE ${r.trainingPaces.E} · T ${r.trainingPaces.T}`;
+  window.__sharePayload = { title: 'hoohaa 러닝 티어', text: shareText, url: 'https://hoohaa.run/result/' };
+  $('resShare').addEventListener('click', () => shareResult(window.__sharePayload));
   requestAnimationFrame(() => { const l = $('ladder'), me = $('ladMe'); if (l && me) l.scrollTop = me.offsetTop - l.clientHeight / 2 + me.offsetHeight / 2; });
   refreshTpl();
   for (const b of $('resBody').querySelectorAll('.info, .prow')) b.addEventListener('click', () => {
