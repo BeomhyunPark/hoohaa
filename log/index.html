@@ -1,0 +1,160 @@
+<!doctype html><html lang="ko"><head>
+<base href="/"><meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>hoohaa · 러닝 티어 &amp; VDOT 기록 계산기 | 내 러닝 티어는?</title>
+<meta name="description" content="5K·10K·하프·풀코스 기록으로 내 러닝 티어를 확인해요. VDOT 계산기로 마라톤 예상 기록과 E·M·T·I·R 훈련 페이스까지 한 번에. 같은 성별·나이대 상위 %로 아이언부터 챌린저까지, 무료·로그인 없이 브라우저에서 계산해요.">
+<link rel="canonical" href="https://hoohaa.run/log/">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0F1620">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="hoohaa">
+<script>try{if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)document.documentElement.classList.add("standalone")}catch(e){}</script>
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website"><meta property="og:site_name" content="hoohaa">
+<meta property="og:title" content="hoohaa · 내 러닝 티어는?"><meta property="og:description" content="후하후하, 내 PB는 무슨 티어?">
+<meta property="og:url" content="https://hoohaa.run/log/">
+<meta property="og:image" content="https://hoohaa.run/og.png?v=1">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="hoohaa 로고와 문구 '후하후하, 내 PB는 무슨 티어?'"><meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="hoohaa · 내 러닝 티어는?"><meta name="twitter:description" content="후하후하, 내 PB는 무슨 티어?">
+<meta name="twitter:image" content="https://hoohaa.run/og.png?v=1">
+<link rel="stylesheet" href="/src/styles/app.css">
+</head><body>
+<main id="app">
+<!-- INPUT -->
+<section id="scrInput" class="screen" aria-labelledby="hIn">
+  <header class="top"><h1 id="hIn" class="logo"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 122" width="470" height="122"><g transform="translate(0,4)"><g transform="translate(40,0) skewX(-14)"><g transform="translate(6,6)"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#3DC8F5"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="174" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M340 40V100" stroke="#3DC8F5" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M412 40V100" stroke="#3DC8F5" stroke-width="16"/></g><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#F4F6F8"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#F4F6F8"/><circle cx="102" cy="70" r="22" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M102 70L113.81258650761974 63.18" stroke="#0F1620" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5.95" fill="#0F1620"/><circle cx="174" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M340 40V100" stroke="#F4F6F8" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M412 40V100" stroke="#F4F6F8" stroke-width="16"/></g></g></svg><span class="sr">hoohaa 러닝 티어</span></h1></header>
+  <div class="field">
+    <span class="lbl" id="lEv">종목</span>
+    <div class="chips five" role="radiogroup" aria-labelledby="lEv" id="evChips">
+      <button type="button" role="radio" data-v="5K">5K</button>
+      <button type="button" role="radio" data-v="10K">10K</button>
+      <button type="button" role="radio" data-v="half">하프</button>
+      <button type="button" role="radio" data-v="full">풀</button>
+      <button type="button" role="radio" data-v="custom">직접</button>
+    </div>
+    <div id="kmWrap" class="sub-field" hidden>
+      <label for="km" class="lbl sm">거리</label>
+      <div class="suffix"><input id="km" inputmode="decimal" autocomplete="off" placeholder="예: 15"><span>km</span></div>
+    </div>
+  </div>
+  <div class="field">
+    <label for="tq" class="lbl">기록</label>
+    <input id="tq" class="big" inputmode="numeric" autocomplete="off" placeholder="25:00">
+    <p class="hint" id="tqHint">숫자만 입력하면 자동으로 변환돼요 · 2327 → 0:23:27</p>
+  </div>
+  <div class="field">
+    <span class="lbl" id="lSex">성별</span>
+    <div class="chips two" role="radiogroup" aria-labelledby="lSex" id="sexChips">
+      <button type="button" role="radio" data-v="M">남성</button>
+      <button type="button" role="radio" data-v="F">여성</button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="by" class="lbl">출생연도</label>
+    <input id="by" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="예: 1995">
+    <p class="hint">나이는 출생연도로 계산해요</p>
+  </div>
+  <p id="err" class="err" role="alert"></p>
+  <div id="barInput" class="actions"><button id="go" class="btn primary" disabled>내 티어 보기</button><button type="button" id="logGo" class="btn secondary">오늘 기록 남기기</button></div>
+  <nav class="tools" aria-label="러닝 계산기"><a class="tool" href="/pace-calculator/"><b>페이스 계산기</b><span>거리·기록 → km 페이스</span></a><a class="tool" href="/bmr/"><b>기초대사량 계산기</b><span>BMR·하루 소모 칼로리</span></a><a class="tool" href="/predictor/"><b>기록 예측기</b><span>하프·풀 예상 기록</span></a><a class="tool" href="/pace/"><b>훈련 페이스</b><span>E·M·T·I·R 페이스</span></a></nav><style>.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 4px}.tool{display:flex;flex-direction:column;gap:2px;padding:12px;background:#0B1119;border:1px solid #26313F;border-radius:12px;color:inherit;text-decoration:none;min-width:0}.tool b{font-size:15px}.tool span{font-size:12px;opacity:.7}</style>
+
+<!--SEO-->
+<section class="seo web-only" aria-labelledby="hHow">
+  <h2 id="hHow">어떻게 계산하나요</h2>
+  <p>5K·10K·하프·풀코스 기록을 입력하면 <strong>VDOT</strong>을 계산하고, 같은 성별 러너들의 <b>기록 분포</b>를 기준으로 <b>러닝 티어</b>를 정해요. 같은 VDOT을 기준으로 <span class="hi">다른 거리의 예상 기록과 훈련 페이스</span>도 함께 보여줘요.</p>
+  <details class="seo-box"><summary><h2 id="hTbl">티어 기준표 (예: 10K · 30대 남성)</h2></summary>
+  <table class="seo-tbl"><thead><tr><th scope="col">티어</th><th scope="col">10K 기록</th><th scope="col">누적 상위</th></tr></thead><tbody>
+<tr><th scope="row"><span class="t-challenger">챌린저</span></th><td>33:31 이내</td><td>상위 0.1%</td></tr>
+<tr><th scope="row"><span class="t-grandmaster">그랜드마스터</span></th><td>35:25 이내</td><td>상위 0.5%</td></tr>
+<tr><th scope="row"><span class="t-master">마스터</span></th><td>37:41 이내</td><td>상위 2%</td></tr>
+<tr><th scope="row"><span class="t-diamond">다이아몬드</span></th><td>41:32 이내</td><td>상위 8%</td></tr>
+<tr><th scope="row"><span class="t-emerald">에메랄드</span></th><td>45:03 이내</td><td>상위 18%</td></tr>
+<tr><th scope="row"><span class="t-platinum">플래티넘</span></th><td>48:52 이내</td><td>상위 33%</td></tr>
+<tr><th scope="row"><span class="t-gold">골드</span></th><td>52:58 이내</td><td>상위 52%</td></tr>
+<tr><th scope="row"><span class="t-silver">실버</span></th><td>58:54 이내</td><td>상위 72%</td></tr>
+<tr><th scope="row"><span class="t-bronze">브론즈</span></th><td>1:05:28 이내</td><td>상위 88%</td></tr>
+<tr><th scope="row"><span class="t-iron">아이언</span></th><td>모든 완주 기록</td><td>누구나</td></tr>
+  </tbody></table>
+  <p class="hint">각 티어의 3단계에 진입하는 기록이에요. 성별·나이대·종목에 따라 기준 기록이 달라지고, 결과 화면에서는 내 조건에 맞는 전체 24단계 기준표를 볼 수 있어요.</p></details>
+  <h2 id="hFaq">자주 묻는 질문</h2>
+<details class="faq"><summary><h3>VDOT이 뭔가요?</h3></summary><p>잭 다니엘스(Jack Daniels) 코치가 만든 <b>러닝 능력 지수</b>예요. 한 번의 레이스 기록을 바탕으로 러너의 유산소 능력을 숫자로 나타내고, 이를 이용해 <span class="hi">다른 거리의 예상 기록과 훈련 페이스</span>를 계산해요.</p><p>숫자가 높을수록 러닝 능력이 높다고 볼 수 있어요.</p></details>
+<details class="faq"><summary><h3>티어는 어떤 기준으로 정해지나요?</h3></summary><p>같은 성별 러너들의 <b>기록 분포</b>를 기준으로 내 기록이 상위 몇 %에 해당하는지 계산해 티어를 정해요.</p><p>아이언부터 챌린저까지 <b>10개 티어</b>로 나뉘고, 아이언부터 다이아몬드까지는 3·2·1 단계로 세분화돼요.</p></details>
+<details class="faq"><summary><h3>마라톤 예상 기록은 얼마나 정확한가요?</h3></summary><p><strong>VDOT</strong>을 바탕으로 계산한 <b>이론적인 예상 기록</b>이라 참고용으로 봐주세요.</p><p>특히 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나올 수 있어요. 장거리 훈련량, 코스, 날씨, 컨디션 등에 따라서도 실제 기록은 달라질 수 있어요.</p><p>가능하면 <span class="hi">최근에 달린 기록 중 예측하려는 거리와 가까운 기록</span>을 입력하는 게 좋아요.</p></details>
+<details class="faq"><summary><h3>훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?</h3></summary><ul><li><b>E (Easy)</b> — 대화가 가능한 편안한 조깅</li><li><b>M (Marathon)</b> — 풀코스 목표 페이스</li><li><b>T (Threshold)</b> — 20~30분 정도 유지할 수 있는 ‘편하게 힘든’ 페이스</li><li><b>I (Interval)</b> — 3~5분 정도 반복하는 빠른 달리기</li><li><b>R (Repetition)</b> — 짧게 반복하는 빠른 페이스</li></ul><p><strong>대부분의 러닝은 E 페이스</strong>로 진행하는 게 좋아요.</p></details>
+<details class="faq"><summary><h3>입력한 기록이 저장되나요?</h3></summary><p>계산은 <b>이 브라우저에서만</b> 이루어져요.</p><p>입력한 기록, 성별, 출생연도, 편집한 사진은 서버로 보내지 않고 <b>이 기기에만 저장</b>돼요. 저장된 정보는 <a href="/privacy/">개인정보</a>에서 삭제할 수 있어요.</p></details>
+<details class="faq"><summary><h3>느린 기록도 넣어도 되나요?</h3></summary><p>물론이에요.</p><p><b>완주 기록이라면 누구나</b> 티어를 확인할 수 있고, 다음 티어까지 얼마나 남았는지도 알려줘요.</p><p>기록이 빠른지 느린지는 중요하지 않아요. <span class="hi">모든 러너는 출발선에 선 순간부터 러너예요.</span></p></details>
+  <h2 id="hMore">기록 기준표 더 보기</h2>
+  <nav class="lanenav" aria-label="기록 가이드"><div class="lane"><span class="ln"><b aria-hidden="true">1</b>5K</span><div class="ls"><a href="5k/">티어표</a><a href="5k/20min/">20분</a><a href="5k/25min/">25분</a><a href="5k/30min/">30분</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">2</b>10K</span><div class="ls"><a href="10k/">티어표</a><a href="10k/40min/">40분</a><a href="10k/45min/">45분</a><a href="10k/50min/">50분</a><a href="10k/55min/">55분</a><a href="10k/60min/">1시간</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">3</b>하프</span><div class="ls"><a href="half/">티어표·계산기</a><a href="half/1h30/">1:30</a><a href="half/1h45/">1:45</a><a href="half/2h/">2:00</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">4</b>풀</span><div class="ls"><a href="full/">티어표·예상 기록</a><a class="sub2" href="full/sub2/">SUB2</a><a href="full/sub3/" class="sub3">SUB3</a><a href="full/sub330/" class="sub330">SUB3:30</a><a href="full/sub4/" class="sub4">SUB4</a><a href="full/sub430/" class="sub430">SUB4:30</a><a href="full/sub5/" class="sub5">SUB5</a><a href="predictor/">기록 예측기</a><a href="splits/">구간 기록표</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">5</b>공통</span><div class="ls"><a href="men/">남자 기준</a><a href="women/">여자 기준</a><a href="pace/">훈련 페이스</a><a href="pace-calculator/">페이스 계산기</a><a href="bmr/">기초대사량</a><a href="vdot/">VDOT</a><a href="vo2max/">VO2max</a><a href="tier-guide/">티어 기준</a><a href="age/20s-30s/">20·30대</a><a href="age/40s/">40대</a><a href="age/50s/">50대</a><a href="age/60s/">60대+</a><a href="guide/">전체 가이드</a></div></div></nav><style>.lanenav{margin:12px 0 4px;background:#0B1119;border:1px solid #26313F;border-radius:14px;overflow:hidden}
+.lane{display:flex;align-items:stretch;border-top:2px dashed rgba(255,255,255,.13);min-height:52px}.lane:first-child{border-top:0}
+.lane .ln{flex:none;width:78px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;border-right:2px solid rgba(255,255,255,.18);color:#F4F6F8;font-weight:800;font-size:14px;letter-spacing:.2px}
+.lane .ln b{font:800 20px/1 system-ui,sans-serif;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.45);width:14px;text-align:center}
+.lane .ls{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1}.lane .ls::-webkit-scrollbar{display:none}
+.lane .ls a{flex:none;display:flex;align-items:center;min-height:52px;padding:0 13px;color:#B8C2CF;text-decoration:none;font-size:14px;white-space:nowrap;position:relative}
+.lane .ls a+a::before{content:"";position:absolute;left:0;top:50%;width:1px;height:14px;margin-top:-7px;background:rgba(255,255,255,.18)}
+.lane .ls a:hover{color:#F4F6F8}.lane .ls a[aria-current]{color:#3DC8F5;font-weight:700}
+.lane .ls a[aria-current]::after{content:"";position:absolute;left:13px;right:13px;bottom:10px;height:2px;background:#3DC8F5;border-radius:2px}
+.lane.on{background:linear-gradient(90deg,rgba(61,200,245,.10),transparent 70%)}.lane.on .ln{color:#3DC8F5}.lane.on .ln b{-webkit-text-stroke-color:#3DC8F5}.lane .ls a.sub2,.lane .ls a.sub3,.lane .ls a.sub330,.lane .ls a.sub4,.lane .ls a.sub430,.lane .ls a.sub5{font-weight:800;letter-spacing:.02em}.lane .ls a.sub2{background:linear-gradient(90deg,#FFF3C8,#FFC9EC,#A8F3FF);-webkit-background-clip:text;background-clip:text;color:transparent}.lane .ls a.sub2:hover,.lane .ls a.sub2[aria-current]{color:transparent}.lane .ls a.sub2[aria-current]::after{background:#FFF3C8}.lane .ls a.sub3{color:#B9D4FF}.lane .ls a.sub3:hover,.lane .ls a.sub3[aria-current]{color:#E4EEFF}.lane .ls a.sub3[aria-current]::after{background:#B9D4FF}.lane .ls a.sub330{color:#9FE3DC}.lane .ls a.sub330:hover,.lane .ls a.sub330[aria-current]{color:#D7F7F3}.lane .ls a.sub330[aria-current]::after{background:#9FE3DC}.lane .ls a.sub4{color:#F6DC8E}.lane .ls a.sub4:hover,.lane .ls a.sub4[aria-current]{color:#FFF3C8}.lane .ls a.sub4[aria-current]::after{background:#F6DC8E}.lane .ls a.sub430{color:#E2A67F}.lane .ls a.sub430:hover,.lane .ls a.sub430[aria-current]{color:#F6D7C4}.lane .ls a.sub430[aria-current]::after{background:#E2A67F}.lane .ls a.sub5{color:#A9B2BF}.lane .ls a.sub5:hover,.lane .ls a.sub5[aria-current]{color:#D5DBE3}.lane .ls a.sub5[aria-current]::after{background:#A9B2BF}
+@media (min-width:601px){.lane .ls{flex-wrap:wrap;overflow:visible}}
+@media (max-width:600px){.lane .ln{width:64px;padding-left:10px;font-size:13px}}</style>
+</section>
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"hoohaa","alternateName":"hoohaa 러닝 티어","url":"https://hoohaa.run/","inLanguage":"ko","applicationCategory":"SportsApplication","operatingSystem":"Web","isAccessibleForFree":true,"description":"PB 기록으로 러닝 티어, VDOT, 마라톤 예상 기록, 훈련 페이스를 계산하는 무료 웹앱","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"VDOT이 뭔가요?","acceptedAnswer":{"@type":"Answer","text":"잭 다니엘스(Jack Daniels) 코치가 만든 러닝 능력 지수예요. 한 번의 레이스 기록을 바탕으로 러너의 유산소 능력을 숫자로 나타내고, 이를 이용해 다른 거리의 예상 기록과 훈련 페이스를 계산해요. 숫자가 높을수록 러닝 능력이 높다고 볼 수 있어요."}},{"@type":"Question","name":"티어는 어떤 기준으로 정해지나요?","acceptedAnswer":{"@type":"Answer","text":"같은 성별 러너들의 기록 분포를 기준으로 내 기록이 상위 몇 %에 해당하는지 계산해 티어를 정해요. 아이언부터 챌린저까지 10개 티어로 나뉘고, 아이언부터 다이아몬드까지는 3·2·1 단계로 세분화돼요."}},{"@type":"Question","name":"마라톤 예상 기록은 얼마나 정확한가요?","acceptedAnswer":{"@type":"Answer","text":"VDOT을 바탕으로 계산한 이론적인 예상 기록이라 참고용으로 봐주세요. 특히 짧은 거리 기록으로 풀코스를 예측하면 실제보다 빠르게 나올 수 있어요. 장거리 훈련량, 코스, 날씨, 컨디션 등에 따라서도 실제 기록은 달라질 수 있어요. 가능하면 최근에 달린 기록 중 예측하려는 거리와 가까운 기록을 입력하는 게 좋아요."}},{"@type":"Question","name":"훈련 페이스 E/M/T/I/R은 무슨 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"E(Easy)는 대화가 가능한 편안한 조깅, M(Marathon)은 풀코스 목표 페이스, T(Threshold)는 20~30분 정도 유지할 수 있는 ‘편하게 힘든’ 페이스, I(Interval)는 3~5분 정도 반복하는 빠른 달리기, R(Repetition)은 짧게 반복하는 빠른 페이스예요. 대부분의 러닝은 E 페이스로 진행하는 게 좋아요."}},{"@type":"Question","name":"입력한 기록이 저장되나요?","acceptedAnswer":{"@type":"Answer","text":"계산은 이 브라우저에서만 이루어져요. 입력한 기록, 성별, 출생연도, 편집한 사진은 서버로 보내지 않고 이 기기에만 저장돼요. 저장된 정보는 개인정보에서 삭제할 수 있어요."}},{"@type":"Question","name":"느린 기록도 넣어도 되나요?","acceptedAnswer":{"@type":"Answer","text":"물론이에요. 완주 기록이라면 누구나 티어를 확인할 수 있고, 다음 티어까지 얼마나 남았는지도 알려줘요. 기록이 빠른지 느린지는 중요하지 않아요. 모든 러너는 출발선에 선 순간부터 러너예요."}}]}]</script>
+<!--/SEO-->
+</section>
+
+<!-- 오늘 기록 (records on this device → 3:4 cards) -->
+<section id="scrLog" class="screen" hidden aria-labelledby="hLog"><div id="logRoot"></div></section>
+
+<!-- RESULT -->
+<section id="scrResult" class="screen" hidden aria-label="결과">
+  <div class="actions to-ed"><button type="button" id="toEditor" class="btn primary">이미지 만들기</button></div>
+  <div id="resBody"></div>
+  <section class="card tpl" id="tplCard" aria-labelledby="hTpl">
+    <h2 id="hTpl" class="sr">공유 이미지</h2>
+    <div class="st-chrome" id="stChrome">
+      <div class="st-row">
+        <button type="button" class="stp" id="undo" aria-label="실행취소">↶</button>
+        <button type="button" class="stp" id="redo" aria-label="다시실행">↷</button>
+        <span class="st-gap"></span>
+        <button id="save" class="btn primary st-act">저장</button>
+        <button id="share" class="btn secondary st-act">공유</button>
+      </div>
+    </div>
+    <div class="st-fit" id="tplEd">
+      <div class="st-stage" id="stage"><canvas id="tplPreview" width="1080" height="1920" role="img" aria-label="공유 이미지 미리보기 (저장될 이미지와 같아요)"></canvas><canvas id="ovl" width="1080" height="1920" aria-hidden="true"></canvas>
+        <div class="mini" id="miniBar" hidden role="toolbar" aria-label="선택한 요소"><button type="button" data-mb="up" aria-label="앞으로" title="앞으로"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 14l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg><small>앞으로</small></button><button type="button" data-mb="down" aria-label="뒤로" title="뒤로"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6 10l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg><small>뒤로</small></button><button type="button" data-mb="behind" aria-label="인물 뒤로" aria-pressed="false" hidden><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.5 19c1.2-3.2 3.5-4.8 6.5-4.8s5.3 1.6 6.5 4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><small>인물 뒤로</small></button><button type="button" data-mb="asbg" aria-label="배경 사진" title="배경 사진" hidden><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.3" fill="currentColor"/><path d="M4 16.5 8.2 13l3 2.4 2.4-2 6.4 4.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><small>배경 사진</small></button><button type="button" data-mb="lock" aria-label="잠금" title="잠금" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="5.5" y="11" width="13" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path class="lk-shut" style="display:none" d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="lk-open" d="M8.5 11V8a3.5 3.5 0 0 1 6.8-1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><small>잠금</small></button><button type="button" data-mb="dup" aria-label="복제" title="복제"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="8" y="8" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 15V6h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><small>복제</small></button><button type="button" data-mb="del" aria-label="삭제" title="삭제"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M5 7h14M9 7V5h6v2M7.5 7l.8 13h7.4l.8-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><small>삭제</small></button></div><div class="ctx" id="ctxMenu" hidden role="menu"><button type="button" data-act="behind" id="ctxBehind" role="menuitem" hidden>인물 뒤로</button><button type="button" data-act="dup" role="menuitem">복제</button><button type="button" data-act="up" role="menuitem">앞으로</button><button type="button" data-act="down" role="menuitem">뒤로</button><button type="button" data-act="del" role="menuitem">삭제</button></div></div>
+    </div>
+    <p class="pv-hint" id="pvHint" role="status" aria-live="polite"></p>
+    <div class="st-tools" id="tools" role="toolbar" aria-label="편집 도구" aria-orientation="horizontal">
+      <button type="button" data-tool="tpl" aria-label="템플릿" aria-pressed="false"><b>▦</b><small>템플릿</small></button>
+      <button type="button" data-tool="text" aria-label="텍스트 추가"><b>Aa</b><small>텍스트</small></button>
+      <button type="button" data-tool="photo" aria-label="사진 추가"><b>📷</b><small>사진</small></button>
+      <button type="button" data-tool="sticker" aria-label="스티커" aria-pressed="false"><b>★</b><small>스티커</small></button>
+      <button type="button" data-tool="stat" aria-label="기록 블록" aria-pressed="false"><b>⏱</b><small>기록</small></button>
+      <button type="button" data-tool="bg" aria-label="바탕" aria-pressed="false"><b>◐</b><small>바탕</small></button>
+      <button type="button" data-tool="layers" aria-label="레이어" aria-pressed="false"><b>☰</b><small>레이어</small></button>
+    </div>
+    <div class="st-tpls" id="stTpls" hidden><div class="seg n4" id="fmtSeg" role="radiogroup" aria-label="이미지 형식"><button type="button" role="radio" data-v="story" aria-checked="true" aria-label="스토리 9:16">9:16</button><button type="button" role="radio" data-v="feed" aria-checked="false" aria-label="피드 4:5">4:5</button><button type="button" role="radio" data-v="square" aria-checked="false" aria-label="정사각 1:1">1:1</button><button type="button" role="radio" data-v="thumb" aria-checked="false" aria-label="3:4">3:4</button></div><div class="tpl-list" id="tplList" role="radiogroup" aria-label="템플릿"></div><div class="st-extra" id="stExtra"><div id="barResult" class="actions" hidden><button id="again" class="btn ghost-btn">다른 기록 넣기</button></div> <button type="button" class="chip-btn" id="safeBtn" aria-pressed="false" title="인스타그램 스토리 UI에 가려지는 위·아래 영역 표시 (저장 이미지엔 안 나와요)">안전영역</button> <button type="button" class="chip-btn" id="tplReset" aria-label="템플릿으로 되돌리기">되돌리기</button> <button type="button" class="chip-btn" id="saveMyTpl" aria-label="내 템플릿 저장">내 템플릿</button></div></div>
+    <div class="panel" id="panel"></div>
+    <div id="logBar" class="log-bar" hidden></div>
+    <input id="photo" type="file" accept="image/*" class="vh" tabindex="-1" aria-hidden="true">
+  </section>
+  <div class="cpick" id="cpick" role="group" aria-label="색 선택" hidden>
+    <div class="cp-top"><span class="cp-chip" id="cpChip" aria-hidden="true"></span><input id="cpHex" class="cp-hex" maxlength="7" autocomplete="off" spellcheck="false" aria-label="HEX 색상 코드" value="#FFFFFF"></div>
+    <div class="cp-sv" id="cpSV" role="slider" tabindex="0" aria-label="채도·밝기" aria-valuetext=""><i id="cpSVk"></i></div>
+    <div class="cp-hue" id="cpHue" role="slider" tabindex="0" aria-label="색상" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0"><i id="cpHuek"></i></div>
+  </div>
+
+</section>
+<footer class="app-foot"><a href="/privacy/">개인정보</a><a href="/support/">고객지원</a><button type="button" id="wipe">이 기기의 데이터 지우기</button></footer>
+</main>
+
+<script type="module" src="/src/app/boot.js"></script>
+</body></html>
