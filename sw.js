@@ -1,4 +1,4 @@
-const CACHE = 'hoohaa-shell-22';
+const CACHE = 'hoohaa-shell-23';
 const SHELL = [
   '/app/',
   '/app/index.html',
@@ -23,6 +23,7 @@ const SHELL = [
 const ON_USE = [
   '/src/editor/editor.js',
   '/src/vendor/html-to-image.js',
+  '/src/table-share.js',
   '/src/editor/workout.js',
   '/src/editor/assets.js',
   '/src/net/weather.js',
