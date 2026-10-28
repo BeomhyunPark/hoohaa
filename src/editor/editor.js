@@ -732,7 +732,7 @@ function clampIn() { let mv = false; const H = FH();
   if (mv) needClamp = true; return mv; }
 window.__fmt = () => ({ fmt: doc.fmt || 'story', h: FH(), cw: $('tplPreview').width, ch: $('tplPreview').height });
 function placePhoto(pid, keepBg) { if (!pid || !photos[pid]) return; if (doc.bgT) { dropBgKeep(); doc.bg = { type: 'photo', pid, pz: 1, filter: 'none', ...(keepBg && keepBg.pid === pid ? { filter: keepBg.filter, crop: keepBg.crop, rot: keepBg.rot, flip: keepBg.flip } : {}), ...clone(doc.bgT), px: doc.bgT.px || 0, py: doc.bgT.py || 0 }; }
-  else { const s0 = doc.layers.find(l => l.type === 'photo' && !l.pid); if (s0) s0.pid = pid; }
+  else { const s0 = doc.layers.find(l => l.type === 'photo' && !l.pid); if (s0) s0.pid = pid; else if (keepBg && keepBg.pid === pid) { dropBgKeep(); doc.bg = clone(keepBg); } }
   if (doc.layers.some(l => l.behind) && doc.bg.type === 'photo') ensureMask(doc.bg.pid).then(ok => { if (!ok) doc.layers.forEach(l => l.behind = false); changed(true); }); }
 try { localStorage.removeItem('runtier:mystyle'); } catch { /* old 내 스타일 data: feature removed */ }
 function newDoc(t, f = 'story') { const d = templateDoc(TEMPLATES.some(x => x[0] === t) ? t : 'nrc', state.story, f);
@@ -1004,7 +1004,7 @@ function bindPhotoEd(P) { const on = (id, f) => { const e = $(id); if (e) e.addE
   on('peOl', () => { P.ol = { col: '#ffffff', w: 12, ...(P.ol || {}), on: !(P.ol && P.ol.on) }; changed(true); paintPanel(); });
   const olc = $('olCol'); if (olc) { olc.addEventListener('click', e => { const b = e.target.closest('[data-olc]'); if (!b) return; P.ol.col = b.dataset.olc; changed(true); paintPanel(); }); $('olColPick').addEventListener('input', e => { P.ol.col = e.target.value; changed(); }); $('olColPick').addEventListener('change', () => { commit(); }); }
   const w = $('olW'); if (w) w.addEventListener('input', e => { P.ol.w = +e.target.value; $('olWV').textContent = e.target.value + 'px'; changed(); });
-  const f = $('peFilter'); if (f) f.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; P.filter = b.dataset.v; changed(true); paintPanel(); });
+  const f = $('peFilter'); if (f) f.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; P.filter = b.dataset.v; for (const x of f.querySelectorAll('[data-v]')) x.setAttribute('aria-checked', String(x === b)); changed(true); });
   on('peMore', e => { moreAdj = !moreAdj; const b = e.currentTarget; b.setAttribute('aria-expanded', moreAdj); b.querySelector('i').textContent = moreAdj ? '▴' : '▾'; $('peAdj').hidden = !moreAdj; });
   for (const [k] of ADJ) { const r = $('pa_' + k); if (r) r.addEventListener('input', e => { P.adj = { ...(P.adj || {}), [k]: +e.target.value }; if (!Object.values(P.adj).some(Boolean)) delete P.adj; $('pa_' + k + 'V').textContent = e.target.value; changed(); }); }
   on('peAdjReset', () => { delete P.adj; changed(true); paintPanel(); }); }
@@ -1082,7 +1082,8 @@ function paintPanel() {
   } else if (mode === 'layers') {
     h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
   } else if (mode === 'tpl') { /* #stTpls shown above */ } else h += `<p class="hint">아래 도구로 템플릿을 고르거나 텍스트·사진·스티커·기록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p>`;
-  P.innerHTML = h; bindPanel(L);
+  const sx = {}; for (const e of P.querySelectorAll('.hbar[id]')) sx[e.id] = e.scrollLeft; const sy = P.scrollTop;
+  P.innerHTML = h; bindPanel(L); for (const [id, x] of Object.entries(sx)) { const e = $(id); if (e) e.scrollLeft = x; } P.scrollTop = sy;
   for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
   paintSelInfo();
 }
@@ -1108,7 +1109,7 @@ function bindPanel(L) {
   on('tText', 'input', e => { L.t = e.target.value; if (L.bind) delete L.bind; changed(); $('pName').textContent = lname(L); });
   on('raceIn', 'input', e => { doc.race = e.target.value; changed(); });
   const segOn = (id, f) => { const s = $(id); if (s) s.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { f(b.dataset.v); changed(true); paintPanel(); } }); };
-  segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pCT', v => { colMode = v; }); on('pBgNone', 'click', () => { if (L.v === 2) { delete L.bcol; delete L.bo; } else { L.box = 'none'; } changed(true); paintPanel(); }); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); segOn('bgFilter', v => { const target = doc.bg.type === 'photo' ? doc.bg : doc.bgKeep; if (target && target.type === 'photo') target.filter = v; });
+  segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pCT', v => { colMode = v; }); on('pBgNone', 'click', () => { if (L.v === 2) { delete L.bcol; delete L.bo; } else { L.box = 'none'; } changed(true); paintPanel(); }); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); on('bgFilter', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; const target = doc.bg.type === 'photo' ? doc.bg : doc.bgKeep; if (target && target.type === 'photo') target.filter = b.dataset.v; for (const x of e.currentTarget.querySelectorAll('[data-v]')) x.setAttribute('aria-checked', String(x === b)); changed(true); });
   const rg = (id, f, u = '') => on(id, 'input', e => { f(+e.target.value); $(id + 'V').textContent = e.target.value + u; changed(); });
   rg('pS', v => { pinS(L); L.s = v / 100; }, '%'); rg('pR', v => L.r = v * Math.PI / 180, '°'); rg('pO', v => L.o = v / 100, '%'); rg('pBo', v => L.bo = v / 100, '%'); rg('pTs', v => L.size = v); rg('pLs', v => L.ls = v, 'px');
   rg('pCz', v => L.cz = v / 100, '%'); rg('pCx', v => L.cx = v / 100); rg('pCy', v => L.cy = v / 100); rg('bgZ', v => doc.bg.pz = v / 100, '%');
@@ -1338,9 +1339,10 @@ function renderResult(r) {
       const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
   }
   function pickLogTpl(b) { const f0 = doc.fmt || 'story', acc = b.dataset.lt && doc.tok && kindOf(doc.log.tpl) === kindOf(b.dataset.lt) ? doc.tok.acc : undefined;
-    const kept = b.dataset.lt ? userLayers(doc) : [];
+    const kept = b.dataset.lt ? userLayers(doc) : [], keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null;
     if (b.dataset.lt) { doc = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc }); if (f0 !== 'thumb') relayout(doc, f0); if (kept.length) doc.layers.push(...kept); }
     else { const m = clone((LS('runtier:mytpl') || [])[+b.dataset.m]); delete m.n; doc = fillBindings(m, logCtx.vals); doc.log = { ...doc.log, id: logCtx.log && logCtx.log.id }; }
+    if (keepBg && !(doc.bg.type === 'photo' && photos[doc.bg.pid])) { setLogBg(doc, keepBg.pid); doc.bg = { ...doc.bg, ...keepBg }; }
     const bgSeg = document.getElementById('lbBg'); if (bgSeg) for (const x of bgSeg.querySelectorAll('[data-v]')) x.setAttribute('aria-checked', String((x.dataset.v === 'photo') === (doc.bg.type === 'photo')));
     sel = null; mode = 'tpl'; for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); }
   window.__logDoc = () => doc && doc.log ? clone(doc) : null;
