@@ -1,4 +1,4 @@
-const CACHE = 'hoohaa-shell-22';
+const CACHE = 'hoohaa-shell-23';
 const SHELL = [
   '/app/',
   '/app/index.html',
