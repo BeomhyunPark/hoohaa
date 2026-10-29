@@ -43,7 +43,7 @@ footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:
 .share{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;border-radius:12px;border:1px solid var(--b);background:none;color:var(--t1);font:inherit;font-size:15px;margin-top:12px}
 </style></head><body><div class="w">
 <header><a class="lg" href="../" aria-label="hoohaa 홈"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 122" width="470" height="122"><g transform="translate(0,4)"><g transform="translate(40,0) skewX(-14)"><g transform="translate(6,6)"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#3DC8F5"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="174" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M340 40V100" stroke="#3DC8F5" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M412 40V100" stroke="#3DC8F5" stroke-width="16"/></g><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#F4F6F8"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#F4F6F8"/><circle cx="102" cy="70" r="22" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M102 70L113.81258650761974 63.18" stroke="#0F1620" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5.95" fill="#0F1620"/><circle cx="174" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M340 40V100" stroke="#F4F6F8" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M412 40V100" stroke="#F4F6F8" stroke-width="16"/></g></g></svg></a></header>
-<h1>기초대사량 계산기</h1>
+<h1>기초대사량 · TDEE 계산기</h1>
 <p>가만히 있어도 하루에 쓰는 에너지(기초대사량)와, 활동량까지 더한 하루 예상 소비 칼로리를 계산해요.</p>
 <section class="tool" id="bmrTool">
 <label>성별</label><div class="seg" role="group" aria-label="성별"><button type="button" id="sM" aria-pressed="true">남자</button><button type="button" id="sF" aria-pressed="false">여자</button></div>
@@ -51,8 +51,10 @@ footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:
 <div><label for="bH">키 (cm)</label><input id="bH" type="number" inputmode="decimal" min="100" max="230" placeholder="175"></div></div>
 <label for="bW">몸무게 (kg)</label><input id="bW" type="number" inputmode="decimal" min="25" max="250" placeholder="70">
 <label for="bAct">활동량</label><select id="bAct">
-<option value="1.2">거의 안 움직임</option><option value="1.375">가벼운 운동 (주 1–3회)</option><option value="1.55" selected>보통 (주 3–5회)</option><option value="1.725">열심히 (주 6–7회)</option><option value="1.9">매우 힘듦 (매일 고강도)</option></select>
-<div class="kpi" id="bOut"><div><span>기초대사량</span><b id="oBmr">-</b></div><div><span>하루 예상 소비 칼로리</span><b id="oTdee">-</b></div></div>
+<option value="1.2">거의 운동 안 함 / 앉아서 생활</option><option value="1.375">가벼운 활동 (주 1–3일)</option><option value="1.55" selected>보통 활동 (주 3–5일)</option><option value="1.725">활발한 활동 (주 6–7일)</option><option value="1.9">매우 활발 (하루 2회·육체노동)</option></select>
+<p class="note" style="margin:6px 0 0">주 3–5일 달리는 러너라면 '보통 활동'이 무난해요.</p>
+<div class="kpi" id="bOut"><div><span>기초대사량</span><b id="oBmr">-</b></div><div><span>TDEE · 하루 총 소비 칼로리</span><b id="oTdee">-</b><span id="oMul" style="display:block"></span></div></div>
+<p class="note">TDEE는 기초대사량에 활동량을 곱한, 하루에 쓰는 총 칼로리예요. 활동량을 바꾸면 바로 다시 계산돼요.</p>
 <div class="kpi" id="bGoal"><div><span>감량</span><b id="oCut">-</b></div><div><span>유지</span><b id="oKeep">-</b></div><div><span>증량</span><b id="oBulk">-</b></div></div>
 <p class="note" id="bMsg">값을 모두 넣으면 바로 계산돼요.</p>
 <button type="button" class="share" id="bShare">이 결과 링크 복사</button>
@@ -60,7 +62,7 @@ footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:
 <h2>어떻게 계산하나요?</h2>
 <p><strong>Mifflin–St Jeor 공식</strong>을 써요.</p>
 <p>남자: 10×몸무게 + 6.25×키 − 5×나이 + 5<br>여자: 10×몸무게 + 6.25×키 − 5×나이 − 161</p>
-<p>하루 예상 소비 칼로리는 기초대사량에 활동량 계수(1.2~1.9)를 곱한 값이에요. 감량은 −500, 증량은 +300kcal를 대략적인 출발점으로 보여 줘요.</p>
+<h3>TDEE(하루 총 소비 칼로리)</h3><p>TDEE는 기초대사량에 활동량 계수(1.2~1.9)를 곱한 값이에요. 감량은 −500, 증량은 +300kcal를 대략적인 출발점으로 보여 줘요.</p>
 <p class="note">공식으로 계산한 참고값이에요. 실제 소비량은 사람마다 조금씩 달라요. 입력값은 서버로 보내지 않아요.</p>
 <a class="cta" href="../app/">내 러닝 티어 확인하기</a>
 <footer>hoohaa · <a href="../">홈</a> · <a href="../pace-calculator/">페이스 계산기</a></footer>
@@ -72,9 +74,9 @@ function setSex(s){sex=s;$('sM').setAttribute('aria-pressed',s==='m');$('sF').se
 function vals(){return{a:+$('bAge').value,h:+$('bH').value,w:+$('bW').value,k:+$('bAct').value};}
 function calc(){
  const v=vals();const ids=['oBmr','oTdee','oCut','oKeep','oBulk'];
- if(!(v.a>=10&&v.a<=100&&v.h>=100&&v.h<=230&&v.w>=25&&v.w<=250)){ids.forEach(i=>$(i).textContent='-');$('bMsg').textContent='값을 모두 넣으면 바로 계산돼요.';return;}
+ if(!(v.a>=10&&v.a<=100&&v.h>=100&&v.h<=230&&v.w>=25&&v.w<=250)){ids.forEach(i=>$(i).textContent='-');$('oMul').textContent='';$('bMsg').textContent='값을 모두 넣으면 바로 계산돼요.';return;}
  const bmr=10*v.w+6.25*v.h-5*v.a+(sex==='m'?5:-161),t=bmr*v.k;
- $('oBmr').textContent=fmt(bmr);$('oTdee').textContent=fmt(t);
+ $('oBmr').textContent=fmt(bmr);$('oTdee').textContent=fmt(t);$('oMul').textContent='기초대사량 × '+v.k;
  $('oCut').textContent=fmt(Math.max(t-500,bmr));$('oKeep').textContent=fmt(t);$('oBulk').textContent=fmt(t+300);
  $('bMsg').textContent='하루 기준이에요.';
  const q=new URLSearchParams({s:sex,a:v.a,h:v.h,w:v.w,k:v.k});history.replaceState(null,'','?'+q);
@@ -83,8 +85,8 @@ const p=new URLSearchParams(location.search);
 if(p.get('a'))$('bAge').value=p.get('a');if(p.get('h'))$('bH').value=p.get('h');if(p.get('w'))$('bW').value=p.get('w');
 if(p.get('k')&&[...$('bAct').options].some(o=>o.value===p.get('k')))$('bAct').value=p.get('k');
 $('sM').onclick=()=>setSex('m');$('sF').onclick=()=>setSex('f');
-['bAge','bH','bW','bAct'].forEach(i=>$(i).addEventListener('input',calc));
-$('bShare').onclick=async()=>{const u=location.href;try{if(navigator.share)await navigator.share({title:'기초대사량 계산기',url:u});else{await navigator.clipboard.writeText(u);$('bShare').textContent='링크를 복사했어요';}}catch(e){}};
+['bAge','bH','bW','bAct'].forEach(i=>{$(i).addEventListener('input',calc);$(i).addEventListener('change',calc);});
+$('bShare').onclick=async()=>{const u=location.href;try{if(navigator.share)await navigator.share({title:'기초대사량·TDEE 계산기',text:$('oBmr').textContent!=='-'?'기초대사량 '+$('oBmr').textContent+' · TDEE '+$('oTdee').textContent:undefined,url:u});else{await navigator.clipboard.writeText(u);$('bShare').textContent='링크를 복사했어요';}}catch(e){}};
 setSex(p.get('s')==='f'?'f':'m');
 })();
 </script></body></html>
