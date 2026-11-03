@@ -1,6 +1,6 @@
 // 공유 카드 만들기: run / race / diet records on this device (IndexedDB) → 3:4 thumbnail cards.
 import * as db from '../storage/logdb.js';
-import { bindValues, defaultTemplate, sortLogs, parseDur, fmtPace, paceSec, num, isoToday, startDateOf, dayN, TPL_IDS, normTplId } from '../engine/logcalc.js';
+import { bindValues, defaultTemplate, sortLogs, parseDur, fmtPace, paceSec, num, posKm, isoToday, startDateOf, dayN, TPL_IDS, normTplId } from '../engine/logcalc.js';
 
 const TYPES = [['run', '러닝'], ['race', '대회'], ['diet', '식단']];
 const TNAME = Object.fromEntries(TYPES);
@@ -14,13 +14,29 @@ export function mountLogs(env) {
   const { $, esc, show, openEditor } = env;
   const navBack = env.navBack || (() => show('scrInput'));
   const root = $('logRoot');
-  let S = { profile: db.PROFILE0, logs: [], races: [] }, type = 'run', msg = '', editor = null, cur = null;
-  // per-tab drafts (memory only): typed values + picked photo survive tab switches and re-paints; a full reload starts fresh
+  let S = { profile: db.PROFILE0, logs: [], races: [] }, type = 'run', msg = '', editor = null, cur = null, busy = false;
+  // per-tab drafts: typed values survive tab switches, re-paints and a reload (sessionStorage, this browser tab only).
+  // A picked photo (File) can't go into sessionStorage: it survives tab switches, and after a reload we say it needs picking again.
+  // d.edit = id of the record being edited, d.dropPhoto = the edit removes that record's photo.
   const drafts = { run: {}, race: {}, diet: {} }, draft = () => (drafts[type] || (drafts[type] = {}));
-  let prevURL = '';
+  const DKEY = 'hoohaa-log-draft';
+  try {
+    const sv = JSON.parse(sessionStorage.getItem(DKEY) || 'null');
+    if (sv && typeof sv === 'object') {
+      for (const k of Object.keys(drafts)) { const d = sv.drafts && sv.drafts[k]; if (d && typeof d === 'object') drafts[k] = { v: d.v && typeof d.v === 'object' ? d.v : undefined, edit: d.edit || null, dropPhoto: !!d.dropPhoto, lostPhoto: d.photo || '' }; }
+      if (TNAME[sv.type]) type = sv.type;
+    }
+  } catch { /* storage blocked or bad JSON: start fresh */ }
+  function persist() {
+    const out = {}; for (const [k, d] of Object.entries(drafts)) out[k] = { v: d.v, edit: d.edit || null, dropPhoto: !!d.dropPhoto, photo: d.file ? (d.file.name || '사진') : (d.lostPhoto || '') };
+    try { sessionStorage.setItem(DKEY, JSON.stringify({ type, drafts: out })); } catch { /* storage blocked: memory drafts still work */ }
+  }
+  let prevURL = '', photoTok = 0;
+  const editLog = () => { const d = draft(); const l = d.edit && S.logs.find(x => x.id === d.edit); return l && l.type === type ? l : null; };
   function capture() {
     const form = $('lgForm'); if (!form || form.dataset.t !== type) return; const d = draft(); d.v = {};
-    form.querySelectorAll('input[id]:not([type=file]), select[id]').forEach(e => { d.v[e.id] = { value: e.value, digits: e.dataset.digits || '' }; });
+    // untouched date/time defaults are not kept, so a form left open past midnight still opens on today
+    form.querySelectorAll('input[id]:not([type=file]), select[id]').forEach(e => { if (!d.edit && /^(date|time)$/.test(e.type) && e.value === e.defaultValue) return; d.v[e.id] = { value: e.value, digits: e.dataset.digits || '' }; });
   }
   function restore() {
     const d = draft();
@@ -28,13 +44,21 @@ export function mountLogs(env) {
     paintPhoto();
   }
   function paintPhoto() {
-    const box = $('lgPhotoPrev'), inp = $('lgPhoto'), f = draft().file; if (!box) return;
+    const box = $('lgPhotoPrev'), inp = $('lgPhoto'), d = draft(), f = d.file, tok = ++photoTok; if (!box) return;
     if (prevURL) { URL.revokeObjectURL(prevURL); prevURL = ''; }
+    const old = editLog(), oldPid = old && !d.dropPhoto && old.photoIds && old.photoIds[0];
+    if (!f && oldPid) {
+      box.hidden = false; box.innerHTML = '<span>지금 사진을 그대로 써요</span><button type="button" class="chip-btn quiet" id="lgPhotoClr">사진 빼기</button>';
+      $('lgPhotoClr').addEventListener('click', () => { d.dropPhoto = true; paintPhoto(); persist(); });
+      db.get('photos', oldPid).then(r => { if (tok !== photoTok || !r || !r.blob) return; prevURL = URL.createObjectURL(r.blob); box.insertAdjacentHTML('afterbegin', `<img src="${prevURL}" alt="지금 사진">`); }).catch(() => {});
+      return;
+    }
+    if (!f && d.lostPhoto) { box.hidden = false; box.innerHTML = `<span>새로고침하면서 고른 사진(${esc(d.lostPhoto)})이 빠졌어요 · 다시 골라 주세요</span>`; return; }
     if (!f) { box.hidden = true; box.innerHTML = ''; return; }
     if (inp && !(inp.files && inp.files[0])) { try { const dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files; } catch { /* preview + draft still hold it */ } }
     prevURL = URL.createObjectURL(f);
     box.hidden = false; box.innerHTML = `<img src="${prevURL}" alt="고른 사진 미리보기"><span>${esc(f.name || '사진')}</span><button type="button" class="chip-btn quiet" id="lgPhotoClr">사진 빼기</button>`;
-    $('lgPhotoClr').addEventListener('click', () => { draft().file = null; if (inp) inp.value = ''; paintPhoto(); });
+    $('lgPhotoClr').addEventListener('click', () => { d.file = null; if (old) d.dropPhoto = true; if (inp) inp.value = ''; paintPhoto(); persist(); });
   }
   const ctx = () => ({ profile: S.profile, logs: S.logs, races: S.races });
   const say = t => { msg = t; const m = $('lgMsg'); if (m) m.textContent = t; };
@@ -70,12 +94,13 @@ export function mountLogs(env) {
   function listHTML() {
     const L = sortLogs(S.logs);
     if (!L.length) return '<p class="hint">아직 기록이 없어요. 위에서 첫 기록을 남겨 보세요.</p>';
-    return `<ol class="lg-list">${L.map(l => `<li><span class="lg-t t-${l.type}">${TNAME[l.type]}</span><span class="lg-s"><b>${esc((l.date || '').replaceAll('-', '.'))}</b><small>${esc(summary(l))}</small></span><button type="button" class="chip-btn" data-card="${esc(l.id)}">카드</button><button type="button" class="chip-btn quiet" data-del="${esc(l.id)}" aria-label="기록 삭제">삭제</button></li>`).join('')}</ol>`;
+    return `<ol class="lg-list">${L.map(l => `<li><span class="lg-t t-${l.type}">${TNAME[l.type]}</span><span class="lg-s"><b>${esc((l.date || '').replaceAll('-', '.'))}</b><small>${esc(summary(l))}</small></span><button type="button" class="chip-btn" data-card="${esc(l.id)}">카드</button><button type="button" class="chip-btn quiet" data-edit="${esc(l.id)}" aria-label="기록 수정">수정</button><button type="button" class="chip-btn quiet" data-del="${esc(l.id)}" aria-label="기록 삭제">삭제</button></li>`).join('')}</ol>`;
   }
   function settingsHTML() {
     const p = S.profile, sd = startDateOf(p, S.logs), n = sd ? dayN(isoToday(), sd) : null;
+    const dayHint = n ? `오늘은 Day ${n}` : sd ? '아직 시작일 전이에요 · 시작일이 Day 1이에요' : '시작일을 정하면 러닝 카드에 Day N이 자동으로 들어가요';
     return `<details class="card lg-set"><summary>설정 · 백업</summary>
-      ${field('lgStartDate', '시작일 (Day 1)', `<input id="lgStartDate" type="date" value="${esc(p.startDate || '')}">`, sd ? `오늘은 Day ${n}` : '시작일을 정하면 러닝 카드에 Day N이 자동으로 들어가요')}
+      ${field('lgStartDate', '시작일 (Day 1)', `<input id="lgStartDate" type="date" value="${esc(p.startDate || '')}">`, dayHint)}
       <div class="field"><span class="lbl sm" id="lgModeL">Day 계산 기준</span><div class="seg n2" id="lgMode" role="radiogroup" aria-labelledby="lgModeL"><button type="button" role="radio" data-v="custom" aria-checked="${p.dayCountMode !== 'first-log'}">직접 정한 시작일</button><button type="button" role="radio" data-v="first-log" aria-checked="${p.dayCountMode === 'first-log'}">첫 러닝 기록일</button></div></div>
       ${field('lgHandle', '핸들', `<input id="lgHandle" autocomplete="off" maxlength="30" placeholder="@my_runs" value="${esc(p.handle || '')}">`)}
       ${field('lgDefTpl', '러닝 기본 템플릿', `<select id="lgDefTpl"><option value="">사진 있으면 사진, 없으면 단색</option>${Object.keys(TPL_KO).map(t => `<option value="${t}"${normTplId(p.defaultTemplateId) === t ? ' selected' : ''}>${TPL_KO[t]}</option>`).join('')}</select>`)}
@@ -86,10 +111,23 @@ export function mountLogs(env) {
     capture();
     root.innerHTML = `<header class="top lg-top"><button type="button" class="icon-btn" id="lgBack" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 id="hLog">공유 카드 만들기</h1></header>
       <section class="card"><div class="seg n3" id="lgType" role="radiogroup" aria-label="기록 종류">${TYPES.map(([k, n]) => `<button type="button" role="radio" data-v="${k}" aria-checked="${k === type}">${n}</button>`).join('')}</div>
-      <form id="lgForm" data-t="${type}" class="lg-form" autocomplete="off">${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">저장하고 카드 만들기</button></div></form></section>
+      <form id="lgForm" data-t="${type}" class="lg-form" autocomplete="off">${editBanner()}${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">${editLog() ? '고치고 카드 만들기' : '저장하고 카드 만들기'}</button></div></form></section>
       <section class="card" aria-labelledby="hLgList"><h2 id="hLgList">기록</h2>${listHTML()}</section>
       ${settingsHTML()}`;
-    bind(); restore(); livePace();
+    bind(); restore(); livePace(); persist();
+  }
+  function editBanner() { const l = editLog(); return l ? `<p class="hint lg-editing">${esc((l.date || '').replaceAll('-', '.'))} ${TNAME[l.type]} 기록을 고치는 중이에요 <button type="button" class="chip-btn quiet" id="lgEditX">새 기록으로</button></p>` : ''; }
+  // load a stored record into its tab's form; saving then updates the same record (id, createdAt, photo kept)
+  function startEdit(l) {
+    capture(); type = l.type; const d = l.data || {}, V = {};
+    const set = (id, v, dur) => { V[id] = { value: v == null ? '' : String(v), digits: dur ? String(v || '').replace(/\D/g, '') : '' }; };
+    set('lgDate', l.date);
+    if (l.type === 'run') { set('lgDist', d.distance); set('lgTime', d.time, 1); set('lgWx', d.weather); set('lgNote', d.note); }
+    else if (l.type === 'race') { const r = (d.raceId && S.races.find(x => x.id === d.raceId)) || d; set('lgName', r.name ?? d.name); set('lgRDate', r.date ?? d.date); set('lgDist', r.distance ?? d.distance); set('lgGoal', r.goal ?? d.goal, 1); set('lgRes', r.result ?? d.result, 1); }
+    else { set('lgMeal', d.meal); set('lgMenu', d.menu); set('lgClock', d.time); set('lgDist', d.distance); set('lgNote', d.note); }
+    drafts[type] = { v: V, edit: l.id }; msg = '';
+    const form = $('lgForm'); if (form) form.remove(); paint();
+    const f = $('lgForm'); if (f && f.scrollIntoView) f.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
   const val = id => { const e = $(id); return e ? e.value.trim() : ''; };
   function livePace() { const o = $('lgPace'); if (!o) return; const p = fmtPace(paceSec(num(val('lgDist')), parseDur(val('lgTime')))); o.textContent = p ? p + '/km' : '–'; }
@@ -100,16 +138,28 @@ export function mountLogs(env) {
     const on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
     on('lgBack', 'click', () => navBack());
     on('lgType', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; capture(); type = b.dataset.v; msg = ''; paint(); });
+    on('lgForm', 'input', () => { capture(); persist(); }); on('lgForm', 'change', () => { capture(); persist(); });
+    on('lgEditX', 'click', () => { drafts[type] = {}; msg = ''; $('lgForm').remove(); paint(); });
     on('lgDist', 'input', livePace);
-    on('lgPhoto', 'change', e => { const f = e.target.files && e.target.files[0]; draft().file = f || null; paintPhoto(); }); bindDur('lgTime'); bindDur('lgGoal'); bindDur('lgRes');
+    on('lgPhoto', 'change', e => { const f = e.target.files && e.target.files[0], d = draft(); d.file = f || null; d.lostPhoto = ''; paintPhoto(); persist(); }); bindDur('lgTime'); bindDur('lgGoal'); bindDur('lgRes');
     on('lgWxGo', 'click', async () => {
       say('날씨를 불러오는 중…');
       try { const { wxHere, fetchWeather } = await import('../net/weather.js'); const p = await wxHere(); const r = await fetchWeather(p.lat, p.lon, val('lgDate') || isoToday(), new Date().getHours()); $('lgWx').value = `${r.temp} ${r.label}`; say(''); }
       catch (e) { say(e && e.code === 1 ? '위치 권한이 없어요 · 날씨를 직접 입력해 주세요' : '날씨를 불러오지 못했어요 · 직접 입력해 주세요'); }
     });
-    on('lgForm', 'submit', async e => { e.preventDefault(); const log = await saveForm(); if (log) await openCard(log); });
+    // one save at a time: a double tap must not store the record twice
+    on('lgForm', 'submit', async e => {
+      e.preventDefault(); if (busy) return; busy = true; const btn = $('lgSave'); if (btn) btn.disabled = true;
+      try { const log = await saveForm(); if (log) await openCard(log); }
+      catch (err) { console.error(err); say('카드를 열지 못했어요. 기록은 저장됐으니 목록에서 다시 열어 주세요'); }
+      finally { busy = false; const b = $('lgSave'); if (b) b.disabled = false; }
+    });
+    root.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => { const l = S.logs.find(x => x.id === b.dataset.edit); if (l) startEdit(l); }));
     root.querySelectorAll('[data-card]').forEach(b => b.addEventListener('click', () => { const l = S.logs.find(x => x.id === b.dataset.card); if (l) openCard(l); }));
-    root.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => { const l = S.logs.find(x => x.id === b.dataset.del); if (!l || !confirm('이 기록을 지울까요? 사진도 함께 지워져요.')) return; await db.deleteLog(l); await reload(); paint(); }));
+    root.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => { const l = S.logs.find(x => x.id === b.dataset.del); if (!l || !confirm('이 기록을 지울까요? 사진도 함께 지워져요.')) return;
+      try { await db.deleteLog(l); } catch (e) { console.error(e); alert('기록을 지우지 못했어요. 다시 시도해 주세요'); return; }
+      for (const d of Object.values(drafts)) if (d.edit === l.id) { d.edit = null; d.dropPhoto = false; }
+      capture(); await reload(); paint(); }));
     const prof = async patch => { S.profile = { ...S.profile, ...patch }; await db.saveProfile(S.profile); await reload(); paint(); };
     on('lgStartDate', 'change', e => prof({ startDate: e.target.value }));
     on('lgMode', 'click', e => { const b = e.target.closest('[data-v]'); if (b) prof({ dayCountMode: b.dataset.v }); });
@@ -117,30 +167,43 @@ export function mountLogs(env) {
     on('lgDefTpl', 'change', e => prof({ defaultTemplateId: e.target.value }));
     on('lgExport', 'click', async () => { try { const blob = await db.exportZip(), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `hoohaa-records-${isoToday().replaceAll('-', '')}.zip`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 30000); } catch (e) { console.error(e); alert('백업을 만들지 못했어요'); } });
     on('lgImportB', 'click', () => $('lgImport').click());
-    on('lgImport', 'change', async e => { const f = e.target.files && e.target.files[0]; if (!f) return; try { const n = await db.importZip(f); await reload(); paint(); alert(`가져왔어요 · 기록 ${n.logs}개, 사진 ${n.photos}장`); } catch (err) { console.error(err); alert('가져오지 못했어요: ' + (err.message || err)); } });
+    on('lgImport', 'change', async e => {
+      const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return; // same file can be picked again
+      try { const n = await db.importZip(f); await reload(); paint(); const shown = Object.keys(TNAME).reduce((a, k) => a + (n.types[k] || 0), 0); alert(`가져왔어요 · 기록 ${shown}개, 사진 ${n.photos}장` + (n.missingPhotos ? ` · 사진 ${n.missingPhotos}장은 zip에 없어서 건너뛰었어요` : '')); }
+      catch (err) { console.error(err); alert(err && err.name === 'BackupError' ? err.message : '가져오지 못했어요. 다시 시도해 주세요'); }
+    });
   }
   async function saveForm() {
-    const date = val('lgDate') || isoToday(), f = ($('lgPhoto') && $('lgPhoto').files[0]) || draft().file, photoIds = [];
-    let data;
+    const d0 = draft(), old = editLog(), date = val('lgDate') || isoToday(), f = ($('lgPhoto') && $('lgPhoto').files[0]) || d0.file;
+    const km = posKm(val('lgDist'));
+    if (val('lgDist') && km == null) { say('거리는 5.2처럼 0보다 큰 숫자로 입력해 주세요'); return null; }
+    let data, race = null;
     if (type === 'run') {
-      const km = num(val('lgDist')), sec = parseDur(val('lgTime'));
-      if (km == null && !sec) { say('거리나 시간을 입력해 주세요'); return null; }
+      const sec = parseDur(val('lgTime'));
+      if (km == null && !val('lgTime')) { say('거리나 시간을 입력해 주세요'); return null; }
       if (val('lgTime') && !sec) { say('시간은 29:38 또는 1:02:03처럼 입력해 주세요'); return null; }
       data = { distance: km != null ? String(km) : '', time: val('lgTime'), pace: fmtPace(paceSec(km, sec)), weather: val('lgWx'), note: val('lgNote') };
     } else if (type === 'race') {
       if (!val('lgName')) { say('대회명을 입력해 주세요'); return null; }
       for (const id of ['lgGoal', 'lgRes']) if (val(id) && !parseDur(val(id))) { say('기록은 50:00 또는 1:52:14처럼 입력해 주세요'); return null; }
-      const race = { id: db.uid('race'), name: val('lgName'), date: val('lgRDate') || date, distance: val('lgDist'), goal: val('lgGoal'), result: val('lgRes') };
-      await db.put('races', race); data = { raceId: race.id, name: race.name, date: race.date, distance: race.distance, goal: race.goal, result: race.result };
+      const rid = (old && old.data && old.data.raceId) || db.uid('race');
+      race = { id: rid, name: val('lgName'), date: val('lgRDate') || date, distance: km != null ? String(km) : '', goal: val('lgGoal'), result: val('lgRes') };
+      data = { raceId: race.id, name: race.name, date: race.date, distance: race.distance, goal: race.goal, result: race.result };
     } else {
       if (!val('lgMeal') && !val('lgMenu')) { say('식사나 메뉴를 입력해 주세요'); return null; }
-      data = { meal: val('lgMeal'), menu: val('lgMenu'), time: val('lgClock'), note: val('lgNote') }; if (num(val('lgDist')) != null) data.distance = String(num(val('lgDist')));
+      data = { meal: val('lgMeal'), menu: val('lgMenu'), time: val('lgClock'), note: val('lgNote') }; if (km != null) data.distance = String(km);
     }
-    if (f) photoIds.push(await db.addPhoto(f));
-    const log = { id: db.uid('log'), type, date, dayN: null, data, photoIds, templateId: '', createdAt: Date.now() };
-    await reload(); const sd = startDateOf(S.profile, [...S.logs, log]); log.dayN = sd ? dayN(date, sd) : null;
-    log.templateId = defaultTemplate(log, S.profile);
-    await db.put('logs', log); await reload(); msg = ''; drafts[type] = {}; $('lgForm').remove(); paint(); return log;
+    // photo: a new pick replaces the old one, "사진 빼기" on an edit removes it, otherwise the edit keeps it
+    let photo = null, photoIds = old ? [...(old.photoIds || [])] : [], drop = [];
+    if (f) { photo = { id: db.uid('ph'), blob: f }; drop = photoIds; photoIds = [photo.id]; }
+    else if (old && d0.dropPhoto) { drop = photoIds; photoIds = []; }
+    const log = old ? { ...old, date, data, photoIds } : { id: db.uid('log'), type, date, dayN: null, data, photoIds, templateId: '', createdAt: Date.now() };
+    await reload(); const sd = startDateOf(S.profile, [...S.logs.filter(l => l.id !== log.id), log]); log.dayN = sd ? dayN(date, sd) : null;
+    // a template the user never changed follows the photo; one they picked stays
+    if (!old || !old.templateId || old.templateId === defaultTemplate(old, S.profile)) log.templateId = defaultTemplate(log, S.profile);
+    try { await db.saveLog({ log, race, photo, dropPhotoIds: drop }); }
+    catch (e) { console.error(e); say(e && e.name === 'QuotaExceededError' ? '기기 저장 공간이 부족해서 저장하지 못했어요' : '저장하지 못했어요. 다시 시도해 주세요'); return null; }
+    await reload(); msg = ''; drafts[type] = {}; $('lgForm').remove(); paint(); return log;
   }
   // reopening a record always regenerates its card from the stored data
   async function openCard(log) {

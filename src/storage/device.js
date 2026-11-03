@@ -45,6 +45,7 @@ export async function wipeDevice() {
     for (const k of keys) localStorage.removeItem(k);
   } catch { /* storage unavailable */ }
   try { await idb.clear(); } catch { /* database unavailable */ }
+  try { sessionStorage.removeItem('hoohaa-log-draft'); } catch { /* 공유 카드 입력 중 값 */ }
   try { await new Promise(res => { const r = indexedDB.deleteDatabase('hoohaa-log'); r.onsuccess = r.onerror = r.onblocked = () => res(); }); } catch { /* 오늘 기록 DB unavailable */ }
   location.reload();
   return true;
