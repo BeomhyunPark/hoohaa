@@ -228,6 +228,8 @@ main{max-width:760px}
 /* in-flow primary actions (no sticky bars) */
 .actions{display:flex;flex-direction:column;gap:8px;margin:16px 0 8px}
 .res-share{margin:12px 0 4px}
+/* 다른 기록 넣기: end of the result summary, above the full-height share-image editor; secondary (text link) next to 공유하기 */
+.res-again{max-width:660px;margin:8px auto 16px}
 .res-toast{position:absolute;left:50%;transform:translateX(-50%);top:0;opacity:0;pointer-events:none;background:#1F2B3B;color:#F4F6F8;border:1px solid #2A3748;border-radius:10px;padding:10px 14px;font-size:14px;transition:opacity .2s;z-index:50}
 .res-toast.on{opacity:1}
 /* ===== share editor v3 (story-style; everything in page flow, no sticky/fixed) ===== */
@@ -426,8 +428,6 @@ html.standalone .web-only{display:none!important}
 .st-chrome .chip-btn{flex:none;white-space:nowrap;padding:0 10px}
 .st-chrome #stMore{min-height:44px}
 .st-extra{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 0}
-.st-chrome #barResult.actions{display:flex;flex-direction:row;flex:0 1 auto;min-width:0;width:auto;margin:0}
-.st-chrome #barResult .ghost-btn{width:auto;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:none;border:1px solid var(--border2);border-radius:12px;padding:0 10px;font-size:13px}
 .st-fit{flex:1 1 auto;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center;container-type:size}
 .card.tpl .st-stage{width:min(100cqw,calc(100cqh * var(--arn,.5625)));max-width:100%;height:auto;flex:none}
 .card.tpl .pv-hint{flex:none;margin:0;min-height:0;max-height:1.35em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px;line-height:1.35}
@@ -447,7 +447,6 @@ body.log-mode .st-fit{flex:none;height:min(48dvh,480px)}
 .st-tpls[hidden]{display:none}
 .st-tpls .seg{display:flex;gap:2px;padding:2px;width:100%}.st-tpls .seg button{flex:1 1 0;min-height:40px;padding:0;font-size:13px}
 .st-tpls .st-extra{display:flex;flex-wrap:wrap;gap:6px;padding:0}.st-tpls .chip-btn{flex:none;white-space:nowrap;padding:0 10px;min-height:40px}
-.st-tpls #barResult.actions{display:flex;flex-direction:row;width:auto;margin:0}.st-tpls #barResult[hidden]{display:none}.st-tpls #barResult .ghost-btn{width:auto;min-height:40px;white-space:nowrap;text-decoration:none;border:1px solid var(--border2);border-radius:12px;padding:0 10px;font-size:13px}
 .st-tpls .tpl-list{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:4px 4px 2px;margin:0;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .st-tpls .tpl-list::-webkit-scrollbar{display:none}
 .st-tpls .tpl-btn,.st-tpls .tpl-mine{flex:0 0 58px;width:58px;min-width:58px;gap:3px}
