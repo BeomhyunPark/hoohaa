@@ -43,7 +43,8 @@ function digitsToDisplay(d) {
 }
 function parseTimeDigits(d) { // -> {sec} | {error} | null
   d = d.replace(/^0+(?=\d)/, '');
-  if (!d || +d === 0) return null;
+  if (!d) return null;
+  if (+d === 0) return { error: '0초는 계산할 수 없어요. 기록을 입력해 주세요.' };
   if (d.length > 6) return { error: '기록을 다시 확인해 주세요.' };
   const s = +d.slice(-2), m = +(d.slice(-4, -2) || 0), h = +(d.slice(0, -4) || 0);
   if (s > 59 || m > 59 || h > HMAX) return { error: `분·초는 59까지, 시간은 ${HMAX}까지 입력할 수 있어요.` };
@@ -59,7 +60,9 @@ $('tq').addEventListener('input', e => {
 });
 $('tq').addEventListener('blur', () => { const t = parseTimeDigits(prevDigits); if (t && !t.error) $('tq').value = `${t.h}:${p2(t.m)}:${p2(t.s)}`; });
 $('by').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); validate(); });
-$('km').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^\d.]/g, ''); validate(); });
+$('km').addEventListener('input', e => { const [a, ...b] = e.target.value.replace(/[^\d.]/g, '').split('.'); e.target.value = b.length ? `${a}.${b.join('')}` : a; validate(); }); // one decimal point: 1.5.5 -> 1.55
+// Enter (Android keyboard 이동/완료, hardware keyboard) submits like the button
+for (const id of ['tq', 'km', 'by']) $(id).addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && !$('go').disabled) { e.preventDefault(); $(id).blur(); $('go').click(); } });
 
 // ---------- chips ----------
 function setChip(groupId, v) {
@@ -150,7 +153,7 @@ $('go').addEventListener('click', async () => {
   if (!validate()) return;
   const { t, by, km } = readInput();
   const r = calculate({ birthYear: by, sex: state.sex, event: state.ev, distanceKm: state.ev === 'custom' ? km : null, time: t.sec });
-  if (!r.ok) { $('err').textContent = r.errors.map(x => MSG[x.code] || x.message).join(' '); return; }
+  if (!r.ok) { $('err').textContent = r.errors.map(x => MSG[x.code === 'birthdate' && /^\d{4}$/.test(by) ? 'age_range' : x.code] || x.message).join(' '); return; } // 2030, 1899: 4 digits already
   const go = $('go');
   go.disabled = true;
   go.textContent = '계산 중…';
@@ -188,10 +191,16 @@ else if (wantLog) { try { const u = new URL(location.href); u.searchParams.delet
 if (history.state && history.state.scr && !state.last && !wantLog && !wantResult) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
 if (wantLog) openLogs();
 restore();
+// landing-page deep link: ?ev=5k|10k|half|full preselects the event on home. It is dropped from the URL right away,
+// so it can't follow into /result/?ev=… and relabel a result computed for another event after a refresh,
+// and a refresh on home keeps the event the user picked. /result/ always recomputes the saved inputs as they are.
+{
+  const u = new URL(location.href), q = { '5k': '5K', '10k': '10K', half: 'half', full: 'full' }[(u.searchParams.get('ev') || '').toLowerCase()];
+  if (q && !wantResult && !wantLog) { state.ev = q; applyEv(); validate(); }
+  if (u.searchParams.has('ev')) { u.searchParams.delete('ev'); try { history.replaceState(history.state, '', u.pathname + u.search + u.hash); } catch (e) {} }
+}
 // /result/ opened directly: recompute from the inputs saved on this device; nothing saved → stay on home input
 if (wantResult && !wantLog && validate()) $('go').click();
-// landing-page deep link: ?ev=5k|10k|half|full preselects the event
-{ const q = { '5k': '5K', '10k': '10K', half: 'half', full: 'full' }[(new URLSearchParams(location.search).get('ev') || '').toLowerCase()]; if (q) { state.ev = q; applyEv(); validate(); } }
 
 const wipeBtn = document.getElementById('wipe');
 if (wipeBtn) wipeBtn.addEventListener('click', () => wipeDevice());
