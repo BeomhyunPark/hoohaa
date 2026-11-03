@@ -565,7 +565,7 @@ async function renderDoc(d, doc, photos = {}, cv) {
 const TEMPLATES = Object.entries(TPL_NAMES);
 // designer handoff → layers: every value/label is its own element; values are result tokens (never typed); positions are per format (spec px)
 function templateDoc(t, d, fmt = 'story') {
-  if (!TPL_SPEC[t]) t = 'nrc'; const els = TPL_SPEC[t][fmt || 'story'] || TPL_SPEC[t].story, W = 1080, H = fmtH(fmt === 'story' ? undefined : fmt);
+  if (!TPL_SPEC[t]) t = 'nrc'; const els = TPL_SPEC[t][fmt || 'story'] || (fmt === 'thumb' && TPL_SPEC[t].feed) || TPL_SPEC[t].story, W = 1080, H = fmtH(fmt === 'story' ? undefined : fmt);
   const doc = { tpl: t, bg: { type: 'tone' }, race: '', layers: [], fmt: fmt === 'story' ? undefined : fmt }; let cutAt = els.findIndex(e => e.k === 'cut');
   const Y = (e, h) => e.y != null ? e.y + h / 2 : H - e.yb - h / 2;
   els.forEach((e, i) => { const rad = (e.r || 0) * Math.PI / 180;
@@ -601,7 +601,7 @@ function normLayout(doc, els, fmt, W) {
       if (al === 'left') { L.ax = 'left'; L.x = MARGIN; } else if (al === 'right') { L.ax = 'right'; L.x = W - MARGIN; } else { delete L.ax; L.x = MARGIN + (W - 2 * MARGIN) * (i + .5) / n; }
       L.y = q.s === 't' ? y0 : fmtH(fmt === 'story' ? undefined : fmt) - y0; }); q.lab = m.every(e => byId(e.id) && byId(e.id).row.k === 'lab'); q.y0 = y0; });
   // top-anchored value rows sit on their label row (fixed gap), so shrinking a row never opens a hole above the labels
-  for (const q of rows) { if (q.lab || q.s !== 't') continue; const lr = rows.find(r => r.lab && r.s === 't' && r.m.length === q.m.length && r.y0 > q.y0 && r.y0 - q.y0 < 220); if (!lr) continue;
+  for (const q of rows) { if (q.lab || q.s !== 't') continue; const lr = rows.filter(r => r.s === 't' && r.y0 > q.y0).sort((r1, r2) => r1.y0 - r2.y0)[0]; if (!lr || !lr.lab || lr.m.length !== q.m.length || lr.y0 - q.y0 >= 220) continue;
     for (const e of q.m) { const L = byId(e.id); if (L) { L.ay = 'bottom'; L.y = lr.y0 - Math.round(8 * (FMT_K[fmt] || 1)); } } }
   for (const L of doc.layers) { if (inRow.has(L) || !L.sp || L.vert) continue; if (L.sp.sz <= 34 * (FMT_K[fmt] || 1) + 2 && L.sp.sz < 36) { L.sp = { ...L.sp, sz: TS.meta }; if (L.type === 'text') L.size = TS.meta; }
     if (L.sp.sz < 150) { if (L.ax === 'left' && L.x >= 30 && L.x <= 110) L.x = MARGIN; if (L.ax === 'right' && W - L.x >= 30 && W - L.x <= 110) L.x = W - MARGIN; } }
@@ -667,7 +667,8 @@ async function restorePhotos() { const ids = new Set([doc.bg.pid, ...doc.layers.
 let hist = [], hi = -1, comT = 0;
 function commit() { clearTimeout(comT); if (!doc) return; const s = JSON.stringify(doc); if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 100) hist.shift(); hi = hist.length - 1; } LS(docKey(), doc); paintTop(); }
 const later = () => { clearTimeout(comT); comT = setTimeout(commit, 300); };
-function undoRedo(dd) { commit(); const n = hi + dd; if (n < 0 || n >= hist.length) return; hi = n; doc = JSON.parse(hist[hi]); if (sel && !getL(sel)) sel = null; LS(docKey(), doc); changed(true); paintPanel(); }
+function undoRedo(dd) { commit(); const n = hi + dd; if (n < 0 || n >= hist.length) return; hi = n; doc = JSON.parse(hist[hi]); if (sel && !getL(sel)) sel = null; LS(docKey(), doc); changed(true); paintPanel();
+  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { if (b.dataset.m != null) { if (!doc.log && doc.tpl !== 'mine') b.setAttribute('aria-checked', 'false'); continue; } b.setAttribute('aria-checked', String(doc.log ? b.dataset.lt === doc.log.tpl : b.dataset.t === doc.tpl)); } }
 const docKey = () => doc && doc.log ? 'runtier:logdoc' : 'runtier:v3doc';
 $('undo').addEventListener('click', () => undoRedo(-1)); $('redo').addEventListener('click', () => undoRedo(1));
 function paintTop() { $('undo').disabled = hi <= 0; $('redo').disabled = hi >= hist.length - 1; }
@@ -704,7 +705,7 @@ function syncMulti() { for (const id of [...multi]) { const m = getL(id); if (!m
   if (multiSnap && multiSnap.id === L.id) for (const k of MSYNC) if (JSON.stringify(L[k]) !== JSON.stringify(multiSnap[k])) for (const id of multi) { const m = getL(id); if (L[k] === undefined) delete m[k]; else m[k] = clone(L[k]); }
   multiSnap = clone(L); }
 window.__multi = () => [...multi];
-function changed(now) { syncTier(); syncMulti(); if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; fitStage(); $('tplPreview').getContext('2d').drawImage(cv, 0, 0); if (needClamp) { needClamp = false; if (clampN++ < 5 && clampIn()) { changed(true); return; } clampN = 0; } paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
+function changed(now) { syncTier(); syncMulti(); if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; fitStage(); $('tplPreview').getContext('2d').drawImage(cv, 0, 0); if (needClamp) { needClamp = false; const fold = hi >= 0 && JSON.stringify(doc) === hist[hi]; if (clampN++ < 5 && clampIn()) { if (fold) hist[hi] = JSON.stringify(doc); changed(true); return; } clampN = 0; } paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
 // ---- format: 9:16 story · 4:5 feed · 1:1 (preview canvas follows the export aspect) ----
 let needClamp = false, clampN = 0;
 function fitStage() { const h = FH(), pv = $('tplPreview'), o = $('ovl'); if (pv.height !== h) { pv.height = h; o.height = h; } $('stage').style.setProperty('--ar', `1080/${h}`); $('stage').style.setProperty('--arn', String(1080 / h));
@@ -739,16 +740,16 @@ function newDoc(t, f = 'story') { const d = templateDoc(TEMPLATES.some(x => x[0]
   needClamp = true; clampN = 0; return d; }
 async function refreshTpl() { // called from renderResult
   if (!state.story) return;
-  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : newDoc(); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
+  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : newDoc(); syncTier(); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
   changed(true); paintPanel(); thumbs();
 }
 async function thumbs() {
   if (doc && doc.log) return logThumbs();
   const mine = (LS('runtier:mytpl') || []).map((m, i) => ({ ...m, _i: i })).filter(m => !m.log);
   $('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-t="${k}" aria-checked="${doc.tpl === k}"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${n}</span></button>`).join('') +
-    mine.map(m => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${m._i}" aria-checked="false"><canvas width="108" height="192"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${m._i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
+    mine.map(m => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${m._i}" aria-checked="false"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${m._i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
   const all = LS('runtier:mytpl') || [];
-  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? relayout(templateDoc(b.dataset.t, state.story), doc.fmt || 'story') : all[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
+  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = relayout(b.dataset.t ? templateDoc(b.dataset.t, state.story) : clone(all[+b.dataset.m]), doc.fmt || 'story'); const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
 }
 const userLayers = d => (d.layers || []).filter(l => l && !l.sid).map(clone);
 $('tplList').addEventListener('click', e => { const del = e.target.closest('[data-mdel]'); if (del) { const m = LS('runtier:mytpl') || []; m.splice(+del.dataset.mdel, 1); LS('runtier:mytpl', m); thumbs(); return; }
@@ -1323,7 +1324,7 @@ function renderResult(r) {
     logCtx = { log: o.log, vals: o.vals, pid };
     doc = buildLogDoc(o.tpl, o.vals, { pid: pid && LOG_TPLS.length ? pid : null, logId: o.log && o.log.id, type: o.log && o.log.type, acc: o.acc, fmt: 'thumb' });
     if (!pid) setLogBg(doc, null);
-    sel = null; mode = null; hist = [JSON.stringify(doc)]; hi = 0; needClamp = false;
+    sel = null; mode = null; syncTier(); hist = [JSON.stringify(doc)]; hi = 0; needClamp = false;
     changed(true); paintPanel(); thumbs(); return doc;
   }
   // picking another log refills only the still-bound elements of the current card
