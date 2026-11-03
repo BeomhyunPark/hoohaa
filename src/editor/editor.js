@@ -1052,13 +1052,16 @@ if (!$('sheetGrab')) { const g = document.createElement('button'); g.type = 'but
     if (dy < -24) { c.classList.add('sheet-xl'); requestAnimationFrame(() => paintOvl()); } else if (dy > 24 && c.classList.contains('sheet-xl')) { c.classList.remove('sheet-xl'); requestAnimationFrame(() => paintOvl()); } else closeSheet(); });
   g.addEventListener('pointercancel', () => { y0 = null; });
   g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeSheet(); } }); }
-// typing mode: while the text field has focus the on-screen keyboard takes ~half the screen, so the sheet, tools and top bar
-// step aside and only [text field][입력 완료] stays under the canvas (otherwise sheet + keyboard leave a stamp-sized canvas)
-{ const P = $('panel'); let tOut = 0;
-  const done = () => { const b = $('pDone'); if (b) b.textContent = $('tplCard').classList.contains('typing') ? '입력 완료' : '완료'; };
-  P.addEventListener('focusin', e => { if (e.target.id !== 'tText') return; clearTimeout(tOut); $('tplCard').classList.add('typing'); done(); fitSheet(); requestAnimationFrame(() => paintOvl()); });
-  P.addEventListener('focusout', e => { if (e.target.id !== 'tText') return; $('tplCard').dataset.typedAt = Date.now();
-    tOut = setTimeout(() => { if (document.activeElement && document.activeElement.id === 'tText') return; $('tplCard').classList.remove('typing'); done(); requestAnimationFrame(() => paintOvl()); }, 120); });
+// typing mode: while the text field has focus AND the on-screen keyboard is up (visual viewport < 75% of its tallest seen height),
+// the sheet, tools and top bar step aside and only [text field][입력 완료] stays under the canvas — otherwise sheet + keyboard leave a
+// stamp-sized canvas. Keyboard check matters: iOS may not raise the keyboard for the text tool's programmatic focus, and desktop has none.
+{ const P = $('panel'), V = window.visualViewport; let tOut = 0, vMax = 0, vW = 0;
+  const kbUp = () => { if (!V) return false; if (V.width !== vW) { vW = V.width; vMax = 0; } vMax = Math.max(vMax, V.height); return V.height < vMax * .75; };
+  const updTyping = () => { const c = $('tplCard'); if (!c) return; const on = !!(document.activeElement && document.activeElement.id === 'tText') && kbUp() && sheetOn();
+    if (on === c.classList.contains('typing')) return; c.classList.toggle('typing', on); const b = $('pDone'); if (b) b.textContent = on ? '입력 완료' : '완료'; requestAnimationFrame(() => paintOvl()); };
+  if (V) V.addEventListener('resize', updTyping); kbUp();
+  P.addEventListener('focusin', e => { if (e.target.id !== 'tText') return; clearTimeout(tOut); updTyping(); });
+  P.addEventListener('focusout', e => { if (e.target.id !== 'tText') return; const c = $('tplCard'); if (c.classList.contains('typing')) c.dataset.typedAt = Date.now(); clearTimeout(tOut); tOut = setTimeout(updTyping, 120); });
   // 입력 완료 while typing = close the keyboard and stay on this text (font/colour come next); tapping it blurs first, hence the timestamp
   P.addEventListener('click', e => { if (!e.target.closest('#pDone')) return; const c = $('tplCard'); if (c.classList.contains('typing') || Date.now() - (+c.dataset.typedAt || 0) < 500) { e.stopImmediatePropagation(); c.dataset.typedAt = 0; document.activeElement && document.activeElement.blur(); } }, true); }
 document.addEventListener('keydown', e => { if (e.key !== 'Escape' || !sheetOn() || e.defaultPrevented) return; const t = e.target; if (t && (t.closest('.fsheet,.fs-card') || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; closeSheet(); });
