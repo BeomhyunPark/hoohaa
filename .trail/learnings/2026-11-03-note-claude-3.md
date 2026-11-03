@@ -3,17 +3,22 @@ title: "공유 카드 기록은 저장 스키마를 그대로 두고, 입력 중
 author: Claude
 date: 2026-11-03
 branch: claude/epic-pasteur-vnm8y8
-cost: { minutes: 10, tokens: 157740 }
-id: l-0588cadc
+cost: { minutes: 3, tokens: 13577 }
+id: l-9938e599
 scope: repo
 status: active
 src: agent
 touches:
-  - src/storage/zip.js
-  - src/storage/zip.test.mjs
-  - src/storage/logdb.js
+  - 10k/index.html
+  - bmr/index.html
+  - pace-calculator/index.html
   - src/app/logs.js
   - src/engine/logcalc.js
+  - src/engine/logcalc.test.mjs
+  - src/storage/device.js
+  - src/storage/logdb.js
+  - src/storage/zip.js
+  - src/storage/zip.test.mjs
 ---
 
 ## Decided
