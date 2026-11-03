@@ -790,9 +790,11 @@ function placeMini(b) { const m = $('miniBar'); if (!m) return; const L = b && g
   const lk = m.querySelector('[data-mb=lock]'); if (lk) { lk.setAttribute('aria-pressed', !!L.lk); lk.title = L.lk ? '잠금 해제' : '잠금'; lk.setAttribute('aria-label', lk.title); lk.querySelector('small').textContent = L.lk ? '잠김' : '잠금'; lk.querySelector('.lk-open').style.display = L.lk ? 'none' : ''; lk.querySelector('.lk-shut').style.display = L.lk ? '' : 'none'; }
   m.querySelectorAll('[data-mb=dup],[data-mb=del]').forEach(e => e.hidden = isTop(L)); m.querySelector('[data-mb=asbg]').hidden = !(L.type === 'photo' && L.pid && photos[L.pid]) || multi.size > 0; m.hidden = false;
   const r = $('ovl').getBoundingClientRect(), kx = r.width / 1080, ky = r.height / FH(), c = corners(b), xs = c.map(q => q[0] * kx), ys = c.map(q => q[1] * ky);
+  m.classList.toggle('compact', false); if (m.offsetWidth > r.width - 8) m.classList.add('compact');
   const bw = m.offsetWidth, bhh = m.offsetHeight, top = Math.min(...ys), bot = Math.max(...ys), cx = (Math.min(...xs) + Math.max(...xs)) / 2;
   let y = top - bhh - 10; if (y < 4) { y = bot + 10; if (y + bhh > r.height - 4) y = top > r.height - bot ? Math.max(4, top - bhh - 4) : Math.min(r.height - bhh - 4, bot + 4); }
-  m.style.left = Math.max(4, Math.min(r.width - bw - 4, cx - bw / 2)) + 'px'; m.style.top = y + 'px'; }
+  let lo = 4, hi = r.width - bw - 4; if (hi < lo) { const f = $('tplEd').getBoundingClientRect(); lo = Math.min(4, f.left - r.left + 4); hi = Math.max(r.width - bw - 4, f.right - r.left - bw - 4); }
+  m.style.left = Math.max(lo, Math.min(hi, cx - bw / 2)) + 'px'; m.style.top = y + 'px'; }
 // iOS Safari: the stage blocks touch defaults for gestures, so act on pointerup directly (click is only a keyboard fallback)
 function tapButtons(el, sel_, run) { let down = null, last = 0;
   const stop = e => e.stopPropagation();
@@ -820,6 +822,7 @@ const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.fin
   ov.addEventListener('pointerdown', e => {
     fineP = e.pointerType === 'mouse' && matchMedia('(hover: hover) and (pointer: fine)').matches; hideMenu(); const p = cv(e); pts.set(e.pointerId, p); ov.setPointerCapture(e.pointerId); e.preventDefault();
     if (pickMode) { pickMode = false; const px = $('tplPreview').getContext('2d').getImageData(Math.round(p[0]), Math.round(p[1]), 1, 1).data; setCol('#' + [px[0], px[1], px[2]].map(v => v.toString(16).padStart(2, '0')).join('')); status('색을 가져왔어요'); pts.delete(e.pointerId); return; }
+    ov.dataset.down = '1';
     if (pts.size === 1) { moved = false; g0 = null;
       const hS = hitAt(p[0], p[1]), SL = sel && getL(sel);
       if (e.shiftKey && hS && SL && SL.type === 'text' && getL(hS.id) && getL(hS.id).type === 'text') { // shift+click: add/remove text to multi-selection
@@ -859,7 +862,8 @@ const onHandle = (x, y) => { if (fineP) return false; const b = sel && boxes.fin
     changed();
   });
   const up = e => { if (!pts.has(e.pointerId)) return; pts.delete(e.pointerId); clearTimeout(lp);
-    if (!pts.size) { if (dragging && trashHot && sel) delLayer(sel); dragging = false; trashHot = false; guides = null; g0 = null; paintOvl(); if (moved) commit(); if (sel) paintPanel(); } else start(); };
+    if (!pts.size) { delete ov.dataset.down; const want = $('tplCard') && $('tplCard').dataset.sheetWant != null; if (want) delete $('tplCard').dataset.sheetWant;
+      if (dragging && trashHot && sel) delLayer(sel); dragging = false; trashHot = false; guides = null; g0 = null; paintOvl(); if (moved) commit(); if (sel || want) paintPanel(); } else start(); };
   ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
   ov.addEventListener('wheel', e => { const L = sel && getL(sel); if (!L) return; e.preventDefault(); if (L.lk) return; pinS(L); L.s = Math.max(.08, Math.min(8, L.s * Math.exp(-e.deltaY / 500))); changed(); }, { passive: false });
   // no page scroll / zoom while touching the canvas (iOS needs non-passive handlers)
@@ -891,7 +895,7 @@ function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) 
 const addLayer = L => { doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); };
 $('tools').addEventListener('click', async e => { const b = e.target.closest('[data-tool]'); if (!b) return; const t = b.dataset.tool; hideMenu();
   if (t === 'text') { addLayer(mk('text', { t: '텍스트', size: 96, font: null, col: '#ffffff', x: 540, y: 960 })); setTimeout(() => { const ta = $('tText'); if (ta) { ta.focus({ preventScroll: true }); ta.select(); } }, 50); return; }
-  sel = null; mode = mode === t ? null : t; paintPanel(); });
+  sel = null; multi.clear(); libOpen = false; mode = mode === t ? null : t; paintPanel(); paintOvl(); });
 let photoTarget = 'layer';
 const pickPhoto = () => { status('사진은 이 기기 안에서만 쓰여요', 2200); $('photo').click(); };
 $('photo').addEventListener('change', async e => {
@@ -902,7 +906,7 @@ $('photo').addEventListener('change', async e => {
   for (const f of fs) { if (n >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); break; } const pid = await addPhotoFile(f); n++; const L = mk('photo', { pid, mask: 'round', filter: 'none', x: 540 + (n % 3 - 1) * 60, y: 900 + (n % 3) * 40, s: .9 }); doc.layers.push(L); sel = L.id; }
   mode = null; changed(true); paintPanel();
 });
-let stT = 0; function status(t, ms = 2600) { $('pvHint').textContent = t || (fineP ? '클릭해 선택 · 끌어서 이동 · Ctrl+드래그로 크기 · Shift+클릭으로 여러 텍스트 선택' : '요소를 탭해 선택 · 끌어서 이동 · 두 손가락으로 크기·회전 · 길게 눌러 메뉴'); clearTimeout(stT); if (t) stT = setTimeout(() => status(''), ms); }
+let stT = 0; function status(t, ms = 2600) { $('pvHint').textContent = t || (sheetOn() ? '' : fineP ? '클릭해 선택 · 끌어서 이동 · Ctrl+드래그로 크기 · Shift+클릭으로 여러 개 선택' : '탭해 선택 · 끌어서 이동 · 두 손가락으로 크기·회전'); clearTimeout(stT); if (t) stT = setTimeout(() => status(''), ms); }
 // ---- colour picker (HSV, persistent H/S/V: never re-derive hue when s or v = 0) ----
 const hex2hsv = hex => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
   let h = 0; if (d) h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return { h: h * 60, s: mx ? d / mx : 0, v: mx }; };
@@ -1026,9 +1030,42 @@ let stkCat = 'rec';
 const STK_TABS = [['rec', '기록'], ['mark', '배지'], ['run', '러닝'], ['say', '문구']];
 const STK_CAT = { pb: 'mark', medal: 'mark', stamp: 'mark', bib: 'mark', chip5k: 'mark', chip10k: 'mark', chiphalf: 'mark', marathon: 'mark', splits: 'mark', streak: 'mark', crew: 'mark', wordmark: 'mark', dawnrun: 'run', rainrun: 'run', hangang: 'run', shoe: 'run', fuel: 'run', pacer: 'run', heart: 'run', ohunwan: 'say', runlini: 'say', tiredhappy: 'say', handwritten: 'say', runnershigh: 'say', proud: 'say', together: 'say' };
 const stkBtn = (k, n, kind) => `<button type="button" class="pre stk" data-${kind}="${k}"><canvas width="120" height="120" data-stk="${k}"></canvas><small>${esc(n)}</small></button>`;
+// ---- bottom sheet: while a tool or a selection is open the editor fills the screen (fixed), the canvas takes the top and the
+// options sit in a capped, self-scrolling sheet under the tools — no page scrolling back and forth between canvas and options.
+// DOM-only state (no module-level let) so status()/paintPanel() can run before this point is reached.
+function sheetOn() { const c = document.getElementById('tplCard'); return !!(c && c.classList.contains('sheet-on')); }
+function fitSheet() { const c = document.getElementById('tplCard'); if (!c || !c.classList.contains('sheet-on')) return; const v = window.visualViewport;
+  c.style.setProperty('--vvh', (v ? v.height : innerHeight) + 'px'); c.style.setProperty('--vvt', (v ? v.offsetTop : 0) + 'px'); }
+function sheet(on) { const c = document.getElementById('tplCard'); if (!c) return; delete c.dataset.sheetWant; if (on === sheetOn()) return;
+  const o = document.getElementById('ovl'); if (o && o.dataset.down) { c.dataset.sheetWant = on ? '1' : '0'; return; } // finger still on the canvas: resize after it lifts, not under it
+  if (on) { const ph = document.createElement('div'); ph.className = 'sheet-ph'; ph.setAttribute('aria-hidden', 'true'); ph.style.height = c.offsetHeight + 'px'; c.before(ph); c.classList.add('sheet-on'); fitSheet(); }
+  else { c.classList.remove('sheet-on', 'sheet-xl'); const ph = c.previousElementSibling; if (ph && ph.classList.contains('sheet-ph')) ph.remove(); }
+  status(''); requestAnimationFrame(() => paintOvl()); }
+function closeSheet() { if (cropSt) return; sel = null; multi.clear(); multiSnap = null; libOpen = false; mode = null; paintPanel(); paintOvl(); }
+if (window.visualViewport) { visualViewport.addEventListener('resize', fitSheet); visualViewport.addEventListener('scroll', fitSheet); }
+if (!$('sheetGrab')) { const g = document.createElement('button'); g.type = 'button'; g.id = 'sheetGrab'; g.className = 'sheet-grab'; g.setAttribute('aria-label', '편집 메뉴 닫기 (위로 밀면 넓게 보기)');
+  g.innerHTML = '<i aria-hidden="true"></i><span aria-hidden="true">닫기</span>'; $('tools').after(g);
+  let y0 = null; g.addEventListener('pointerdown', e => { y0 = e.clientY; g.setPointerCapture(e.pointerId); });
+  g.addEventListener('pointerup', e => { if (y0 == null) return; const dy = e.clientY - y0; y0 = null; const c = $('tplCard');
+    if (dy < -24) { c.classList.add('sheet-xl'); requestAnimationFrame(() => paintOvl()); } else if (dy > 24 && c.classList.contains('sheet-xl')) { c.classList.remove('sheet-xl'); requestAnimationFrame(() => paintOvl()); } else closeSheet(); });
+  g.addEventListener('pointercancel', () => { y0 = null; });
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeSheet(); } }); }
+document.addEventListener('keydown', e => { if (e.key !== 'Escape' || !sheetOn() || e.defaultPrevented) return; const t = e.target; if (t && (t.closest('.fsheet,.fs-card') || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; closeSheet(); });
+// tool icons: one stroke style instead of mixed text glyphs and a colour emoji (markup is duplicated in 4 pages, so swap here)
+{ const sv = d => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
+  const IC = { tpl: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+    photo: '<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/>',
+    sticker: '<path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/>',
+    stat: '<circle cx="12" cy="13.5" r="7"/><path d="M12 13.5V10M10 3.5h4M18 7l1.5-1.5"/>',
+    bg: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>',
+    layers: '<path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/>' };
+  for (const b of $('tools').querySelectorAll('[data-tool]')) { const d = IC[b.dataset.tool], i = b.querySelector('b'); if (d && i) i.innerHTML = sv(d); }
+  const UR = { undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>', redo: '<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>' };
+  for (const [id, d] of Object.entries(UR)) { const b = $(id); if (b) b.innerHTML = sv(d); } }
 function paintPanel() {
   { const L0 = sel && getL(sel), b = L0 && (L0.ax || L0.ay) && boxes.find(q => q.id === sel); if (b) { L0.x = b.x; L0.y = b.y; delete L0.ax; delete L0.ay; } }
   const P = $('panel'); $('cpick').hidden = true; document.body.appendChild($('cpick')); const L = sel && getL(sel);
+  sheet(!!(L || mode || (cropSt && photos[cropSt.pid])));
   for (const b of $('tools').querySelectorAll('[data-tool]')) b.setAttribute('aria-pressed', String(b.dataset.tool === mode && !L));
   { const tp = $('stTpls'); if (tp) tp.hidden = !(mode === 'tpl' && !L); } // template tool: big thumbnails + ratio live in this static panel
   let h = '';
@@ -1081,7 +1118,7 @@ function paintPanel() {
     P.dataset.grads = JSON.stringify(GR);
   } else if (mode === 'layers') {
     h += `<div class="sh-head"><h3>레이어 (${doc.layers.length})</h3></div><ol class="layers">${[...doc.layers].reverse().map(l => `<li><button type="button" class="fopt" data-pick="${l.id}"><b>${esc(lname(l))}</b><small>${l.hidden ? '숨김' : ''}</small></button>${isTop(l) ? '' : `<button type="button" class="star" data-vis="${l.id}" aria-label="${esc(lname(l))} ${l.hidden ? '보이기' : '숨기기'}">${l.hidden ? '🙈' : '👁'}</button>`}</li>`).join('')}</ol>`;
-  } else if (mode === 'tpl') { /* #stTpls shown above */ } else h += `<p class="hint">아래 도구로 템플릿을 고르거나 텍스트·사진·스티커·기록·바탕을 더하고, 캔버스에서 바로 끌고 돌려 보세요. 아무것도 안 바꿔도 바로 저장돼요.</p>`;
+  } else if (mode === 'tpl') { /* #stTpls shown above */ } // nothing selected and no tool → empty panel, the bottom sheet closes
   const sx = {}; for (const e of P.querySelectorAll('.hbar[id]')) sx[e.id] = e.scrollLeft; const sy = P.scrollTop;
   P.innerHTML = h; bindPanel(L); for (const [id, x] of Object.entries(sx)) { const e = $(id); if (e) e.scrollLeft = x; } P.scrollTop = sy;
   for (const c of P.querySelectorAll('canvas[data-stk]')) { const g = c.getContext('2d'); g.clearRect(0, 0, 120, 120); const L2 = mk('sticker', { k: c.dataset.stk, col: '#ffffff' }); renderMini(g, L2); }
