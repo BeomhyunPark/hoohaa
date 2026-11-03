@@ -1,4 +1,4 @@
-const CACHE = 'hoohaa-shell-42';
+const CACHE = 'hoohaa-shell-43';
 const SHELL = [
   '/app/',
   '/app/index.html',
@@ -22,6 +22,7 @@ const SHELL = [
 // Fetched when the result editor opens. Cached after that use, not on install.
 const ON_USE = [
   '/src/editor/editor.js',
+  '/src/editor/util.js',
   '/src/vendor/html-to-image.js',
   '/src/table-share.js',
   '/src/editor/workout.js',

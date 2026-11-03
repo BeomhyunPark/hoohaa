@@ -3,6 +3,7 @@ import { fetchWeather, searchPlace, wxHere, isoDay } from '../net/weather.js';
 import { celsius } from '../engine/logcalc.js';
 import { paceGuide, parseWeekly } from './workout.js';
 import { LOG_TPLS, TOKENS, ICON_NAMES, iconSVG, buildLogDoc, fillBindings, setLogBg, LOG_H, kindOf } from './logtpl.js';
+import { W, H, SYS_KO, PRE, SUB_PRE, SUB_BH, needFull, ARC, alpha, rr, font, fitText, rng, FONTS, PICKABLE, FONT_CATS, previewFam, nearW, W_, ARC_, PRE_, SYS_KO_, lum, ymd, STATS, statLabel, statValue, paceQ, pctOf, fillTok, STAT_SIZE0, STAT_SIZE, TOP_MIN_PX, STICKERS, FILTERS, FORMATS, fmtH, MASKS, famOf, wOf, HAN, contrast, clone, hex2hsv, hsv2hex } from './util.js';
 
 export async function mountEditor(env) {
   const { $, esc, state, EVN } = env;
@@ -14,16 +15,7 @@ export async function mountEditor(env) {
   const STK_SVG = assets.STK_SVG;
   const TK = {"app": {"bg": "#0F1620", "surface": "#172130", "surface_raised": "#1F2B3B", "text_primary": "#F4F6F8", "text_secondary": "#B8C2CF", "text_tertiary": "#8A97A8", "border": "#2A3748", "border_strong": "#56657A", "accent": "#3DC8F5", "accent_hover": "#6ED6F8", "on_accent": "#0F1620", "success": "#3DD68C", "warning": "#FFB547", "danger": "#FF6B6B", "info": "#5AB8FF", "focus_ring": "#7CC4FF", "share_card_bg": ["#0F1620", "#172338"], "share_card_frame": "#2A3748"}, "tier": {"iron": {"base": "#988C83", "gradient": ["#A49A92", "#8A7F77"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E9ECEF", "dark": "#242C38"}, "tint_text": {"light": "#5C6C84", "dark": "#9B8F87"}, "divisions": {"III": "#8C8179", "II": "#988C83", "I": "#A2988F"}, "glow": {"color": "#988C83", "blur_px": 0, "alpha": 0}, "text": "#9B8F87", "card": {"band": "plain", "ink": "#0F0F10", "ink_min_ratio": 4.51, "stops": ["#A2988F", "#988C83", "#837972"], "background": "linear-gradient(118deg, #A2988F 0%, #988C83 55%, #837972 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#988C83", "glyph": ["circle"]}}, "bronze": {"base": "#B98660", "gradient": ["#C29675", "#A87A57"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F7EDE6", "dark": "#272B35"}, "tint_text": {"light": "#905C38", "dark": "#B98660"}, "divisions": {"III": "#AA7B58", "II": "#B98660", "I": "#C09270"}, "glow": {"color": "#B98660", "blur_px": 0, "alpha": 0}, "text": "#B98660", "card": {"band": "plain", "ink": "#161110", "ink_min_ratio": 4.56, "stops": ["#C09270", "#B98660", "#A07454"], "background": "linear-gradient(118deg, #C09270 0%, #B98660 55%, #A07454 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#B98660", "glyph": ["p", 3, -90, [1]]}}, "silver": {"base": "#AEB6C1", "gradient": ["#BDC4CD", "#A0A7B2"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F4F6F9", "dark": "#26303E"}, "tint_text": {"light": "#656D76", "dark": "#AEB6C1"}, "divisions": {"III": "#A4ABB5", "II": "#AEB6C1", "I": "#BAC1CA"}, "glow": {"color": "#AEB6C1", "blur_px": 0, "alpha": 0}, "text": "#AEB6C1", "card": {"band": "plain", "ink": "#1D2024", "ink_min_ratio": 6.04, "stops": ["#B6BDC7", "#AEB6C1", "#969EA8"], "background": "linear-gradient(118deg, #B6BDC7 0%, #AEB6C1 55%, #969EA8 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#AEB6C1", "glyph": ["p", 4, -45, [0.85]]}}, "gold": {"base": "#D2B56E", "gradient": ["#DBC48B", "#C1A765"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FDF5E2", "dark": "#2A3036"}, "tint_text": {"light": "#85661A", "dark": "#D2B56E"}, "divisions": {"III": "#C5AA67", "II": "#D2B56E", "I": "#D9C185"}, "glow": {"color": "#D2B56E", "blur_px": 0, "alpha": 0}, "text": "#D2B56E", "card": {"band": "plain", "ink": "#221F19", "ink_min_ratio": 6.23, "stops": ["#D6BC7D", "#D2B56E", "#B59D60"], "background": "linear-gradient(118deg, #D6BC7D 0%, #D2B56E 55%, #B59D60 100%), repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px)", "border": "1px solid rgba(255,255,255,.16)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#D2B56E", "glyph": ["p", 4, -90, [1]]}}, "platinum": {"base": "#A3C4B1", "gradient": ["#BFD6C8", "#A3C4B1", "#94B2A1"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E2F7F5", "dark": "#25313D"}, "tint_text": {"light": "#1C786F", "dark": "#A3C4B1"}, "divisions": {"III": "#99B8A6", "II": "#A3C4B1", "I": "#B3CEBE"}, "glow": {"color": "#A3C4B1", "blur_px": 0, "alpha": 0}, "text": "#A3C4B1", "card": {"band": "mid", "ink": "#1B2122", "ink_min_ratio": 5.37, "stops": ["#B7D1C2", "#A3C4B1", "#809A8C"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #B7D1C2 0%, #A3C4B1 55%, #809A8C 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#A3C4B1", "glyph": ["p", 6, -90, [1]]}}, "emerald": {"base": "#529E82", "gradient": ["#71AF98", "#529E82", "#498D74"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E0F2E8", "dark": "#1D2E38"}, "tint_text": {"light": "#197643", "dark": "#57A186"}, "divisions": {"III": "#4B9178", "II": "#529E82", "I": "#63A88E"}, "glow": {"color": "#529E82", "blur_px": 0, "alpha": 0}, "text": "#57A186", "card": {"band": "mid", "ink": "#101C1C", "ink_min_ratio": 4.72, "stops": ["#78B39E", "#529E82", "#4C9278"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #78B39E 0%, #529E82 55%, #4C9278 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#529E82", "glyph": ["p", 8, -67.5, [1]]}}, "diamond": {"base": "#9DA8E6", "gradient": ["#B4BCEC", "#9DA8E6", "#8D97CF"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#E8F3FF", "dark": "#242F42"}, "tint_text": {"light": "#3B6FA8", "dark": "#9DA8E6"}, "divisions": {"III": "#929CD6", "II": "#9DA8E6", "I": "#ABB4EA"}, "glow": {"color": "#9DA8E6", "blur_px": 0, "alpha": 0}, "text": "#9DA8E6", "card": {"band": "mid", "ink": "#1A1E2A", "ink_min_ratio": 4.66, "stops": ["#B3BBEC", "#9DA8E6", "#7C85B6"], "background": "linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 62%), var(--hex), linear-gradient(118deg, #B3BBEC 0%, #9DA8E6 55%, #7C85B6 100%)", "border": "1px solid rgba(255,255,255,.37)", "outline": null, "shadow": "0 12px 28px rgba(0,0,0,.55)", "glow": null, "topo_tint": "#9DA8E6", "glyph": ["pts", [[0, -1], [0.8, -0.2], [0, 1], [-0.8, -0.2]]]}}, "master": {"base": "#A587D4", "gradient": ["#BCA6DF", "#AC91D7", "#A587D4", "#8E74B6"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#EFE6FD", "dark": "#252B40"}, "tint_text": {"light": "#7F47DD", "dark": "#A587D4"}, "divisions": null, "glow": {"color": "#A587D4", "blur_px": 18, "alpha": 0.2}, "text": "#A587D4", "card": {"band": "top", "ink": "#F4F1FA", "ink_min_ratio": 4.89, "stops": ["#625180", "#453A5B", "#2F283F"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #625180 0%, #453A5B 55%, #2F283F 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #A587D470", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 40px rgba(165,135,212,.32)", "glow": "rgba(165,135,212,.32)", "topo_tint": "#A587D4", "glyph": ["p", 8, -90, [1, 0.4]]}}, "grandmaster": {"base": "#CC8094", "gradient": ["#DAA2B1", "#D18B9E", "#CC8094", "#AF6E7F"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#F9E3EC", "dark": "#292B3A"}, "tint_text": {"light": "#B53167", "dark": "#CC8094"}, "divisions": null, "glow": {"color": "#CC8094", "blur_px": 26, "alpha": 0.26}, "text": "#CC8094", "card": {"band": "top", "ink": "#F9F0F2", "ink_min_ratio": 4.86, "stops": ["#784D5A", "#553742", "#39262F"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #784D5A 0%, #553742 55%, #39262F 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #CC809470", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 44px rgba(204,128,148,.37)", "glow": "rgba(204,128,148,.37)", "topo_tint": "#CC8094", "glyph": ["p", 12, -90, [1, 0.5]]}}, "challenger": {"base": "#E6DEFA", "gradient": ["#FFFDF8", "#EEE8FA", "#CFC3F2"], "gradient_angle_deg": 135, "on": "#0F1620", "tint": {"light": "#FEF9EB", "dark": "#272D44"}, "tint_text": {"light": "#7D6F39", "dark": "#E6DEFA"}, "divisions": null, "glow": {"color": "#E6DEFA", "blur_px": 38, "alpha": 0.34}, "text": "#E6DEFA", "card": {"band": "top", "ink": "#2B2350", "ink_min_ratio": 9.45, "stops": ["#FBF7EE", "#EEE7FA", "#D8CBF5"], "background": "linear-gradient(122deg, transparent 32%, rgba(159,240,224,.18) 42%, rgba(179,156,250,.22) 50%, rgba(243,163,196,.18) 58%, transparent 68%), var(--topo), linear-gradient(118deg, #FBF7EE 0%, #EEE7FA 55%, #D8CBF5 100%)", "border": "1px solid rgba(255,255,255,.47)", "outline": "1px solid #B39CFA70", "shadow": "0 12px 28px rgba(0,0,0,.55), 0 0 52px rgba(179,156,250,.47)", "glow": "rgba(179,156,250,.47)", "topo_tint": "#8F72F2", "glyph": ["p", 16, -90, [1, 0.55]]}}}, "subdivision": {"method": "Roman numeral + 3 pips (filled = division strength, I=3 pips) + badge brightness step; III=base mixed 12% black, II=base, I=base mixed 14% white", "tiers": "iron..diamond only"}};
 
-// 9:16 story PNG (1080x1920) rendered on canvas. Embedded fonts: "TC Archivo", "TC Pretendard" (subset).
-const W = 1080, H = 1920;
-const SYS_KO = '-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",sans-serif';
-const PRE = `"TC Pretendard","LZ pretendardk",${SYS_KO}`;
-// Hangul covered by the embedded subsets; anything else lazy-loads the full (KS X 1001) font so labels/user text never fall back
-const SUB_PRE = new Set('간고골그기까나남내넘다단달대동드랄래랜록론린마말메몬버분브상성스시실아언에여예완요위음이저적정주즈지챌초최축터티페표풀프플하해'), SUB_BH = new Set('골그내넘다드랄래랜론린마메몬버브상스실아언에위이저즈챌터티플');
-function needFull(t, bh) { for (const ch of t) if (ch >= "\uac00" && ch <= "\ud7a3" && !(bh ? SUB_BH : SUB_PRE).has(ch)) return true; return false; }
-const ARC = '"TC Archivo",sans-serif';
 // Tier colours come from TK.tier (single source of truth); only material effects live here.
-function alpha(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; }
 const STORY_FX = {"iron": {"sheen": 0, "holo": 0}, "bronze": {"sheen": 0.25, "holo": 0}, "silver": {"sheen": 0.45, "holo": 0}, "gold": {"sheen": 0.55, "holo": 0}, "platinum": {"sheen": 0.6, "holo": 0}, "emerald": {"sheen": 0.65, "holo": 0.08}, "diamond": {"sheen": 0.75, "holo": 0.18}, "master": {"sheen": 0.8, "holo": 0.25}, "grandmaster": {"sheen": 0.85, "holo": 0.3}, "challenger": {"sheen": 0.9, "holo": 0.5}};
 const STORY_MAT = Object.fromEntries(Object.entries(STORY_FX).map(([k, fx]) => { const t = TK.tier[k], cd = t.card;
   return [k, { s: cd.stops, ink: cd.ink, text: t.text, band: cd.band, ...fx, glow: cd.glow }]; }));
@@ -45,26 +37,7 @@ document.head.insertAdjacentHTML('beforeend', '<style id="tier-tk">' + `.tier-ca
   return `.t-${k}{--ink:${cd.ink};--ink2:${cd.ink};--card-bg:${bg};--card-bd:${cd.border.replace(/^1px solid /, '1px solid ')};--card-sh:${cd.shadow};${cd.outline ? `--card-ol:${cd.outline};` : ''}}`; }).join('') + '</style>');
 // --hex is a shorthand-ish layer; expand into background layers
 document.querySelectorAll('#tier-tk').forEach(s => { s.textContent = s.textContent.replace(/var\(--hex\)/g, svgURL(HEX_SVG) + ' 0 0/78px auto repeat'); });
-const rr = (c, x, y, w, h, r) => { c.beginPath(); c.roundRect(x, y, w, h, r); };
-function font(c, size, weight, fam, stretch = 'normal') { c.font = `${weight} ${size}px ${fam}`; try { c.fontStretch = stretch; } catch { } }
-function fitText(c, txt, max) { while (c.measureText(txt).width > max && txt.length > 1) txt = txt.slice(0, -2) + '…'; return txt; }
 
-// ---------- font registry: 6 embedded + Pretendard, rest lazy-loaded on pick ----------
-const rng = s => { const [a, b] = String(s).split(' ').map(Number); if (!b) return [a]; const o = []; for (let w = a; w <= b; w += 100) o.push(w); return o; };
-const FONTS = {
-  archivo: { n: 'Archivo', cat: 'sporty', fam: ARC, ws: [300, 400, 500, 600, 700, 800, 900], emb: 1, lic: 'OFL-1.1' },
-  bebas: { n: 'Bebas Neue', cat: 'sporty', fam: `"OV Bebas",${PRE}`, ws: [400], sz: 1.2, emb: 1, lic: 'OFL-1.1' },
-  anton: { n: 'Anton', cat: 'sporty', fam: `"OV Anton",${PRE}`, ws: [400], emb: 1, lic: 'OFL-1.1' },
-  playfair: { n: 'Playfair Display', cat: 'classic', fam: `"OV Playfair",serif`, ws: [800], emb: 1, lic: 'OFL-1.1' },
-  mono: { n: 'JetBrains Mono', cat: 'mono', fam: `"OV Mono",monospace`, ws: [700], sz: .88, emb: 1, lic: 'OFL-1.1' },
-  blackhan: { n: '검은고딕 (Black Han Sans)', cat: 'ko', fam: `"OV BlackHan","LZ blackhank",${PRE}`, ws: [400], emb: 1, ko: 1, lic: 'OFL-1.1' },
-  pretendard: { n: 'Pretendard', cat: 'ko', fam: PRE, ws: [500, 600, 700], emb: 1, ko: 1, lic: 'OFL-1.1' },
-  notokr: { n: 'Noto Sans KR', cat: 'ko', fam: `"LZ notokr",${PRE}`, ws: [400, 500, 700], files: [['notokr-400.woff2', '400'], ['notokr-500.woff2', '500'], ['notokr-700.woff2', '700']], ko: 1, lic: 'OFL-1.1' },
-};
-for (const f of LAZY_FONTS) FONTS[f.k] = { n: f.n, cat: f.cat, fam: `"LZ ${f.k}",${f.ko ? '' : PRE + ','}${SYS_KO}`.replace(',,', ','), ws: [...new Set(f.files.flatMap(x => rng(x[1])))], files: f.files, ko: f.ko, lic: f.lic, pw: f.pw };
-const PICKABLE = k => FONTS[k] && FONTS[k].cat !== 'hidden';
-const FONT_CATS = [['sporty', '스포티'], ['classic', '클래식'], ['mono', '모노'], ['ko', '한글'], ['hand', '손글씨']];
-for (const k of ['marker', 'gaegu', 'gamja', 'himelody', 'poorstory', 'nanumpen', 'dokdo', 'eastsea', 'kirang']) if (FONTS[k]) FONTS[k].cat = 'hand';
 const loaded = new Map();
 let FONT_BASE = '/fonts/lazy/';
 function setFontBase(b) { FONT_BASE = b; }
@@ -80,13 +53,10 @@ function loadPreviewFont(k) { // tiny subset (font name + digits/latin + tier wo
   return pv.get(k);
 }
 const isFontReady = k => !FONTS[k] || FONTS[k].emb || loaded.has(k);
-const previewFam = k => FONTS[k].emb ? FONTS[k].fam : `"PV ${k}","LZ ${k}",${PRE}`;
-const nearW = (k, w) => { const ws = FONTS[k].ws; return ws.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a, ws[0]); };
 
 
 let H_ = H;
 function setH_(h) { H_ = h; }
-const W_ = W, ARC_ = ARC, PRE_ = PRE, SYS_KO_ = SYS_KO;
 { rr, font, alpha };
 const RC_METAL = {
   iron: ['#BEC1C5', '#8E9196', '#5C5F64'], bronze: ['#DDA680', '#B27B53', '#784C30'], silver: ['#EEF0F3', '#C3C8CE', '#8A9097'],
@@ -192,7 +162,6 @@ function drawCard(c, d, x, y, w, h) {
   c.restore();
 }
 
-function lum(hex) { const n = parseInt(String(hex).slice(1), 16); if (isNaN(n)) return 1; const f = v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }; return .2126 * f(n >> 16) + .7152 * f(n >> 8 & 255) + .0722 * f(n & 255); }
 function tierBg(c, d) {
   const m = STORY_MAT[d.key], g = c.createLinearGradient(0, 0, W * .4, H);
   g.addColorStop(0, m.s[0]); g.addColorStop(.55, m.s[Math.floor(m.s.length / 2)]); g.addColorStop(1, m.s[m.s.length - 1]);
@@ -201,7 +170,6 @@ function tierBg(c, d) {
   const rg = c.createRadialGradient(W * .2, H * .1, 0, W * .2, H * .1, H * .7); rg.addColorStop(0, 'rgba(255,255,255,.18)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
   c.fillStyle = rg; c.fillRect(0, 0, W, H);
 }
-const ymd = (now = new Date()) => `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
 const tierTint = d => (TK.tier[d.key].tint_text || {}).light || TK.tier[d.key].text;
 function accentOf(d) { return TK.tier[d.key].text; }
 async function saveStory(cv, name = 'running-tier.png') {
@@ -216,26 +184,6 @@ async function saveStory(cv, name = 'running-tier.png') {
 }
 
 // v3 story editor: document = background + ordered layers, rendered 1:1 to a 1080x1920 canvas (preview == export).
-// ---- stat ("기록 블록") values come only from the calculation result: never editable ----
-const STATS = { rec: ['기록', 'RECORD'], pace: ['페이스', 'PACE'], tier: ['티어', 'TIER'], top: ['상위 %', 'RANK'], vdot: ['VDOT', 'VDOT'], next: ['다음 티어까지', 'NEXT'], date: ['날짜', 'DATE'], race: ['대회명', 'RACE'], event: ['종목', 'EVENT'], combo: ['기록 문구', 'TEXT'] };
-const statLabel = (d, k) => k === 'rec' ? d.recLine.split(' ')[0] + ' 기록' : STATS[k][0];
-const statValue = (d, doc, k, L) => L && L.tx ? fillTok(L.tx, d, doc) : ({ rec: d.time, pace: d.pace, tier: d.word + (d.roman ? ' ' + d.roman : ''), top: d.topLabel, vdot: d.vdot, next: d.nextLine, date: ymd(), race: (doc.race || '').trim() || '대회명을 입력해 주세요', event: d.recLine.split(' ')[0] })[k];
-// result tokens used by the v4 templates (values always come from the calculation; race is the only user-typed one)
-const paceQ = p => { const m = /^(\d+):(\d\d)/.exec(p || ''); return m ? `${m[1]}'${m[2]}"` : (p || '').replace('/km', ''); };
-const pctOf = d => { const m = /([\d.]+)%/.exec(d.topLabel || ''); return m ? m[1] : ''; };
-function fillTok(tx, d, doc) { const ev = d.recLine.split(' ')[0], race = (doc.race || '').trim(), dt = ymd();
-  const V = { rec: d.time, pace: paceQ(d.pace), tier: d.word + (d.roman ? ' ' + d.roman : ''), roman: d.roman || '', tierko: d.tierKo || '', vdot: d.vdot, date: dt, mmdd: dt.slice(5), ev, race: race || ev, pct: pctOf(d) };
-  let t = tx.replace(/\{(\w+)\}/g, (_, k) => V[k] ?? ''); if (/이내/.test(d.topLabel) && /\{pct\}%/.test(tx)) t = t.replace(V.pct + '%', V.pct + '% 이내');
-  if (!race && /\{race\}/.test(tx) && /\{ev\}/.test(tx)) t = t.replace(ev + ' · ', '').replace(ev + ' ' + ev, ev); return t; }
-const STAT_SIZE0 = { combo: 48, rec: 120, pace: 96, tier: 92, top: 104, vdot: 72, next: 40, date: 40, race: 56, event: 64 };
-const STAT_SIZE = STAT_SIZE0;
-const TOP_MIN_PX = 64; // 상위 % is always shown big
-const STICKERS = [['wordmark', 'hoohaa 워드마크'], ['emblem', '티어 엠블럼'], ['runner', '러너'], ['shoe', '러닝화'], ['dist', '거리 배지'], ['sun', '맑음'], ['date', '날짜 도장'], ['flag', '피니시'], ['sparkle', '반짝'], ['heart', '하트'], ['bolt', '번개'], ['star', '별'], ['rect', '사각형'], ['circle', '원'], ['line', '선']];
-const FILTERS = [['none', '원본'], ['vivid', '선명하게'], ['golden', '골든아워'], ['warm', '따뜻하게'], ['morning', '새벽공기'], ['cool', '차갑게'], ['teal', '틸 & 오렌지'], ['film', '필름'], ['fade', '빈티지'], ['bw', '흑백'], ['noir', '누아르']];
-// export formats: 9:16 story (default), 4:5 feed, 1:1, 3:4 thumbnail (default for 오늘 기록 cards)
-const FORMATS = [['story', '스토리 9:16', 1920], ['feed', '피드 4:5', 1350], ['square', '정사각 1:1', 1080], ['thumb', '썸네일 3:4', 1440]];
-const fmtH = f => (FORMATS.find(x => x[0] === f) || FORMATS[0])[2];
-const MASKS = [['rect', '사각'], ['round', '둥근'], ['circle', '원형'], ['polaroid', '폴라로이드']];
 const LK = { x: 540, y: 960, s: 1, r: 0, o: 1 };
 let lseq = 0;
 const lid = () => 'L' + Date.now().toString(36) + (lseq++);
@@ -292,10 +240,6 @@ function photoSrc(photos, pid, P) { const im = photos[pid]; if (!im) return null
     if (P.ol && P.ol.on) c = applyOutline(c, P); }
   if (pcache.size > 16) pcache.clear(); pcache.set(k, c); return c; }
 window.__photoSrc = (pid, P) => photoSrc(photos, pid, P);
-const famOf = (k, ko) => k && FONTS[k] ? FONTS[k].fam : ko ? PRE_ : ARC_;
-const wOf = (k, w) => { if (!k || !FONTS[k]) return w; const ws = FONTS[k].ws; return ws.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a, ws[0]); };
-const HAN = /[\uac00-\ud7a3]/;
-const contrast = c => lum(c) > .45 ? '#111111' : '#ffffff';
 // text block: lines measured, local box centred on (0,0)
 function textBlock(c, lines, o) { // o: size, fam, w, ls, lh, al, st
   const L = lines.map(l => { font(c, l.size || o.size, l.w || o.w, l.fam || o.fam, l.st || o.st || 'normal'); c.letterSpacing = (l.ls ?? o.ls ?? 0) + 'px'; const wd = c.measureText(l.t).width - (l.ls ?? o.ls ?? 0); c.letterSpacing = '0px'; return { ...l, size: l.size || o.size, wd }; });
@@ -627,7 +571,6 @@ function normLayout(doc, els, fmt, W) {
     if (L.sp.sz < 150) { if (L.ax === 'left' && L.x >= 30 && L.x <= 110) L.x = MARGIN; if (L.ax === 'right' && W - L.x >= 30 && W - L.x <= 110) L.x = W - MARGIN; } }
 }
 // ================= share-image editor v3 (story-style free layers) =================
-const clone = o => JSON.parse(JSON.stringify(o));
 const MAX_PHOTOS = 12, PCV = { W: 1080, H: 1920 };
 const bgImg = () => photoSrc(photos, doc.bg.pid, doc.bg) || photos[doc.bg.pid];
 const FH = () => fmtH(doc && doc.fmt); let safeOn = false, cropSt = null, moreFx = false, moreAdj = false;
@@ -929,10 +872,6 @@ $('photo').addEventListener('change', async e => {
 });
 let stT = 0; function status(t, ms = 2600) { $('pvHint').textContent = t || (sheetOn() ? '' : fineP ? '클릭해 선택 · 끌어서 이동 · Ctrl+드래그로 크기 · Shift+클릭으로 여러 개 선택' : '탭해 선택 · 끌어서 이동 · 두 손가락으로 크기·회전'); clearTimeout(stT); if (t) stT = setTimeout(() => status(''), ms); }
 // ---- colour picker (HSV, persistent H/S/V: never re-derive hue when s or v = 0) ----
-const hex2hsv = hex => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
-  let h = 0; if (d) h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return { h: h * 60, s: mx ? d / mx : 0, v: mx }; };
-const hsv2hex = ({ h, s, v }) => { const f = k => { const x = (k + h / 60) % 6; return v - v * s * Math.max(0, Math.min(x, 4 - x, 1)); };
-  return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join(''); };
 let hsv = { h: 0, s: 0, v: 1 }, hsvCol = '';
 const adoptHex = hex => { const n = hex2hsv(hex); if (n.v === 0) n.s = hsv.s; if (n.s === 0 || n.v === 0) n.h = hsv.h; hsv = n; hsvCol = hex.toLowerCase(); };
 const hasBg = L => L.v === 2 || (L.box && L.box !== 'none');
