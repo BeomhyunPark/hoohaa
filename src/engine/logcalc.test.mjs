@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseDur, fmtDur, fmtPace, paceSec, dayN, ddayLabel, bindValues, startDateOf, defaultTemplate, sortLogs } from './logcalc.js';
+import { parseDur, fmtDur, fmtPace, paceSec, dayN, ddayLabel, bindValues, startDateOf, defaultTemplate, sortLogs, celsius } from './logcalc.js';
 
 assert.equal(parseDur('29:38'), 1778); assert.equal(parseDur('2938'), 1778); assert.equal(parseDur('2300'), 1380); assert.equal(parseDur('23:00'), 1380); assert.equal(parseDur('1:02:03'), 3723); assert.equal(parseDur('5:70'), null); assert.equal(parseDur(''), null);
 assert.equal(fmtDur(1778), '29:38'); assert.equal(fmtDur(3723), '1:02:03');
@@ -71,4 +71,7 @@ assert.equal(fmtPace(paceSec(10, 3599.9)), '6:00'); assert.equal(fmtPace(paceSec
 assert.equal(bindValues({ type: 'race', date: '2026-11-09', data: { name: 'x', distance: '10', goal: '50:00' } }, {}).pace, '5:00');
 // 식단: 같은 날 러닝 거리, 거리가 없는 러닝은 건너뜀
 assert.equal(bindValues({ type: 'diet', date: '2026-10-23', data: { meal: '저녁' } }, { logs: [{ type: 'run', date: '2026-10-23', data: { time: '30:00' } }, logs[1]] }).distance, '5.20');
+// 기온은 섭씨로 통일: 숫자만, °, 도, ℃는 °C로. 화씨와 다른 숫자는 그대로
+for (const [a, b] of [['12', '12°C'], ['12°', '12°C'], ['12도', '12°C'], ['12℃', '12°C'], ['-3°', '-3°C'], ['12°C 맑음', '12°C 맑음'], ['12° 맑음', '12°C 맑음'], ['비 오고 8도', '비 오고 8°C'], ['54°F', '54°F'], ['10km 맑음', '10km 맑음'], ['', '']]) assert.equal(celsius(a), b);
+assert.equal(bindValues({ type: 'run', date: '2026-10-23', data: { weather: '12° 맑음' } }, {}).weather, '12°C 맑음');
 console.log('logcalc boundaries ok');

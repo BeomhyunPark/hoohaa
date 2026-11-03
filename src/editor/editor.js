@@ -1,5 +1,6 @@
 import { LS, idb } from '../storage/device.js';
 import { fetchWeather, searchPlace, wxHere, isoDay } from '../net/weather.js';
+import { celsius } from '../engine/logcalc.js';
 import { paceGuide, parseWeekly } from './workout.js';
 import { LOG_TPLS, TOKENS, ICON_NAMES, iconSVG, buildLogDoc, fillBindings, setLogBg, LOG_H, kindOf } from './logtpl.js';
 
@@ -460,7 +461,7 @@ const NIGHT = '#1E2458';
 const WICON = { sun: sun(140, 188, 50), cloud: cloud(142, 196, 1.05, '#F7FAFC'), partly: sun(108, 162, 32) + cloud(158, 208, .86, '#F7FAFC'), rain: cloud(140, 162, .92, '#E7EEF6') + drop(104, 214) + drop(146, 228) + drop(186, 214), snow: cloud(140, 160, .92, '#fff') + flake(108, 250, 13) + flake(148, 272, 15) + flake(190, 250, 13), night: `<circle cx="128" cy="188" r="56" fill="#FFE38A" stroke="${INK}" stroke-width="8"/><circle cx="156" cy="164" r="44" fill="${NIGHT}"/><path d="M206 132 l4 10 10 4 -10 4 -4 10 -4-10 -10-4 10-4z" fill="#fff"/><path d="M78 146 l3 7 7 3 -7 3 -3 7 -3-7 -7-3 7-3z" fill="#fff" opacity=".9"/>` };
 const WBG = { sun: '#FFF4CC', cloud: '#EEF3F8', partly: '#FFF6D8', rain: '#E4F0FB', snow: '#F3F7FF', night: NIGHT };
 const WEATHER = [['sun', '맑음'], ['partly', '구름 조금'], ['cloud', '흐림'], ['rain', '비'], ['snow', '눈'], ['night', '밤']];
-const DATA_STK = { data_weather: { n: '날씨', f: { icon: 'sun', temp: '12°', label: '맑음 · 바람 약함' } }, data_course: { n: '코스', f: { dist: '10.0 km', name: '반포 → 잠수교' } }, data_bib: { n: '배번', f: { num: '1031', race: 'SEOUL 10K', color: PINK } }, data_memo: { n: '메모', f: { text1: '오늘은 그냥', text2: '기분 좋게 뛰었다 :)', date: '' } } };
+const DATA_STK = { data_weather: { n: '날씨', f: { icon: 'sun', temp: '12°C', label: '맑음 · 바람 약함' } }, data_course: { n: '코스', f: { dist: '10.0 km', name: '반포 → 잠수교' } }, data_bib: { n: '배번', f: { num: '1031', race: 'SEOUL 10K', color: PINK } }, data_memo: { n: '메모', f: { text1: '오늘은 그냥', text2: '기분 좋게 뛰었다 :)', date: '' } } };
 const COURSE = 'M100 380 C 120 260, 220 300, 230 200 S 360 120, 410 150 S 420 300, 340 330';
 function dataArt(k, f) { const F = { ...DATA_STK[k === 'data_weather' || k.startsWith('data_weather') ? 'data_weather' : k]?.f, ...f };
   if (k.startsWith('data_weather')) { const ic = F.icon || 'sun'; return SV(`<rect x="30" y="80" width="452" height="300" rx="60" fill="${WBG[ic]}" stroke="${INK}" stroke-width="12"/>${WICON[ic]}`); }
@@ -473,7 +474,7 @@ const dtext = (c, t, x, y, sz, fam, w, col, anchor = 'center', ls = 0) => { font
 function v4Sticker(c, L) { const k = L.k, data = k.startsWith('data_'), F = data ? dataFields(L) : null, svg = data ? dataArt(k, F) : k.startsWith('ph:') ? iconSVG(k, L.col || TOKENS.text) : STK_SVG[k]; if (!svg) return null;
   return { w: 512, h: 512, draw: () => { const im = imgNow(svg); if (im) c.drawImage(im, -256, -256, 512, 512); if (!data) return; c.save(); c.translate(-256, -256);
     const A = FONTS.anton.fam, K = FONTS.kodemono ? FONTS.kodemono.fam : FONTS.mono.fam, Pf = FONTS.pretendard.fam, G = FONTS.gaegu ? FONTS.gaegu.fam : Pf;
-    if (k.startsWith('data_weather')) { const ink = F.icon === 'night' ? '#fff' : INK; dtext(c, String(F.temp || '').slice(0, 5), 370, 250, 120, A, 400, ink); dtext(c, String(F.label || '').slice(0, 16), 256, 345, 40, Pf, 700, ink); }
+    if (k.startsWith('data_weather')) { const ink = F.icon === 'night' ? '#fff' : INK; const tt = celsius(F.temp).replace(/-?\d+\.\d+(?=°C)/, m => String(Math.round(+m))).slice(0, 5); font(c, 120, 400, A); dtext(c, tt, 342, 250, Math.min(120, Math.floor(120 * 190 / Math.max(1, c.measureText(tt).width))), A, 400, ink); dtext(c, String(F.label || '').slice(0, 16), 256, 345, 40, Pf, 700, ink); }
     else if (k === 'data_course') { dtext(c, F.dist || '', 60, 110, 44, K, 700, '#fff', 'start'); dtext(c, String(F.name || '').slice(0, 18), 60, 440, 32, Pf, 700, '#fff', 'start'); }
     else if (k === 'data_bib') { c.translate(256, 256); c.rotate(-4 * Math.PI / 180); c.translate(-256, -256); dtext(c, String(F.race || '').slice(0, 18), 256, 150, 40, A, 400, '#fff', 'center', 4); dtext(c, String(F.num || '').slice(0, 5), 256, 320, 140, A, 400, INK); dtext(c, 'hoohaa · RUNNER', 256, 382, 30, K, 400, INK, 'center', 3); }
     else if (k === 'data_memo') { c.translate(256, 256); c.rotate(-3 * Math.PI / 180); c.translate(-256, -256); dtext(c, String(F.text1 || '').slice(0, 14), 105, 205, 46, G, 700, INK, 'start'); dtext(c, String(F.text2 || '').slice(0, 16), 105, 275, 40, G, 700, INK, 'start'); dtext(c, F.date || ymd().slice(5), 400, 400, 36, G, 700, ORG, 'end'); }
@@ -804,7 +805,7 @@ function tapButtons(el, sel_, run) { let down = null, last = 0;
   el.addEventListener('pointerup', e => { stop(e); const b = e.target.closest(sel_); if (b && b === down && !b.hidden) { last = Date.now(); e.preventDefault(); run(b); } down = null; });
   el.addEventListener('pointercancel', () => { down = null; });
   el.addEventListener('click', e => { stop(e); const b = e.target.closest(sel_); if (b && Date.now() - last > 700) run(b); }); }
-tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(sel); if (!L) return; if (a === 'lock') { if (L.lk) delete L.lk; else L.lk = 1; changed(true); paintOvl(); status(L.lk ? '잠갔어요 · 위치와 크기가 고정돼요' : '잠금을 풀었어요'); } else if (a === 'behind') toggleBehind(L); else if (a === 'asbg') photoToBg(L); else act(a); });
+tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(sel); if (!L) return; if (a === 'lock') { if (L.lk) delete L.lk; else L.lk = 1; changed(true); paintOvl(); status(L.lk ? '잠갔어요 · 옮기기·크기·삭제·복제를 막아요' : '잠금을 풀었어요'); } else if (a === 'behind') toggleBehind(L); else if (a === 'asbg') photoToBg(L); else act(a); });
 const toLocal = (b, x, y) => { const c = Math.cos(-(b.r || 0)), s = Math.sin(-(b.r || 0)), dx = x - b.x, dy = y - b.y; return [(dx * c - dy * s) / b.s, (dx * s + dy * c) / b.s]; };
 function hitAt(x, y) { for (let i = boxes.length - 1; i >= 0; i--) { const b = boxes[i]; if (b.hidden || b.nh) continue; const [lx, ly] = toLocal(b, x, y), pad = Math.max(0, 30 / b.s - 0); if (Math.abs(lx) <= b.w / 2 + pad && Math.abs(ly) <= b.h / 2 + pad) return b; } return null; }
 window.__hitAt = (x, y) => (hitAt(x, y) || {}).id;
@@ -877,17 +878,17 @@ tapButtons($('ctxMenu'), '[data-act]', b => { hideMenu(); if (b.dataset.act === 
 const BG_PHOTO_KEYS = ['pid', 'filter', 'adj', 'crop', 'cr', 'rot', 'flip', 'pz', 'px', 'py', 'cut', 'ol', 'moved'];
 function parkBgPhoto() { const b = doc && doc.bg; if (!b || b.type !== 'photo' || !b.pid) return; const k = { type: 'photo' }; for (const f of BG_PHOTO_KEYS) if (b[f] !== undefined) k[f] = clone(b[f]); doc.bgKeep = k; }
 function dropBgKeep() { if (doc && doc.bgKeep) delete doc.bgKeep; }
-function photoToBg(L) { if (!L || !L.pid || !photos[L.pid]) return; const old = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null;
+function photoToBg(L) { if (!L || !L.pid || !photos[L.pid]) return; if (L.lk) { status('잠긴 사진은 배경으로 바꿀 수 없어요 · 잠금을 먼저 풀어 주세요', 3000); return; } const old = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null;
   dropBgKeep(); doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none', ...(L.adj ? { adj: clone(L.adj) } : {}), ...(L.crop ? { crop: clone(L.crop) } : {}), ...(L.rot ? { rot: L.rot } : {}), ...(L.flip ? { flip: L.flip } : {}) };
   doc.layers = doc.layers.filter(l => l !== L); sel = null; multi.clear(); if (old) bgToLayer(old, true); else { changed(true); paintPanel(); } status(old ? '배경 사진과 맞바꿨어요' : '배경 사진으로 깔았어요'); }
 function bgToLayer(bg = doc.bg, keepBg = false) { if (bg.type !== 'photo' || !photos[bg.pid]) return; if (doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; }
   const L = mk('photo', { pid: bg.pid, mask: 'rect', filter: bg.filter || 'none', x: 540, y: FH() / 2, s: .7, ...(bg.adj ? { adj: clone(bg.adj) } : {}), ...(bg.crop ? { crop: clone(bg.crop) } : {}), ...(bg.rot ? { rot: bg.rot } : {}), ...(bg.flip ? { flip: bg.flip } : {}) });
   if (!keepBg) { dropBgKeep(); doc.bg = { type: 'tier' }; doc.layers.forEach(l => l.behind = false); } doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); if (!keepBg) status('배경 사진을 꺼냈어요 · 끌어서 옮겨 보세요'); }
 window.__photoToBg = () => photoToBg(getL(sel)); window.__bgToLayer = () => bgToLayer();
-function delLayer(id) { const L = getL(id); if (!L) return; if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
+function delLayer(id) { const L = getL(id); if (!L) return; if (L.lk) { status('잠긴 요소는 지울 수 없어요 · 잠금을 먼저 풀어 주세요', 3000); return; } if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
 function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) return; const L = doc.layers[i];
   if (a === 'del') { const ids = [...multi]; multi.clear(); ids.forEach(id => delLayer(id)); return delLayer(sel); }
-  if (a === 'dup') { if (isTop(L)) { status('상위 %는 하나만 있어요'); return; } if (L.type === 'photo' && doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; } const n = { ...clone(L), id: lid(), x: L.x + 40, y: L.y + 40 }; doc.layers.splice(i + 1, 0, n); sel = n.id; }
+  if (a === 'dup') { if (L.lk) { status('잠긴 요소는 복제할 수 없어요 · 잠금을 먼저 풀어 주세요', 3000); return; } if (isTop(L)) { status('상위 %는 하나만 있어요'); return; } if (L.type === 'photo' && doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; } const n = { ...clone(L), id: lid(), x: L.x + 40, y: L.y + 40 }; doc.layers.splice(i + 1, 0, n); sel = n.id; }
   if (a === 'up' && i < doc.layers.length - 1) [doc.layers[i], doc.layers[i + 1]] = [doc.layers[i + 1], doc.layers[i]];
   if (a === 'down' && i > 0) [doc.layers[i], doc.layers[i - 1]] = [doc.layers[i - 1], doc.layers[i]];
   if (a === 'front') { doc.layers.splice(i, 1); doc.layers.push(L); } if (a === 'back') { doc.layers.splice(i, 1); doc.layers.unshift(L); }
@@ -1090,7 +1091,7 @@ function paintPanel() {
     if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}` + (L.pid && photos[L.pid] ? photoEdHTML(L) : '') + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경 사진으로</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
     if (L.type === 'sticker' && L.k.startsWith('data_')) { const F = dataFields(L), inp = (k, lab, max, ph = '') => `<label class="lbl sm" for="df_${k}">${lab}</label><input id="df_${k}" data-df="${k}" maxlength="${max}" autocomplete="off" value="${esc(F[k] ?? '')}" placeholder="${esc(ph)}">`;
       h += `<p class="hint">직접 적는 스티커예요 · 값은 자동으로 채워지지 않아요</p>`;
-      if (L.k.startsWith('data_weather')) h += `<span class="lbl sm">날씨</span>${fchips('dfIcon', WEATHER, F.icon)}` + inp('temp', '기온', 5, '12°') + inp('label', '한 줄 메모', 16, '맑음 · 바람 약함') + wxHTML();
+      if (L.k.startsWith('data_weather')) h += `<span class="lbl sm">날씨</span>${fchips('dfIcon', WEATHER, F.icon)}` + inp('temp', '기온', 6, '12°C') + inp('label', '한 줄 메모', 16, '맑음 · 바람 약함') + wxHTML();
       if (L.k === 'data_course') h += inp('dist', '거리', 10, '10.0 km') + inp('name', '코스 이름', 18, '반포 → 잠수교');
       if (L.k === 'data_bib') h += inp('num', '배번', 5, '1031') + inp('race', '대회 (영문)', 18, 'SEOUL 10K') + `<span class="lbl sm">머리 색</span>${colRow('dfCol', F.color)}`;
       if (L.k === 'data_memo') h += inp('text1', '첫 줄', 14) + inp('text2', '둘째 줄', 16) + inp('date', '날짜 (MM.DD)', 5, '10.14'); }
