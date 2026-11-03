@@ -1,5 +1,6 @@
 import { LS, idb } from '../storage/device.js';
 import { fetchWeather, searchPlace, wxHere, isoDay } from '../net/weather.js';
+import { celsius } from '../engine/logcalc.js';
 import { paceGuide, parseWeekly } from './workout.js';
 import { LOG_TPLS, TOKENS, ICON_NAMES, iconSVG, buildLogDoc, fillBindings, setLogBg, LOG_H, kindOf } from './logtpl.js';
 
@@ -223,7 +224,7 @@ const statValue = (d, doc, k, L) => L && L.tx ? fillTok(L.tx, d, doc) : ({ rec: 
 const paceQ = p => { const m = /^(\d+):(\d\d)/.exec(p || ''); return m ? `${m[1]}'${m[2]}"` : (p || '').replace('/km', ''); };
 const pctOf = d => { const m = /([\d.]+)%/.exec(d.topLabel || ''); return m ? m[1] : ''; };
 function fillTok(tx, d, doc) { const ev = d.recLine.split(' ')[0], race = (doc.race || '').trim(), dt = ymd();
-  const V = { rec: d.time, pace: paceQ(d.pace), tier: d.word + (d.roman ? ' ' + d.roman : ''), vdot: d.vdot, date: dt, mmdd: dt.slice(5), ev, race: race || ev, pct: pctOf(d) };
+  const V = { rec: d.time, pace: paceQ(d.pace), tier: d.word + (d.roman ? ' ' + d.roman : ''), roman: d.roman || '', tierko: d.tierKo || '', vdot: d.vdot, date: dt, mmdd: dt.slice(5), ev, race: race || ev, pct: pctOf(d) };
   let t = tx.replace(/\{(\w+)\}/g, (_, k) => V[k] ?? ''); if (/이내/.test(d.topLabel) && /\{pct\}%/.test(tx)) t = t.replace(V.pct + '%', V.pct + '% 이내');
   if (!race && /\{race\}/.test(tx) && /\{ev\}/.test(tx)) t = t.replace(ev + ' · ', '').replace(ev + ' ' + ev, ev); return t; }
 const STAT_SIZE0 = { combo: 48, rec: 120, pace: 96, tier: 92, top: 104, vdot: 72, next: 40, date: 40, race: 56, event: 64 };
@@ -344,7 +345,7 @@ function logText(c, L) {
 function layerGeom(c, L, d, doc, photos) {
   if (doc && doc.tok) { if (L.col && L.col[0] === '@') L = { ...L, col: tokCol(doc, L.col) }; if (typeof L.fill === 'string' && L.fill[0] === '@') L = { ...L, fill: tokCol(doc, L.fill) }; }
   if (L.lt && L.type === 'text') return logText(c, L);
-  if (L.col === '@tier') L = { ...L, col: accentOf(d) }; else if (L.col === '@tierL') L = { ...L, col: tierTint(d) };
+  if (L.col === '@tier') L = { ...L, col: accentOf(d) }; else if (L.col === '@tierL') L = { ...L, col: tierTint(d) }; else if (typeof L.col === 'string' && L.col.startsWith('@m')) L = { ...L, col: metalTok(L.col, d) };
   if (L.bcol === '@tier') L = { ...L, bcol: accentOf(d) };
   if (L.sp && (L.type === 'text' || L.type === 'stat')) return specText(c, L, d, doc);
   if (L.type === 'text') {
@@ -402,9 +403,13 @@ function layerGeom(c, L, d, doc, photos) {
       c.restore(); if (L.bd && !L.cut) { c.save(); shp(); c.lineWidth = L.bd[0] * 2; c.strokeStyle = L.bd[1]; c.clip(); c.stroke(); c.restore(); } } };
   }
   if (L.type === 'sticker') return sticker(c, L, d);
-  if (L.type === 'shape' && L.k === 'box') { const w = L.w, h = L.h;
-    return { w, h, draw: () => { if (L.sh) { c.save(); c.shadowOffsetX = L.sh[0]; c.shadowOffsetY = L.sh[1]; c.shadowBlur = L.sh[2]; c.shadowColor = L.sh[3]; c.fillStyle = '#000'; c.fillRect(-w / 2, -h / 2, w, h); c.restore(); }
-      const g = cssFill(c, L.fill, w, h); if (g && g.__ry && g.__ry !== 1) { c.save(); c.beginPath(); c.rect(-w / 2, -h / 2, w, h); c.clip(); c.translate(g.__c[0], g.__c[1]); c.scale(1, g.__ry); c.translate(-g.__c[0], -g.__c[1]); c.fillStyle = g; c.fillRect(-w * 2, -h * 2 / g.__ry, w * 4, h * 4 / g.__ry); c.restore(); } else { c.fillStyle = g; c.fillRect(-w / 2, -h / 2, w, h); } } }; }
+  if (L.type === 'shape' && L.k === 'box') { const w = L.w, h = L.h, fill = metalTok(L.fill, d), path = () => boxPath(c, L, w, h);
+    return { w, h, draw: () => {
+      if (L.pat === 'bar' || L.pat === 'dash') { c.fillStyle = typeof fill === 'string' ? fill : '#000'; boxPat(c, L.pat, w, h); return; }
+      const g = cssFill(c, fill, w, h);
+      if (g && g.__ry && g.__ry !== 1) { c.save(); path(); c.clip(); c.translate(g.__c[0], g.__c[1]); c.scale(1, g.__ry); c.translate(-g.__c[0], -g.__c[1]); c.fillStyle = g; c.fillRect(-w * 2, -h * 2 / g.__ry, w * 4, h * 4 / g.__ry); c.restore(); }
+      else { c.save(); if (L.sh) { c.shadowOffsetX = L.sh[0]; c.shadowOffsetY = L.sh[1]; c.shadowBlur = L.sh[2]; c.shadowColor = L.sh[3]; } c.fillStyle = g; path(); c.fill(); c.restore(); }
+      if (L.bs) { c.save(); path(); c.clip(); path(); c.lineWidth = L.bs[0] * 2; c.strokeStyle = cssFill(c, metalTok(L.bs[1], d), w, h); c.stroke(); c.restore(); } } }; }
   if (L.type === 'shape') {
     const w = L.w || 400, h = L.h || 400, col = L.col || '#ffffff';
     return { w, h, draw: () => { c.fillStyle = col;
@@ -440,6 +445,17 @@ function specText(c, L, d, doc) {
       if (sp.ul) { c.save(); c.fillStyle = sp.ul[0]; c.fillRect(x, y + sp.ul[2], lw[i] - ls, sp.ul[1]); c.restore(); }
       if (t) fxText(c, t, x, y, sz, col);
       if (LG) { c.save(); c.globalAlpha *= .92; const sh = L.fsh; if (Array.isArray(sh)) { c.shadowOffsetX = sh[0]; c.shadowOffsetY = sh[1]; c.shadowBlur = sh[2]; c.shadowColor = sh[3]; } c.drawImage(logoTint(col), x + lw[i] - lgW, -lgH / 2, lgW, lgH); c.restore(); } }); c.letterSpacing = '0px'; } }; }
+// template box extras: rad (corner radius), poly (regular n-gon, point up), pat 'zig' (receipt edges) / 'bar' (barcode) / 'dash' (dashed rule), bs [width, colour] inside stroke
+function boxPath(c, L, w, h) { if (L.poly) { const n = L.poly, r = Math.min(w, h) / 2; c.beginPath(); for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / n; c[i ? 'lineTo' : 'moveTo'](r * Math.cos(a), r * Math.sin(a)); } c.closePath(); return; }
+  if (L.pat === 'zig') { const z = 18, n = Math.max(1, Math.round(w / (z * 2))), s = w / n, x0 = -w / 2, y0 = -h / 2; c.beginPath(); c.moveTo(x0, y0 + z); for (let i = 0; i < n; i++) { c.lineTo(x0 + i * s + s / 2, y0); c.lineTo(x0 + (i + 1) * s, y0 + z); } c.lineTo(w / 2, h / 2 - z); for (let i = n; i > 0; i--) { c.lineTo(x0 + i * s - s / 2, h / 2); c.lineTo(x0 + (i - 1) * s, h / 2 - z); } c.closePath(); return; }
+  rr(c, -w / 2, -h / 2, w, h, Math.min(L.rad || 0, w / 2, h / 2)); }
+const BARS = [3, 1, 2, 1, 4, 1, 1, 3, 2, 1, 1, 2, 4, 1, 2, 1, 3, 1, 1, 2, 3, 1, 2, 4, 1, 1, 2, 1, 3, 2, 1, 1, 4, 2, 1, 3, 1, 2, 1, 1, 3, 2, 1, 4];
+function boxPat(c, pat, w, h) { if (pat === 'dash') { for (let x = -w / 2; x < w / 2; x += 18) c.fillRect(x, -h / 2, Math.min(10, w / 2 - x), h); return; }
+  const tot = BARS.reduce((a, b) => a + b, 0) + BARS.length, k = w / tot; let x = -w / 2; BARS.forEach((b, i) => { if (i % 2 === 0) c.fillRect(x, -h / 2, b * k, h); x += (b + 1) * k; }); }
+// '@m0' '@m1' '@m2' (light→dark tier metal), optional '/alpha' — template fills follow the result's tier
+const metalTok = (f, d) => { if (!f || (typeof f === 'string' && f[0] !== '@') || (typeof f === 'object' && !JSON.stringify(f).includes('"@m'))) return f; const M = RC_METAL[d && d.key] || RC_METAL.gold;
+  const sub = s => s.replace(/@m([012])(?:\/([\d.]+))?/g, (_, i, a) => { const hx = M[+i]; if (a == null) return hx; const n = parseInt(hx.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; });
+  return typeof f === 'string' ? sub(f) : JSON.parse(sub(JSON.stringify(f))); };
 // css-like fills for template boxes: colour, linear-gradient(angle), radial-gradient(ellipse|circle at x% y%) (farthest-corner)
 function cssFill(c, f, w, h) { if (!f || typeof f === 'string') return f || '#000';
   let g; if (f.t === 'lin') { const a = f.a * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), len = Math.abs(w * dx) + Math.abs(h * dy); g = c.createLinearGradient(-dx * len / 2, -dy * len / 2, dx * len / 2, dy * len / 2); }
@@ -450,33 +466,34 @@ const simg = new Map();
 function stkLoad(k) { const svg = STK_SVG[k] || (k.startsWith('data_') ? dataArt(k, {}) : null); if (!svg) return Promise.resolve(null); return imgOf(svg); }
 function imgOf(svg) { if (!simg.has(svg)) simg.set(svg, new Promise(res => { const im = new Image(); im.onload = () => { simg.set(svg, im); res(im); }; im.onerror = () => res(null); im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); })); const v = simg.get(svg); return v instanceof Promise ? v : Promise.resolve(v); }
 const imgNow = svg => { const v = simg.get(svg); return v && !(v instanceof Promise) ? v : null; };
-const INK = '#1B1B1F', LIME = '#D7FF3A', ORG = '#FF7A3D', SKY = '#7FC8FF', YEL = '#FFD84A', PINK = '#FF8FB8';
-const SV = b => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">${b}</svg>`;
-const cloud = (cx, cy, sc = 1, fill = '#fff') => `<path transform="translate(${cx} ${cy}) scale(${sc})" d="M-78 26 a34 34 0 0 1 12-64 a46 46 0 0 1 86-4 a30 30 0 0 1 46 36 a26 26 0 0 1-22 32 h-108 a28 28 0 0 1-14 0z" fill="${fill}" stroke="${INK}" stroke-width="${(8 / sc).toFixed(1)}" stroke-linejoin="round"/>`;
-const sun = (cx, cy, r = 52) => [...Array(8)].map((_, i) => { const a = i * Math.PI / 4, i0 = r + 12, i1 = r + 30; return `<line x1="${(cx + i0 * Math.cos(a)).toFixed(1)}" y1="${(cy + i0 * Math.sin(a)).toFixed(1)}" x2="${(cx + i1 * Math.cos(a)).toFixed(1)}" y2="${(cy + i1 * Math.sin(a)).toFixed(1)}" stroke="${YEL}" stroke-width="10" stroke-linecap="round"/>`; }).join('') + `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${YEL}" stroke="${INK}" stroke-width="8"/><circle cx="${(cx - r * .28).toFixed(1)}" cy="${(cy - r * .3).toFixed(1)}" r="${(r * .2).toFixed(1)}" fill="#fff" opacity=".75"/>`;
-const drop = (x, y) => `<path d="M${x} ${y} c7 12 14 20 14 28 a14 14 0 0 1-28 0 c0-8 7-16 14-28z" fill="${SKY}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>`;
-const flake = (x, y, r = 14) => [...Array(6)].map((_, i) => { const a = i * Math.PI / 3 - Math.PI / 2; return `<line x1="${x}" y1="${y}" x2="${(x + Math.cos(a) * r).toFixed(1)}" y2="${(y + Math.sin(a) * r).toFixed(1)}" stroke="#7EC8FF" stroke-width="5" stroke-linecap="round"/>`; }).join('') + `<circle cx="${x}" cy="${y}" r="3" fill="#fff"/>`;
-const NIGHT = '#1E2458';
-const WICON = { sun: sun(140, 188, 50), cloud: cloud(142, 196, 1.05, '#F7FAFC'), partly: sun(108, 162, 32) + cloud(158, 208, .86, '#F7FAFC'), rain: cloud(140, 162, .92, '#E7EEF6') + drop(104, 214) + drop(146, 228) + drop(186, 214), snow: cloud(140, 160, .92, '#fff') + flake(108, 250, 13) + flake(148, 272, 15) + flake(190, 250, 13), night: `<circle cx="128" cy="188" r="56" fill="#FFE38A" stroke="${INK}" stroke-width="8"/><circle cx="156" cy="164" r="44" fill="${NIGHT}"/><path d="M206 132 l4 10 10 4 -10 4 -4 10 -4-10 -10-4 10-4z" fill="#fff"/><path d="M78 146 l3 7 7 3 -7 3 -3 7 -3-7 -7-3 7-3z" fill="#fff" opacity=".9"/>` };
-const WBG = { sun: '#FFF4CC', cloud: '#EEF3F8', partly: '#FFF6D8', rain: '#E4F0FB', snow: '#F3F7FF', night: NIGHT };
+// v5 palette (same tokens as the 오늘 기록 cards): ink / paper / translucent glass + muted accents, thin line icons
+const INK = '#17181B', PAPER = '#ECEBE6', CREAM = '#F4F2EC', GLASS = '#111214', RUNC = '#B5C96A', RACEC = '#E08A62', GEARC = '#7FA8C9';
+const SV = b => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><defs><filter id="s" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity=".28"/></filter></defs>${b}</svg>`;
+const glassBox = (x, y, w, h, r) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${GLASS}" fill-opacity=".66" filter="url(#s)"/><rect x="${x + 1}" y="${y + 1}" width="${w - 2}" height="${h - 2}" rx="${r - 1}" fill="none" stroke="${PAPER}" stroke-opacity=".22" stroke-width="2"/>`;
+const line = (d, col = PAPER, fill = 'none') => `<path d="${d}" fill="${fill}" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
+const CLOUD = (x, y, s = 1) => `M${x - 50 * s} ${y + 28 * s}a${24 * s} ${24 * s} 0 0 1 ${6 * s}-${46 * s}a${34 * s} ${34 * s} 0 0 1 ${64 * s}-${6 * s}a${24 * s} ${24 * s} 0 0 1 ${10 * s} ${52 * s}z`;
+const SUN = (cx, cy, r) => `M${cx + r} ${cy}a${r} ${r} 0 1 1-${2 * r} 0a${r} ${r} 0 1 1 ${2 * r} 0` + [...Array(8)].map((_, i) => { const a = i * Math.PI / 4, i0 = r + 12, i1 = r + 24; return `M${(cx + i0 * Math.cos(a)).toFixed(1)} ${(cy + i0 * Math.sin(a)).toFixed(1)}L${(cx + i1 * Math.cos(a)).toFixed(1)} ${(cy + i1 * Math.sin(a)).toFixed(1)}`; }).join('');
+const WICON = { sun: line(SUN(132, 226, 30), '#F2D38A'), partly: line(SUN(112, 200, 20), '#F2D38A') + line(CLOUD(146, 236, .9), PAPER, '#232427'), cloud: line(CLOUD(136, 232)),
+  rain: line(CLOUD(136, 212, .9)) + line('M106 266l-8 18M136 266l-8 18M166 266l-8 18', GEARC), snow: line(CLOUD(136, 212, .9)) + line('M104 272v.1M134 284v.1M164 272v.1M119 300v.1M149 300v.1'),
+  night: line('M152 194a42 42 0 1 0 22 62a34 34 0 0 1-22-62z', '#F2D38A') };
 const WEATHER = [['sun', '맑음'], ['partly', '구름 조금'], ['cloud', '흐림'], ['rain', '비'], ['snow', '눈'], ['night', '밤']];
-const DATA_STK = { data_weather: { n: '날씨', f: { icon: 'sun', temp: '12°', label: '맑음 · 바람 약함' } }, data_course: { n: '코스', f: { dist: '10.0 km', name: '반포 → 잠수교' } }, data_bib: { n: '배번', f: { num: '1031', race: 'SEOUL 10K', color: PINK } }, data_memo: { n: '메모', f: { text1: '오늘은 그냥', text2: '기분 좋게 뛰었다 :)', date: '' } } };
+const DATA_STK = { data_weather: { n: '날씨', f: { icon: 'sun', temp: '12°C', label: '맑음 · 바람 약함' } }, data_course: { n: '코스', f: { dist: '10.0 km', name: '반포 → 잠수교' } }, data_bib: { n: '배번', f: { num: '1031', race: 'SEOUL 10K', color: GEARC } }, data_memo: { n: '메모', f: { text1: '오늘은 그냥', text2: '기분 좋게 뛰었다 :)', date: '' } } };
 const COURSE = 'M100 380 C 120 260, 220 300, 230 200 S 360 120, 410 150 S 420 300, 340 330';
 function dataArt(k, f) { const F = { ...DATA_STK[k === 'data_weather' || k.startsWith('data_weather') ? 'data_weather' : k]?.f, ...f };
-  if (k.startsWith('data_weather')) { const ic = F.icon || 'sun'; return SV(`<rect x="30" y="80" width="452" height="300" rx="60" fill="${WBG[ic]}" stroke="${INK}" stroke-width="12"/>${WICON[ic]}`); }
-  if (k === 'data_course') return SV(`<rect x="30" y="40" width="452" height="432" rx="48" fill="${INK}" fill-opacity=".72"/><path d="${COURSE}" fill="none" stroke="${LIME}" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><circle cx="100" cy="380" r="16" fill="#fff" stroke="${INK}" stroke-width="6"/><circle cx="340" cy="330" r="16" fill="${ORG}" stroke="#fff" stroke-width="6"/>`);
-  if (k === 'data_bib') { const col = F.color || PINK; return SV(`<g transform="rotate(-4 256 256)"><rect x="50" y="100" width="412" height="312" rx="22" fill="#fff" stroke="${INK}" stroke-width="12"/><rect x="50" y="100" width="412" height="74" rx="22" fill="${col}"/><rect x="50" y="150" width="412" height="24" fill="${col}"/>${[[86, 126], [426, 126], [86, 386], [426, 386]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="10" fill="#ddd" stroke="${INK}" stroke-width="5"/>`).join('')}</g>`); }
-  if (k === 'data_memo') return SV(`<g transform="rotate(-3 256 256)"><rect x="70" y="90" width="372" height="340" fill="#FFF3A8" stroke="${INK}" stroke-width="8"/><rect x="200" y="70" width="112" height="44" fill="#fff" fill-opacity=".7" stroke="${INK}" stroke-width="4" transform="rotate(4 256 92)"/>${[220, 290, 360].map(y => `<path d="M100 ${y} h312" stroke="#E2CF6A" stroke-width="3"/>`).join('')}</g>`);
+  if (k.startsWith('data_weather')) { const ic = WICON[F.icon] ? F.icon : 'sun'; return SV(glassBox(30, 110, 452, 292, 56) + `<g transform="translate(136 236) scale(1.4) translate(-136 -236)">${WICON[ic]}</g>`); }
+  if (k === 'data_course') return SV(`<rect x="30" y="40" width="452" height="432" rx="48" fill="${INK}" fill-opacity=".86" filter="url(#s)"/><path d="${COURSE}" fill="none" stroke="${RUNC}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><circle cx="100" cy="380" r="13" fill="${PAPER}"/><circle cx="340" cy="330" r="13" fill="${RACEC}" stroke="${INK}" stroke-width="5"/>`);
+  if (k === 'data_bib') { const col = F.color || GEARC; return SV(`<g transform="rotate(-4 256 256)"><rect x="50" y="110" width="412" height="292" rx="16" fill="${CREAM}" filter="url(#s)"/><path d="M50 180V126a16 16 0 0 1 16-16h380a16 16 0 0 1 16 16v54z" fill="${col}"/>${[[78, 206], [434, 206], [78, 378], [434, 378]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="#D9D5CA"/>`).join('')}</g>`); }
+  if (k === 'data_memo') return SV(`<g transform="rotate(-3 256 256)"><rect x="70" y="96" width="372" height="330" rx="10" fill="${CREAM}" filter="url(#s)"/>${[230, 296, 362].map(y => `<path d="M104 ${y} h304" stroke="${INK}" stroke-opacity=".1" stroke-width="2"/>`).join('')}<rect x="206" y="78" width="100" height="36" fill="${RUNC}" fill-opacity=".85" transform="rotate(4 256 96)"/></g>`);
   return null; }
 const dataFields = L => ({ ...DATA_STK[L.k.startsWith('data_weather') ? 'data_weather' : L.k]?.f, ...(L.k.startsWith('data_weather_') && !(L.f && L.f.icon) ? { icon: L.k.slice(13) } : {}), ...(L.f || {}) });
 const dtext = (c, t, x, y, sz, fam, w, col, anchor = 'center', ls = 0) => { font(c, sz, w, fam); c.letterSpacing = ls + 'px'; c.fillStyle = col; c.textAlign = anchor === 'start' ? 'left' : anchor === 'end' ? 'right' : 'center'; c.textBaseline = 'alphabetic'; c.fillText(t, x, y); c.letterSpacing = '0px'; c.textAlign = 'left'; };
 function v4Sticker(c, L) { const k = L.k, data = k.startsWith('data_'), F = data ? dataFields(L) : null, svg = data ? dataArt(k, F) : k.startsWith('ph:') ? iconSVG(k, L.col || TOKENS.text) : STK_SVG[k]; if (!svg) return null;
   return { w: 512, h: 512, draw: () => { const im = imgNow(svg); if (im) c.drawImage(im, -256, -256, 512, 512); if (!data) return; c.save(); c.translate(-256, -256);
-    const A = FONTS.anton.fam, K = FONTS.kodemono ? FONTS.kodemono.fam : FONTS.mono.fam, Pf = FONTS.pretendard.fam, G = FONTS.gaegu ? FONTS.gaegu.fam : Pf;
-    if (k.startsWith('data_weather')) { const ink = F.icon === 'night' ? '#fff' : INK; dtext(c, String(F.temp || '').slice(0, 5), 370, 250, 120, A, 400, ink); dtext(c, String(F.label || '').slice(0, 16), 256, 345, 40, Pf, 700, ink); }
-    else if (k === 'data_course') { dtext(c, F.dist || '', 60, 110, 44, K, 700, '#fff', 'start'); dtext(c, String(F.name || '').slice(0, 18), 60, 440, 32, Pf, 700, '#fff', 'start'); }
-    else if (k === 'data_bib') { c.translate(256, 256); c.rotate(-4 * Math.PI / 180); c.translate(-256, -256); dtext(c, String(F.race || '').slice(0, 18), 256, 150, 40, A, 400, '#fff', 'center', 4); dtext(c, String(F.num || '').slice(0, 5), 256, 320, 140, A, 400, INK); dtext(c, 'hoohaa · RUNNER', 256, 382, 30, K, 400, INK, 'center', 3); }
-    else if (k === 'data_memo') { c.translate(256, 256); c.rotate(-3 * Math.PI / 180); c.translate(-256, -256); dtext(c, String(F.text1 || '').slice(0, 14), 105, 205, 46, G, 700, INK, 'start'); dtext(c, String(F.text2 || '').slice(0, 16), 105, 275, 40, G, 700, INK, 'start'); dtext(c, F.date || ymd().slice(5), 400, 400, 36, G, 700, ORG, 'end'); }
+    const A = FONTS.anton.fam, M = FONTS.mono.fam, Pf = FONTS.pretendard.fam, G = FONTS.gaegu ? FONTS.gaegu.fam : Pf;
+    if (k.startsWith('data_weather')) { const tt = celsius(F.temp).replace(/-?\d+\.\d+(?=°C)/, m => String(Math.round(+m))).slice(0, 5); font(c, 120, 400, A); dtext(c, tt, 342, 276, Math.min(120, Math.floor(120 * 190 / Math.max(1, c.measureText(tt).width))), A, 400, PAPER); dtext(c, String(F.label || '').slice(0, 16), 256, 366, 36, Pf, 700, 'rgba(236,235,230,.85)'); }
+    else if (k === 'data_course') { dtext(c, F.dist || '', 66, 112, 40, M, 700, PAPER, 'start', 2); dtext(c, String(F.name || '').slice(0, 18), 66, 440, 32, Pf, 700, 'rgba(236,235,230,.9)', 'start'); }
+    else if (k === 'data_bib') { c.translate(256, 256); c.rotate(-4 * Math.PI / 180); c.translate(-256, -256); dtext(c, String(F.race || '').slice(0, 18), 78, 156, 28, M, 700, CREAM, 'start', 4); dtext(c, String(F.num || '').slice(0, 5), 256, 340, 150, A, 400, INK); dtext(c, 'hoohaa · RUNNER', 256, 384, 20, M, 700, 'rgba(23,24,27,.45)', 'center', 4); }
+    else if (k === 'data_memo') { c.translate(256, 256); c.rotate(-3 * Math.PI / 180); c.translate(-256, -256); dtext(c, String(F.text1 || '').slice(0, 14), 104, 218, 46, G, 700, INK, 'start'); dtext(c, String(F.text2 || '').slice(0, 16), 104, 284, 40, G, 700, INK, 'start'); dtext(c, F.date || ymd().slice(5), 408, 396, 34, G, 700, RACEC, 'end'); }
     c.restore(); } }; }
 function sticker(c, L, d) {
   { const v = v4Sticker(c, L); if (v) return v; }
@@ -563,9 +580,12 @@ async function renderDoc(d, doc, photos = {}, cv) {
 }
 // ---- templates (10+): pre-arranged layer bundles ----
 const TEMPLATES = Object.entries(TPL_NAMES);
+// v4 template ids (saved docs, '템플릿 상태로') → the v5 template that replaced them
+const TPL_ALIAS = { nrc: 'finish', mono: 'minimal', behind: 'finish', hero: 'pass', polaroid: 'film', mag: 'minimal', split: 'film', collage: 'film', medal: 'pass', crew: 'bib' };
+const tplKey = t => TPL_SPEC[t] ? t : TPL_ALIAS[t] || 'finish';
 // designer handoff → layers: every value/label is its own element; values are result tokens (never typed); positions are per format (spec px)
 function templateDoc(t, d, fmt = 'story') {
-  if (!TPL_SPEC[t]) t = 'nrc'; const els = TPL_SPEC[t][fmt || 'story'] || TPL_SPEC[t].story, W = 1080, H = fmtH(fmt === 'story' ? undefined : fmt);
+  t = tplKey(t); const els = TPL_SPEC[t][fmt || 'story'] || (fmt === 'thumb' && TPL_SPEC[t].feed) || TPL_SPEC[t].story, W = 1080, H = fmtH(fmt === 'story' ? undefined : fmt);
   const doc = { tpl: t, bg: { type: 'tone' }, race: '', layers: [], fmt: fmt === 'story' ? undefined : fmt }; let cutAt = els.findIndex(e => e.k === 'cut');
   const Y = (e, h) => e.y != null ? e.y + h / 2 : H - e.yb - h / 2;
   els.forEach((e, i) => { const rad = (e.r || 0) * Math.PI / 180;
@@ -573,7 +593,7 @@ function templateDoc(t, d, fmt = 'story') {
     if (e.k === 'box' && e.w === 'full' && e.h === 'full' && typeof e.fill === 'string' && e.y === 0) { doc.bg = { type: 'solid', c1: e.fill }; return; }
     if (e.k === 'cut') { if (e.ol) doc.bgT = { ...(doc.bgT || {}), ol: { on: true, col: e.ol, w: 5 } }; return; }
     let L;
-    if (e.k === 'box') { const w = e.w === 'full' ? W : e.w, h = e.h === 'full' ? H : e.h; L = mk('shape', { k: 'box', w, h, fill: e.fill, sh: e.sh || undefined, x: e.x + w / 2, y: Y(e, h), r: rad, nh: e.w === 'full' && e.h === 'full' ? 1 : undefined }); }
+    if (e.k === 'box') { const w = e.w === 'full' ? W : e.w, h = e.h === 'full' ? H : e.h; L = mk('shape', { k: 'box', w, h, fill: e.fill, sh: e.sh || undefined, rad: e.rad, bs: e.bs, poly: e.poly, pat: e.pat, x: e.x + w / 2, y: Y(e, h), r: rad, nh: e.w === 'full' && e.h === 'full' ? 1 : undefined }); }
     else if (e.k === 'img') { const w = e.w === 'full' ? W : e.w, h = e.h === 'full' ? H : e.h, x = typeof e.w === 'number' && e.x + w > W ? W - w - 24 : e.x; L = mk('photo', { pid: null, bw: w, bh: h, mask: e.round ? 'circle' : 'rect', filter: 'none', cx: 1 - 2 * e.pos[0], cy: 1 - 2 * e.pos[1], adj: e.adj, bd: e.bd, psh: e.sh || undefined, x: x + w / 2, y: Y(e, h), r: rad }); }
     else if (e.k === 'stk') { const w = e.w, x = Math.min(e.x, W - w); L = mk('sticker', { k: e.n, s: w / 512, x: x + w / 2, y: Y(e, w), r: rad }); }
     else if (e.k === 'text') { const tok = /\{\w+\}/.test(e.tx), base = { font: e.f, col: e.col, sp: { sz: e.sz, wt: e.wt, ls: e.ls, lh: e.lh, al: e.al, ul: e.ul }, fsh: e.sh || undefined, s: 1, r: e.vert ? Math.PI / 2 : rad, vert: e.vert || undefined, af: !e.vert };
@@ -592,7 +612,7 @@ const FMT_K = { story: 1, feed: .8, square: .66, thumb: .75 };
 const typeScale = fmt => { const k = FMT_K[fmt] || 1; return { val: Math.round(64 * k), sub: Math.round(40 * k), lab: Math.round(26 * k), meta: Math.round(26 * k) }; };
 function normLayout(doc, els, fmt, W) {
   const TS = typeScale(fmt), byId = id => doc.layers.find(l => l.sid === id), side = e => e.y != null ? 't' : 'b', yv = e => e.y != null ? e.y : e.yb, xv = e => e.right != null ? W - e.right : e.x;
-  const cand = els.filter(e => e.k === 'text' && !e.vert && e.w !== 'full' && !e.r && e.sz <= 130), cl = [];
+  const cand = els.filter(e => e.k === 'text' && !e.vert && !e.nr && e.w !== 'full' && !e.r && e.sz <= 130), cl = [];
   for (const e of cand) { const g = cl.find(q => q.s === side(e) && Math.abs(q.y - yv(e)) <= 24); if (g) g.m.push(e); else cl.push({ s: side(e), y: yv(e), m: [e] }); }
   const rows = cl.filter(q => { const xs = q.m.map(xv).sort((a, b) => a - b); return xs.length >= 2 && xs.every((x, i) => !i || x - xs[i - 1] > 150); });
   const inRow = new Set(); rows.forEach((q, gi) => { const m = q.m.sort((a, b) => xv(a) - xv(b)), n = m.length, mx = Math.max(...m.map(e => e.sz)) / (FMT_K[fmt] || 1), sz = mx <= 35 ? TS.lab : mx < 56 ? TS.sub : TS.val, y0 = q.s === 't' ? Math.min(...m.map(yv)) : Math.min(...m.map(yv));
@@ -601,7 +621,7 @@ function normLayout(doc, els, fmt, W) {
       if (al === 'left') { L.ax = 'left'; L.x = MARGIN; } else if (al === 'right') { L.ax = 'right'; L.x = W - MARGIN; } else { delete L.ax; L.x = MARGIN + (W - 2 * MARGIN) * (i + .5) / n; }
       L.y = q.s === 't' ? y0 : fmtH(fmt === 'story' ? undefined : fmt) - y0; }); q.lab = m.every(e => byId(e.id) && byId(e.id).row.k === 'lab'); q.y0 = y0; });
   // top-anchored value rows sit on their label row (fixed gap), so shrinking a row never opens a hole above the labels
-  for (const q of rows) { if (q.lab || q.s !== 't') continue; const lr = rows.find(r => r.lab && r.s === 't' && r.m.length === q.m.length && r.y0 > q.y0 && r.y0 - q.y0 < 220); if (!lr) continue;
+  for (const q of rows) { if (q.lab || q.s !== 't') continue; const lr = rows.filter(r => r.s === 't' && r.y0 > q.y0).sort((r1, r2) => r1.y0 - r2.y0)[0]; if (!lr || !lr.lab || lr.m.length !== q.m.length || lr.y0 - q.y0 >= 220) continue;
     for (const e of q.m) { const L = byId(e.id); if (L) { L.ay = 'bottom'; L.y = lr.y0 - Math.round(8 * (FMT_K[fmt] || 1)); } } }
   for (const L of doc.layers) { if (inRow.has(L) || !L.sp || L.vert) continue; if (L.sp.sz <= 34 * (FMT_K[fmt] || 1) + 2 && L.sp.sz < 36) { L.sp = { ...L.sp, sz: TS.meta }; if (L.type === 'text') L.size = TS.meta; }
     if (L.sp.sz < 150) { if (L.ax === 'left' && L.x >= 30 && L.x <= 110) L.x = MARGIN; if (L.ax === 'right' && W - L.x >= 30 && W - L.x <= 110) L.x = W - MARGIN; } }
@@ -667,7 +687,8 @@ async function restorePhotos() { const ids = new Set([doc.bg.pid, ...doc.layers.
 let hist = [], hi = -1, comT = 0;
 function commit() { clearTimeout(comT); if (!doc) return; const s = JSON.stringify(doc); if (s !== hist[hi]) { hist = hist.slice(0, hi + 1); hist.push(s); if (hist.length > 100) hist.shift(); hi = hist.length - 1; } LS(docKey(), doc); paintTop(); }
 const later = () => { clearTimeout(comT); comT = setTimeout(commit, 300); };
-function undoRedo(dd) { commit(); const n = hi + dd; if (n < 0 || n >= hist.length) return; hi = n; doc = JSON.parse(hist[hi]); if (sel && !getL(sel)) sel = null; LS(docKey(), doc); changed(true); paintPanel(); }
+function undoRedo(dd) { commit(); const n = hi + dd; if (n < 0 || n >= hist.length) return; hi = n; doc = JSON.parse(hist[hi]); if (sel && !getL(sel)) sel = null; LS(docKey(), doc); changed(true); paintPanel();
+  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { if (b.dataset.m != null) { if (!doc.log && doc.tpl !== 'mine') b.setAttribute('aria-checked', 'false'); continue; } b.setAttribute('aria-checked', String(doc.log ? b.dataset.lt === doc.log.tpl : b.dataset.t === doc.tpl)); } }
 const docKey = () => doc && doc.log ? 'runtier:logdoc' : 'runtier:v3doc';
 $('undo').addEventListener('click', () => undoRedo(-1)); $('redo').addEventListener('click', () => undoRedo(1));
 function paintTop() { $('undo').disabled = hi <= 0; $('redo').disabled = hi >= hist.length - 1; }
@@ -704,7 +725,7 @@ function syncMulti() { for (const id of [...multi]) { const m = getL(id); if (!m
   if (multiSnap && multiSnap.id === L.id) for (const k of MSYNC) if (JSON.stringify(L[k]) !== JSON.stringify(multiSnap[k])) for (const id of multi) { const m = getL(id); if (L[k] === undefined) delete m[k]; else m[k] = clone(L[k]); }
   multiSnap = clone(L); }
 window.__multi = () => [...multi];
-function changed(now) { syncTier(); syncMulti(); if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; fitStage(); $('tplPreview').getContext('2d').drawImage(cv, 0, 0); if (needClamp) { needClamp = false; if (clampN++ < 5 && clampIn()) { changed(true); return; } clampN = 0; } paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
+function changed(now) { syncTier(); syncMulti(); if (!rafQ) rafQ = requestAnimationFrame(async () => { rafQ = 0; const cv = await renderDoc(state.story, doc, photos); lastCv = cv; boxes = cv.__boxes; fitStage(); $('tplPreview').getContext('2d').drawImage(cv, 0, 0); if (needClamp) { needClamp = false; const fold = hi >= 0 && JSON.stringify(doc) === hist[hi]; if (clampN++ < 5 && clampIn()) { if (fold) hist[hi] = JSON.stringify(doc); changed(true); return; } clampN = 0; } paintOvl(); if (sel) paintSelInfo(); }); if (now === true) commit(); else later(); }
 // ---- format: 9:16 story · 4:5 feed · 1:1 (preview canvas follows the export aspect) ----
 let needClamp = false, clampN = 0;
 function fitStage() { const h = FH(), pv = $('tplPreview'), o = $('ovl'); if (pv.height !== h) { pv.height = h; o.height = h; } $('stage').style.setProperty('--ar', `1080/${h}`); $('stage').style.setProperty('--arn', String(1080 / h));
@@ -735,20 +756,20 @@ function placePhoto(pid, keepBg) { if (!pid || !photos[pid]) return; if (doc.bgT
   else { const s0 = doc.layers.find(l => l.type === 'photo' && !l.pid); if (s0) s0.pid = pid; else if (keepBg && keepBg.pid === pid) { dropBgKeep(); doc.bg = clone(keepBg); } }
   if (doc.layers.some(l => l.behind) && doc.bg.type === 'photo') ensureMask(doc.bg.pid).then(ok => { if (!ok) doc.layers.forEach(l => l.behind = false); changed(true); }); }
 try { localStorage.removeItem('runtier:mystyle'); } catch { /* old 내 스타일 data: feature removed */ }
-function newDoc(t, f = 'story') { const d = templateDoc(TEMPLATES.some(x => x[0] === t) ? t : 'nrc', state.story, f);
+function newDoc(t, f = 'story') { const d = templateDoc(tplKey(t), state.story, f);
   needClamp = true; clampN = 0; return d; }
 async function refreshTpl() { // called from renderResult
   if (!state.story) return;
-  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : newDoc(); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
+  if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : newDoc(); syncTier(); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
   changed(true); paintPanel(); thumbs();
 }
 async function thumbs() {
   if (doc && doc.log) return logThumbs();
   const mine = (LS('runtier:mytpl') || []).map((m, i) => ({ ...m, _i: i })).filter(m => !m.log);
   $('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-t="${k}" aria-checked="${doc.tpl === k}"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${n}</span></button>`).join('') +
-    mine.map(m => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${m._i}" aria-checked="false"><canvas width="108" height="192"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${m._i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
+    mine.map(m => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${m._i}" aria-checked="false"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${m._i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
   const all = LS('runtier:mytpl') || [];
-  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = b.dataset.t ? relayout(templateDoc(b.dataset.t, state.story), doc.fmt || 'story') : all[+b.dataset.m]; const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
+  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = relayout(b.dataset.t ? templateDoc(b.dataset.t, state.story) : clone(all[+b.dataset.m]), doc.fmt || 'story'); const cv = await renderDoc(state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
 }
 const userLayers = d => (d.layers || []).filter(l => l && !l.sid).map(clone);
 $('tplList').addEventListener('click', e => { const del = e.target.closest('[data-mdel]'); if (del) { const m = LS('runtier:mytpl') || []; m.splice(+del.dataset.mdel, 1); LS('runtier:mytpl', m); thumbs(); return; }
@@ -763,7 +784,7 @@ $('tplList').addEventListener('click', e => { const del = e.target.closest('[dat
   doc.race = race; placePhoto(keepPid, keepBg); sel = null; mode = 'tpl';
   for (const x of $('tplList').querySelectorAll('.tpl-btn')) x.setAttribute('aria-checked', String(x === b)); changed(true); paintPanel(); });
 $('tplReset').addEventListener('click', () => { if (doc.log) { const pid = doc.bg.type === 'photo' ? doc.bg.pid : null; const f0 = doc.fmt; doc = setLogBg(buildLogDoc(doc.log.tpl, logCtx.vals, { pid: logCtx.pid, logId: doc.log.id, type: doc.log.type, acc: doc.tok.acc }), pid); if (f0 !== 'thumb') relayout(doc, f0 || 'story'); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); return; }
-  const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(TEMPLATES.some(t => t[0] === doc.tpl) ? doc.tpl : 'nrc'), f0); doc.race = race; placePhoto(keepBg && keepBg.pid, keepBg); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
+  const race = doc.race, keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? doc.bg : null; const f0 = doc.fmt || 'story'; doc = relayout(newDoc(tplKey(doc.tpl)), f0); doc.race = race; placePhoto(keepBg && keepBg.pid, keepBg); sel = null; changed(true); paintPanel(); status('템플릿 상태로 되돌렸어요'); });
 $('saveMyTpl').addEventListener('click', () => { const m = LS('runtier:mytpl') || []; const n = `내 템플릿 ${m.length + 1}`; m.push({ ...clone(doc), n, tpl: doc.log ? doc.tpl : 'mine' }); if (!LS('runtier:mytpl', m.slice(-6))) { status('저장 공간이 부족해요'); return; } thumbs(); status(`'${n}' 저장했어요`); });
 $('fmtSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b || !doc) return; const f = b.dataset.v; if ((doc.fmt || 'story') === f) return; relayout(doc, f); sel = null; changed(true); paintPanel(); thumbs(); status(`${b.getAttribute('aria-label') || b.textContent} 형식으로 바꿨어요`); });
 $('safeBtn').addEventListener('click', e => { safeOn = !safeOn; e.currentTarget.setAttribute('aria-pressed', String(safeOn)); paintOvl(); status(safeOn ? '점선 영역은 인스타 스토리 UI에 가려질 수 있어요 (저장 이미지엔 안 나와요)' : '안전영역 가이드를 껐어요', 2600); });
@@ -803,7 +824,7 @@ function tapButtons(el, sel_, run) { let down = null, last = 0;
   el.addEventListener('pointerup', e => { stop(e); const b = e.target.closest(sel_); if (b && b === down && !b.hidden) { last = Date.now(); e.preventDefault(); run(b); } down = null; });
   el.addEventListener('pointercancel', () => { down = null; });
   el.addEventListener('click', e => { stop(e); const b = e.target.closest(sel_); if (b && Date.now() - last > 700) run(b); }); }
-tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(sel); if (!L) return; if (a === 'lock') { if (L.lk) delete L.lk; else L.lk = 1; changed(true); paintOvl(); status(L.lk ? '잠갔어요 · 위치와 크기가 고정돼요' : '잠금을 풀었어요'); } else if (a === 'behind') toggleBehind(L); else if (a === 'asbg') photoToBg(L); else act(a); });
+tapButtons($('miniBar'), '[data-mb]', b => { const a = b.dataset.mb, L = getL(sel); if (!L) return; if (a === 'lock') { if (L.lk) delete L.lk; else L.lk = 1; changed(true); paintOvl(); status(L.lk ? '잠갔어요 · 옮기기·크기·삭제·복제를 막아요' : '잠금을 풀었어요'); } else if (a === 'behind') toggleBehind(L); else if (a === 'asbg') photoToBg(L); else act(a); });
 const toLocal = (b, x, y) => { const c = Math.cos(-(b.r || 0)), s = Math.sin(-(b.r || 0)), dx = x - b.x, dy = y - b.y; return [(dx * c - dy * s) / b.s, (dx * s + dy * c) / b.s]; };
 function hitAt(x, y) { for (let i = boxes.length - 1; i >= 0; i--) { const b = boxes[i]; if (b.hidden || b.nh) continue; const [lx, ly] = toLocal(b, x, y), pad = Math.max(0, 30 / b.s - 0); if (Math.abs(lx) <= b.w / 2 + pad && Math.abs(ly) <= b.h / 2 + pad) return b; } return null; }
 window.__hitAt = (x, y) => (hitAt(x, y) || {}).id;
@@ -876,17 +897,17 @@ tapButtons($('ctxMenu'), '[data-act]', b => { hideMenu(); if (b.dataset.act === 
 const BG_PHOTO_KEYS = ['pid', 'filter', 'adj', 'crop', 'cr', 'rot', 'flip', 'pz', 'px', 'py', 'cut', 'ol', 'moved'];
 function parkBgPhoto() { const b = doc && doc.bg; if (!b || b.type !== 'photo' || !b.pid) return; const k = { type: 'photo' }; for (const f of BG_PHOTO_KEYS) if (b[f] !== undefined) k[f] = clone(b[f]); doc.bgKeep = k; }
 function dropBgKeep() { if (doc && doc.bgKeep) delete doc.bgKeep; }
-function photoToBg(L) { if (!L || !L.pid || !photos[L.pid]) return; const old = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null;
+function photoToBg(L) { if (!L || !L.pid || !photos[L.pid]) return; if (L.lk) { status('잠긴 사진은 배경으로 바꿀 수 없어요 · 잠금을 먼저 풀어 주세요', 3000); return; } const old = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null;
   dropBgKeep(); doc.bg = { type: 'photo', pid: L.pid, pz: 1, px: 0, py: 0, filter: L.filter || 'none', ...(L.adj ? { adj: clone(L.adj) } : {}), ...(L.crop ? { crop: clone(L.crop) } : {}), ...(L.rot ? { rot: L.rot } : {}), ...(L.flip ? { flip: L.flip } : {}) };
   doc.layers = doc.layers.filter(l => l !== L); sel = null; multi.clear(); if (old) bgToLayer(old, true); else { changed(true); paintPanel(); } status(old ? '배경 사진과 맞바꿨어요' : '배경 사진으로 깔았어요'); }
 function bgToLayer(bg = doc.bg, keepBg = false) { if (bg.type !== 'photo' || !photos[bg.pid]) return; if (doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; }
   const L = mk('photo', { pid: bg.pid, mask: 'rect', filter: bg.filter || 'none', x: 540, y: FH() / 2, s: .7, ...(bg.adj ? { adj: clone(bg.adj) } : {}), ...(bg.crop ? { crop: clone(bg.crop) } : {}), ...(bg.rot ? { rot: bg.rot } : {}), ...(bg.flip ? { flip: bg.flip } : {}) });
   if (!keepBg) { dropBgKeep(); doc.bg = { type: 'tier' }; doc.layers.forEach(l => l.behind = false); } doc.layers.push(L); sel = L.id; mode = null; changed(true); paintPanel(); if (!keepBg) status('배경 사진을 꺼냈어요 · 끌어서 옮겨 보세요'); }
 window.__photoToBg = () => photoToBg(getL(sel)); window.__bgToLayer = () => bgToLayer();
-function delLayer(id) { const L = getL(id); if (!L) return; if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
+function delLayer(id) { const L = getL(id); if (!L) return; if (L.lk) { status('잠긴 요소는 지울 수 없어요 · 잠금을 먼저 풀어 주세요', 3000); return; } if (isTop(L)) { status('상위 %는 항상 크게 보여요 — 위치·스타일만 바꿀 수 있어요', 3000); return; } doc.layers = doc.layers.filter(l => l.id !== id); if (sel === id) sel = null; changed(true); paintPanel(); }
 function act(a) { const i = doc.layers.findIndex(l => l.id === sel); if (i < 0) return; const L = doc.layers[i];
   if (a === 'del') { const ids = [...multi]; multi.clear(); ids.forEach(id => delLayer(id)); return delLayer(sel); }
-  if (a === 'dup') { if (isTop(L)) { status('상위 %는 하나만 있어요'); return; } if (L.type === 'photo' && doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; } const n = { ...clone(L), id: lid(), x: L.x + 40, y: L.y + 40 }; doc.layers.splice(i + 1, 0, n); sel = n.id; }
+  if (a === 'dup') { if (L.lk) { status('잠긴 요소는 복제할 수 없어요 · 잠금을 먼저 풀어 주세요', 3000); return; } if (isTop(L)) { status('상위 %는 하나만 있어요'); return; } if (L.type === 'photo' && doc.layers.filter(l => l.type === 'photo').length >= MAX_PHOTOS) { status(`사진은 ${MAX_PHOTOS}장까지 넣을 수 있어요`); return; } const n = { ...clone(L), id: lid(), x: L.x + 40, y: L.y + 40 }; doc.layers.splice(i + 1, 0, n); sel = n.id; }
   if (a === 'up' && i < doc.layers.length - 1) [doc.layers[i], doc.layers[i + 1]] = [doc.layers[i + 1], doc.layers[i]];
   if (a === 'down' && i > 0) [doc.layers[i], doc.layers[i - 1]] = [doc.layers[i - 1], doc.layers[i]];
   if (a === 'front') { doc.layers.splice(i, 1); doc.layers.push(L); } if (a === 'back') { doc.layers.splice(i, 1); doc.layers.unshift(L); }
@@ -957,8 +978,8 @@ function openFontSheet() { const L = getL(sel); if (!L) return; let sh = $('fShe
       else if (d.fk !== undefined) pickFont(d.fk || null).then(() => { if (!$('fSheet').hidden) $('fList').innerHTML = libHTML(getL(sel)); }); });
     sh.addEventListener('input', e => { if (e.target.id === 'fSearch') $('fList').innerHTML = libHTML(getL(sel)); });
     sh.addEventListener('keydown', e => { if (e.key === 'Escape') closeFontSheet(); }); }
-  sh.innerHTML = fontSheetHTML(L); sh.hidden = false; document.body.classList.add('fs-open'); $('fsDone').focus(); }
-function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); }
+  sh.innerHTML = fontSheetHTML(L); sh.hidden = false; document.body.classList.add('fs-open'); $('fsDone').focus({ preventScroll: true }); requestAnimationFrame(() => paintOvl()); }
+function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); requestAnimationFrame(() => paintOvl()); }
 // ---- bottom panel (one level deep, in page flow) ----
 const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', sticker: '스티커', shape: '도형' };
 const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (DATA_STK[L.k] ? DATA_STK[L.k].n + ' 스티커' : ICON_NAMES[L.k] ? ICON_NAMES[L.k] + ' 아이콘' : STK_NAMES[L.k] || (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커') : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
@@ -1050,6 +1071,18 @@ if (!$('sheetGrab')) { const g = document.createElement('button'); g.type = 'but
     if (dy < -24) { c.classList.add('sheet-xl'); requestAnimationFrame(() => paintOvl()); } else if (dy > 24 && c.classList.contains('sheet-xl')) { c.classList.remove('sheet-xl'); requestAnimationFrame(() => paintOvl()); } else closeSheet(); });
   g.addEventListener('pointercancel', () => { y0 = null; });
   g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeSheet(); } }); }
+// typing mode: while the text field has focus AND the on-screen keyboard is up (visual viewport < 75% of its tallest seen height),
+// the sheet, tools and top bar step aside and only [text field][입력 완료] stays under the canvas — otherwise sheet + keyboard leave a
+// stamp-sized canvas. Keyboard check matters: iOS may not raise the keyboard for the text tool's programmatic focus, and desktop has none.
+{ const P = $('panel'), V = window.visualViewport; let tOut = 0, vMax = 0, vW = 0;
+  const kbUp = () => { if (!V) return false; if (V.width !== vW) { vW = V.width; vMax = 0; } vMax = Math.max(vMax, V.height); return V.height < vMax * .75; };
+  const updTyping = () => { const c = $('tplCard'); if (!c) return; const on = !!(document.activeElement && document.activeElement.id === 'tText') && kbUp() && sheetOn();
+    if (on === c.classList.contains('typing')) return; c.classList.toggle('typing', on); const b = $('pDone'); if (b) b.textContent = on ? '입력 완료' : '완료'; requestAnimationFrame(() => paintOvl()); };
+  if (V) V.addEventListener('resize', updTyping); kbUp();
+  P.addEventListener('focusin', e => { if (e.target.id !== 'tText') return; clearTimeout(tOut); updTyping(); });
+  P.addEventListener('focusout', e => { if (e.target.id !== 'tText') return; const c = $('tplCard'); if (c.classList.contains('typing')) c.dataset.typedAt = Date.now(); clearTimeout(tOut); tOut = setTimeout(updTyping, 120); });
+  // 입력 완료 while typing = close the keyboard and stay on this text (font/colour come next); tapping it blurs first, hence the timestamp
+  P.addEventListener('click', e => { if (!e.target.closest('#pDone')) return; const c = $('tplCard'); if (c.classList.contains('typing') || Date.now() - (+c.dataset.typedAt || 0) < 500) { e.stopImmediatePropagation(); c.dataset.typedAt = 0; document.activeElement && document.activeElement.blur(); } }, true); }
 document.addEventListener('keydown', e => { if (e.key !== 'Escape' || !sheetOn() || e.defaultPrevented) return; const t = e.target; if (t && (t.closest('.fsheet,.fs-card') || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; closeSheet(); });
 // tool icons: one stroke style instead of mixed text glyphs and a colour emoji (markup is duplicated in 4 pages, so swap here)
 { const sv = d => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
@@ -1089,7 +1122,7 @@ function paintPanel() {
     if (L.type === 'photo') h += (L.pid && photos[L.pid] ? '' : `<button type="button" class="chip-btn primary-chip" id="pFill">사진 넣기</button>`) + `<span class="lbl sm">모양</span>${seg('pMask', MASKS, L.mask || 'rect')}` + (L.pid && photos[L.pid] ? photoEdHTML(L) : '') + range('pCz', '자르기 확대', 100, 400, Math.round((L.cz || 1) * 100), '%') + range('pCx', '좌우', -100, 100, Math.round((L.cx || 0) * 100)) + range('pCy', '상하', -100, 100, Math.round((L.cy || 0) * 100)) + `<div class="ed-btns"><button type="button" class="chip-btn" id="pAsBg">배경 사진으로</button><button type="button" class="chip-btn" id="pRefill">사진 바꾸기</button></div>`;
     if (L.type === 'sticker' && L.k.startsWith('data_')) { const F = dataFields(L), inp = (k, lab, max, ph = '') => `<label class="lbl sm" for="df_${k}">${lab}</label><input id="df_${k}" data-df="${k}" maxlength="${max}" autocomplete="off" value="${esc(F[k] ?? '')}" placeholder="${esc(ph)}">`;
       h += `<p class="hint">직접 적는 스티커예요 · 값은 자동으로 채워지지 않아요</p>`;
-      if (L.k.startsWith('data_weather')) h += `<span class="lbl sm">날씨</span>${fchips('dfIcon', WEATHER, F.icon)}` + inp('temp', '기온', 5, '12°') + inp('label', '한 줄 메모', 16, '맑음 · 바람 약함') + wxHTML();
+      if (L.k.startsWith('data_weather')) h += `<span class="lbl sm">날씨</span>${fchips('dfIcon', WEATHER, F.icon)}` + inp('temp', '기온', 6, '12°C') + inp('label', '한 줄 메모', 16, '맑음 · 바람 약함') + wxHTML();
       if (L.k === 'data_course') h += inp('dist', '거리', 10, '10.0 km') + inp('name', '코스 이름', 18, '반포 → 잠수교');
       if (L.k === 'data_bib') h += inp('num', '배번', 5, '1031') + inp('race', '대회 (영문)', 18, 'SEOUL 10K') + `<span class="lbl sm">머리 색</span>${colRow('dfCol', F.color)}`;
       if (L.k === 'data_memo') h += inp('text1', '첫 줄', 14) + inp('text2', '둘째 줄', 16) + inp('date', '날짜 (MM.DD)', 5, '10.14'); }
@@ -1409,7 +1442,7 @@ function renderResult(r) {
     logCtx = { log: o.log, vals: o.vals, pid };
     doc = buildLogDoc(o.tpl, o.vals, { pid: pid && LOG_TPLS.length ? pid : null, logId: o.log && o.log.id, type: o.log && o.log.type, acc: o.acc, fmt: 'thumb' });
     if (!pid) setLogBg(doc, null);
-    sel = null; mode = null; hist = [JSON.stringify(doc)]; hi = 0; needClamp = false;
+    sel = null; mode = null; syncTier(); hist = [JSON.stringify(doc)]; hi = 0; needClamp = false;
     changed(true); paintPanel(); thumbs(); return doc;
   }
   // picking another log refills only the still-bound elements of the current card

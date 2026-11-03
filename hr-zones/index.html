@@ -1,0 +1,102 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>심박 존 계산기 · 최대 심박과 Z1~Z5 범위 | hoohaa</title><meta name="description" content="나이나 최대 심박을 넣으면 러닝 심박 존(Z1~Z5) bpm 범위를 바로 계산해요. 최대 심박을 모르면 208 − 0.7 × 나이로 추정해요."><link rel="canonical" href="https://hoohaa.run/hr-zones/">
+<meta name="color-scheme" content="dark"><meta name="theme-color" content="#0F1620">
+<link rel="icon" href="../favicon.ico" sizes="32x32"><link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../icons/icon-32.png" type="image/png" sizes="32x32"><link rel="apple-touch-icon" href="../icons/apple-touch-icon.png"><link rel="manifest" href="../manifest.webmanifest">
+<meta property="og:type" content="article"><meta property="og:site_name" content="hoohaa"><meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="심박 존 계산기 · 최대 심박과 Z1~Z5 범위 | hoohaa"><meta property="og:description" content="나이나 최대 심박을 넣으면 러닝 심박 존(Z1~Z5) bpm 범위를 바로 계산해요. 최대 심박을 모르면 208 − 0.7 × 나이로 추정해요."><meta property="og:url" content="https://hoohaa.run/hr-zones/">
+<meta property="og:image" content="https://hoohaa.run/og.png?v=1"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://hoohaa.run/og.png?v=1">
+<style>:root{--bg:#0F1620;--s:#151E2A;--b:#26313F;--t1:#F2F4F7;--t2:#B3BAC5;--t3:#8790A0;--a:#3DC8F5;--a2:#B9ECFF}
+*{box-sizing:border-box}html{background:var(--bg);color-scheme:dark}body{margin:0;font:15px/1.7 -apple-system,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",system-ui,sans-serif;color:var(--t2);word-break:keep-all}
+.w{max-width:760px;margin:0 auto;padding:20px 16px 40px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}header a.lg{line-height:0}header svg{height:26px;width:auto;display:block}
+h1{color:var(--t1);font-size:26px;line-height:1.35;margin:0 0 10px;letter-spacing:-.4px}h2{color:var(--t1);font-size:19px;margin:36px 0 10px}h3{color:var(--t1);font-size:16px;margin:22px 0 6px}
+p{margin:0 0 12px}strong{color:var(--a2);font-weight:600}a{color:var(--a)}
+.cta{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:14px;background:var(--a);color:#0F1620;font-weight:800;font-size:17px;text-decoration:none;margin:22px 0}
+.tw{overflow-x:auto;border:1px solid var(--b);border-radius:12px;background:var(--s);margin:10px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}th,td{padding:8px 10px;border-bottom:1px solid var(--b);text-align:right}tr:last-child>*{border-bottom:0}
+thead th{color:var(--t3);font-weight:500;font-size:12.5px}tbody th{text-align:left;color:var(--t1);font-weight:600}td.p,small.p{color:var(--t3);font-size:12px}
+.note{font-size:13px;color:var(--t3)}.note.bad{color:#ffb4b4}details{border:1px solid var(--b);border-radius:12px;background:var(--s);padding:0 14px;margin:8px 0}summary{cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none}summary::after{content:"+";color:var(--t3);font-size:20px;flex:none}details[open]>summary::after{content:"−"}summary::-webkit-details-marker{display:none}summary h3{margin:0;font-size:15px}details p{margin:0 0 14px}
+nav.links{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}nav.links a{border:1px solid var(--b);border-radius:999px;padding:7px 13px;text-decoration:none;color:var(--t1);font-size:13.5px}nav.links a[aria-current]{background:var(--a);color:#0F1620;border-color:var(--a)}
+
+.tabs{display:none;gap:6px;padding:10px 10px 4px;overflow-x:auto}.tabs button{flex:none;border:1px solid var(--b);background:none;color:var(--t2);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;min-height:36px}.tabs button[aria-selected=true]{background:var(--a);color:#0F1620;border-color:var(--a);font-weight:700}
+@media (max-width:600px){.at .tabs{display:flex}.at .a0,.at .a1,.at .a2,.at .a3,.at .a4{display:none}.at.s0 .a0,.at.s1 .a1,.at.s2 .a2,.at.s3 .a3,.at.s4 .a4{display:table-cell}.at table{white-space:normal}}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:14px 0}.kpi div{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:12px}.kpi b{display:block;color:var(--t1);font-size:20px;font-variant-numeric:tabular-nums}.kpi div>span{font-size:12.5px;color:var(--t3)}
+.tool{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:14px;margin:14px 0}.tool label{display:block;font-size:13px;color:var(--t3);margin:8px 0 4px}.tool input,.tool select{width:100%;min-height:46px;border-radius:10px;border:1px solid var(--b);background:var(--bg);color:var(--t1);font:inherit;font-size:16px;padding:0 12px}.tool .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tool output{display:block;margin-top:12px;color:var(--t1)}
+.lanenav{margin:12px 0 4px;background:#0B1119;border:1px solid #26313F;border-radius:14px;overflow:hidden}
+.lane{display:flex;align-items:stretch;border-top:2px dashed rgba(255,255,255,.13);min-height:52px}.lane:first-child{border-top:0}
+.lane .ln{flex:none;width:78px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;border-right:2px solid rgba(255,255,255,.18);color:#F2F4F7;font-weight:800;font-size:14px;letter-spacing:.2px}
+.lane .ln b{font:800 20px/1 system-ui,sans-serif;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.45);width:14px;text-align:center}
+.lane .ls{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1}.lane .ls::-webkit-scrollbar{display:none}
+.lane .ls a{flex:none;display:flex;align-items:center;min-height:52px;padding:0 13px;color:#B3BAC5;text-decoration:none;font-size:14px;white-space:nowrap;position:relative}
+.lane .ls a+a::before{content:"";position:absolute;left:0;top:50%;width:1px;height:14px;margin-top:-7px;background:rgba(255,255,255,.18)}
+.lane .ls a:hover{color:#F2F4F7}.lane .ls a[aria-current]{color:#3DC8F5;font-weight:700}
+.lane .ls a[aria-current]::after{content:"";position:absolute;left:13px;right:13px;bottom:10px;height:2px;background:#3DC8F5;border-radius:2px}
+.lane.on{background:linear-gradient(90deg,rgba(61,200,245,.10),transparent 70%)}.lane.on .ln{color:#3DC8F5}.lane.on .ln b{-webkit-text-stroke-color:#3DC8F5}.lane .ls a.sub2,.lane .ls a.sub3,.lane .ls a.sub330,.lane .ls a.sub4,.lane .ls a.sub430,.lane .ls a.sub5{font-weight:800;letter-spacing:.02em}.lane .ls a.sub2{background:linear-gradient(90deg,#FFF3C8,#FFC9EC,#A8F3FF);-webkit-background-clip:text;background-clip:text;color:transparent}.lane .ls a.sub2:hover,.lane .ls a.sub2[aria-current]{color:transparent}.lane .ls a.sub2[aria-current]::after{background:#FFF3C8}.lane .ls a.sub3{color:#B9D4FF}.lane .ls a.sub3:hover,.lane .ls a.sub3[aria-current]{color:#E4EEFF}.lane .ls a.sub3[aria-current]::after{background:#B9D4FF}.lane .ls a.sub330{color:#9FE3DC}.lane .ls a.sub330:hover,.lane .ls a.sub330[aria-current]{color:#D7F7F3}.lane .ls a.sub330[aria-current]::after{background:#9FE3DC}.lane .ls a.sub4{color:#F6DC8E}.lane .ls a.sub4:hover,.lane .ls a.sub4[aria-current]{color:#FFF3C8}.lane .ls a.sub4[aria-current]::after{background:#F6DC8E}.lane .ls a.sub430{color:#E2A67F}.lane .ls a.sub430:hover,.lane .ls a.sub430[aria-current]{color:#F6D7C4}.lane .ls a.sub430[aria-current]::after{background:#E2A67F}.lane .ls a.sub5{color:#A9B2BF}.lane .ls a.sub5:hover,.lane .ls a.sub5[aria-current]{color:#D5DBE3}.lane .ls a.sub5[aria-current]::after{background:#A9B2BF}
+@media (min-width:601px){.lane .ls{flex-wrap:wrap;overflow:visible}}
+@media (max-width:600px){.lane .ln{width:64px;padding-left:10px;font-size:13px}}
+.gl{list-style:none;margin:0;padding:0;border-top:1px solid var(--b)}.gl a{display:flex;align-items:center;min-height:46px;border-bottom:1px solid var(--b);color:var(--t1);text-decoration:none}.gl a:hover{color:var(--a)}
+.tn{font-weight:700}.t-iron{color:#A9B2BF}.t-bronze{color:#E2A67F}.t-silver{color:#D7DEE7}.t-gold{color:#F6DC8E}.t-platinum{color:#9FE3DC}.t-emerald{color:#5FE0A0}.t-diamond{color:#B9D4FF}.t-master{color:#D9A8FF}.t-grandmaster{color:#FF9C8A}
+.z-E{--pc:#4FC3F7}.z-M{--pc:#4ADE80}.z-T{--pc:#FACC15}.z-I{--pc:#FB923C}.z-R{--pc:#F87171}.zn{display:inline-flex;align-items:center;gap:6px;vertical-align:middle}.zn .ltr{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;font-weight:800;font-size:13px;line-height:1;color:var(--pc);background:color-mix(in srgb,var(--pc) 16%,transparent);flex:none}
+.t-challenger{background:linear-gradient(90deg,#FFF3C8,#FFC9EC,#A8F3FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:13px;color:var(--t3)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seg button{min-height:46px;border-radius:10px;border:1px solid var(--b);background:var(--bg);color:var(--t2);font:inherit;font-size:16px}.seg button[aria-pressed=true]{background:var(--a);color:#0F1620;border-color:var(--a);font-weight:800}
+.share{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;border-radius:12px;border:1px solid var(--b);background:none;color:var(--t1);font:inherit;font-size:15px;margin-top:12px}
+.zt td.r{color:var(--t1);font-weight:700}.zt thead th:first-child{text-align:left}.zt tbody th{white-space:normal;vertical-align:top}.zt td{vertical-align:top}.zt small{display:block;margin-top:4px;color:var(--t3);font-size:12.5px;font-weight:400;line-height:1.5}
+.zb{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:24px;border-radius:7px;font-weight:800;font-size:13px;color:var(--zc);background:color-mix(in srgb,var(--zc) 16%,transparent)}
+.zr1{--zc:#A9B2BF}.zr2{--zc:#4FC3F7}.zr3{--zc:#4ADE80}.zr4{--zc:#FACC15}.zr5{--zc:#F87171}
+.warn{border:1px solid var(--b);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--t3);margin:14px 0}
+</style>
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebPage","name":"심박 존 계산기 · 최대 심박과 Z1~Z5 범위 | hoohaa","url":"https://hoohaa.run/hr-zones/","inLanguage":"ko","isPartOf":{"@type":"WebSite","name":"hoohaa","url":"https://hoohaa.run/"}},{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"hoohaa","item":"https://hoohaa.run/"},{"@type":"ListItem","position":2,"name":"심박 존 계산기","item":"https://hoohaa.run/hr-zones/"}]}]</script>
+</head><body><div class="w">
+<header><a class="lg" href="../" aria-label="hoohaa 홈"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 122" width="470" height="122"><g transform="translate(0,4)"><g transform="translate(40,0) skewX(-14)"><g transform="translate(6,6)"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#3DC8F5"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="174" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#3DC8F5" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M340 40V100" stroke="#3DC8F5" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#3DC8F5" stroke-width="16"/><path d="M412 40V100" stroke="#3DC8F5" stroke-width="16"/></g><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><rect x="95.18" y="28.56" width="13.64" height="9.24" rx="1.848" fill="#F4F6F8"/><rect x="98.9992" y="37.36" width="6.001600000000001" height="4.4" fill="#F4F6F8"/><circle cx="102" cy="70" r="22" fill="#3DC8F5"/><circle cx="102" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M102 70L113.81258650761974 63.18" stroke="#0F1620" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5.95" fill="#0F1620"/><circle cx="174" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100" fill="none" stroke="#F4F6F8" stroke-width="16"/><circle cx="318" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M340 40V100" stroke="#F4F6F8" stroke-width="16"/><circle cx="390" cy="70" r="22" fill="none" stroke="#F4F6F8" stroke-width="16"/><path d="M412 40V100" stroke="#F4F6F8" stroke-width="16"/></g></g></svg></a></header>
+<main>
+<h1>심박 존 계산기</h1>
+<p>나이나 최대 심박을 넣으면 Z1~Z5 심박 존의 bpm 범위를 계산해요. 최대 심박을 모르면 나이로 추정해요.</p>
+<section class="tool" id="hrTool">
+<div class="row"><div><label for="hAge">나이</label><input id="hAge" type="number" inputmode="numeric" min="10" max="100" placeholder="30" value="30"></div>
+<div><label for="hMax">최대 심박 (선택)</label><input id="hMax" type="number" inputmode="numeric" min="100" max="230" placeholder="모르면 비워 두세요"></div></div>
+<div class="kpi"><div><span>최대 심박</span><b id="oMax">187 bpm</b><span id="oSrc" style="display:block">나이로 추정 · 208 − 0.7 × 30</span></div></div>
+<div class="tw" tabindex="0" role="region" aria-label="심박 존 표"><table class="zt"><thead><tr><th scope="col">존</th><th scope="col">심박(bpm)</th><th scope="col">최대 심박 대비</th></tr></thead><tbody id="zBody"><tr><th scope="row"><span class="zb zr1">Z1</span> 회복<small>아주 편한 강도예요. 워밍업, 쿨다운, 회복 조깅에 써요.</small></th><td class="r">~130</td><td class="p">70% 미만</td></tr><tr><th scope="row"><span class="zb zr2">Z2</span> 기초 지구력<small>대화를 편하게 할 수 있어요. 이지런 대부분이 여기예요.</small></th><td class="r">131–149</td><td class="p">70~80%</td></tr><tr><th scope="row"><span class="zb zr3">Z3</span> 템포<small>숨이 차지만 짧은 문장은 말할 수 있어요.</small></th><td class="r">150–162</td><td class="p">80~87%</td></tr><tr><th scope="row"><span class="zb zr4">Z4</span> 역치<small>몇 단어만 겨우 말할 수 있어요. 역치 훈련 강도예요.</small></th><td class="r">163–173</td><td class="p">87~93%</td></tr><tr><th scope="row"><span class="zb zr5">Z5</span> 최대<small>말하기 어려울 만큼 힘들어요. 짧은 인터벌과 스퍼트 강도예요.</small></th><td class="r">174–187</td><td class="p">93% 초과</td></tr></tbody></table></div>
+<p class="note" id="hMsg" aria-live="polite">워치에 찍힌 최대 심박을 알면 넣어 주세요. 더 정확해요.</p>
+<button type="button" class="share" id="hShare">이 결과 링크 복사</button>
+</section>
+<p class="warn">의학적 조언이 아니에요. 공식으로 계산한 참고값이라 실제 최대 심박은 사람마다 10bpm 넘게 다를 수 있어요. 심장 질환이 있거나 운동 중 가슴 통증, 어지러움이 있으면 의사와 먼저 상담해 주세요.</p>
+<h2>어떻게 계산하나요?</h2>
+<p>최대 심박을 넣으면 그 값을, 비워 두면 <strong>208 − 0.7 × 나이</strong>(Tanaka 공식)로 추정해요. 존은 최대 심박에 대한 비율로 나눠요.</p>
+<p>Z1 70% 미만 · Z2 70~80% · Z3 80~87% · Z4 87~93% · Z5 93% 초과</p>
+<h3>최대 심박은 어떻게 알 수 있나요?</h3><p>최근 대회나 강한 인터벌에서 워치에 찍힌 가장 높은 심박이 좋은 기준이에요. 공식보다 실제 기록이 더 정확해요.</p>
+<h3>훈련 페이스와 같이 보기</h3><p>심박은 날씨, 컨디션, 수면에 따라 흔들려요. 레이스 기록으로 정한 <a href="../pace/">훈련 페이스</a>와 함께 보면 좋아요. 기록으로 <a href="../vo2max/">VO2max</a>도 추정해 볼 수 있어요.</p>
+<p class="note">입력값은 서버로 보내지 않아요.</p>
+<a class="cta" href="../app/">내 러닝 티어 확인하기</a>
+<h2>다른 기준표 보기</h2>
+<nav class="lanenav" aria-label="기록 가이드"><div class="lane"><span class="ln"><b aria-hidden="true">1</b>5K</span><div class="ls"><a href="../5k/">티어표</a><a href="../5k/20min/">20분</a><a href="../5k/25min/">25분</a><a href="../5k/30min/">30분</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">2</b>10K</span><div class="ls"><a href="../10k/">티어표</a><a href="../10k/40min/">40분</a><a href="../10k/45min/">45분</a><a href="../10k/50min/">50분</a><a href="../10k/55min/">55분</a><a href="../10k/60min/">1시간</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">3</b>하프</span><div class="ls"><a href="../half/">티어표·계산기</a><a href="../half/1h30/">1:30</a><a href="../half/1h45/">1:45</a><a href="../half/2h/">2:00</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">4</b>풀</span><div class="ls"><a href="../full/">티어표·예상 기록</a><a class="sub2" href="../full/sub2/">SUB2</a><a href="../full/sub3/" class="sub3">SUB3</a><a href="../full/sub330/" class="sub330">SUB3:30</a><a href="../full/sub4/" class="sub4">SUB4</a><a href="../full/sub430/" class="sub430">SUB4:30</a><a href="../full/sub5/" class="sub5">SUB5</a><a href="../predictor/">기록 예측기</a><a href="../splits/">구간 기록표</a></div></div><div class="lane on"><span class="ln"><b aria-hidden="true">5</b>공통</span><div class="ls"><a href="../men/">남자 기준</a><a href="../women/">여자 기준</a><a href="../pace/">훈련 페이스</a><a href="../pace-calculator/">페이스 계산기</a><a href="../vdot/">VDOT</a><a href="../vo2max/">VO2max</a><a href="../hr-zones/" aria-current="page">심박 존</a><a href="../tier-guide/">티어 기준</a><a href="../age/20s-30s/">20·30대</a><a href="../age/40s/">40대</a><a href="../age/50s/">50대</a><a href="../age/60s/">60대+</a><a href="../guide/">전체 가이드</a></div></div></nav>
+</main>
+<footer>hoohaa · <a href="../">홈</a> · <a href="../pace/">훈련 페이스</a> · <a href="../privacy/">개인정보</a> · <a href="../guide/">러닝 가이드 전체</a></footer>
+</div><script type="module">
+import { resolveHrmax, zones } from '../src/engine/hrzones.js';
+const $=id=>document.getElementById(id);
+const NAME={"1": "회복", "2": "기초 지구력", "3": "템포", "4": "역치", "5": "최대"},PCT={"1": "70% 미만", "2": "70~80%", "3": "80~87%", "4": "87~93%", "5": "93% 초과"},DESC={"1": "아주 편한 강도예요. 워밍업, 쿨다운, 회복 조깅에 써요.", "2": "대화를 편하게 할 수 있어요. 이지런 대부분이 여기예요.", "3": "숨이 차지만 짧은 문장은 말할 수 있어요.", "4": "몇 단어만 겨우 말할 수 있어요. 역치 훈련 강도예요.", "5": "말하기 어려울 만큼 힘들어요. 짧은 인터벌과 스퍼트 강도예요."};
+const hint='워치에 찍힌 최대 심박을 알면 넣어 주세요. 더 정확해요.';
+function calc(e){
+ const age=$('hAge').value,max=$('hMax').value,r=resolveHrmax({hrmax:max,age});
+ $('hAge').setAttribute('aria-invalid',String(!!(r.error&&!max)));$('hMax').setAttribute('aria-invalid',String(!!(r.error&&max)));
+ const msg=$('hMsg');msg.classList.toggle('bad',!!r.error);
+ if(!r.hrmax){
+  $('oMax').textContent='-';$('oSrc').textContent='';
+  $('zBody').querySelectorAll('td.r').forEach(td=>td.textContent='-');
+  msg.textContent=r.error||'나이나 최대 심박을 넣으면 바로 계산돼요.';return;
+ }
+ $('oMax').textContent=r.hrmax+' bpm';
+ $('oSrc').textContent=r.source==='input'?'직접 넣은 값':'나이로 추정 · 208 − 0.7 × '+age;
+ $('zBody').innerHTML=zones(r.hrmax).map(z=>'<tr><th scope="row"><span class="zb zr'+z.z+'">Z'+z.z+'</span> '+NAME[z.z]+'<small>'+DESC[z.z]+'</small></th><td class="r">'+(z.lo==null?'~'+z.hi:z.lo+'–'+z.hi)+'</td><td class="p">'+PCT[z.z]+'</td></tr>').join('');
+ msg.textContent=r.source==='input'?'넣어 주신 최대 심박으로 계산했어요.':hint;
+ if(e){const q=new URLSearchParams();if(age)q.set('a',age);if(max)q.set('m',max);history.replaceState(null,'','?'+q);}
+}
+const p=new URLSearchParams(location.search);
+if(p.has('a'))$('hAge').value=p.get('a');if(p.has('m'))$('hMax').value=p.get('m');
+['hAge','hMax'].forEach(i=>$(i).addEventListener('input',calc));
+$('hShare').onclick=async()=>{const u=location.href;try{if(navigator.share)await navigator.share({title:'심박 존 계산기',text:$('oMax').textContent!=='-'?'최대 심박 '+$('oMax').textContent:undefined,url:u});else{await navigator.clipboard.writeText(u);$('hShare').textContent='링크를 복사했어요';}}catch(e){}};
+calc();
+</script></body></html>
