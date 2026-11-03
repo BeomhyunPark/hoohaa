@@ -959,8 +959,8 @@ function openFontSheet() { const L = getL(sel); if (!L) return; let sh = $('fShe
       else if (d.fk !== undefined) pickFont(d.fk || null).then(() => { if (!$('fSheet').hidden) $('fList').innerHTML = libHTML(getL(sel)); }); });
     sh.addEventListener('input', e => { if (e.target.id === 'fSearch') $('fList').innerHTML = libHTML(getL(sel)); });
     sh.addEventListener('keydown', e => { if (e.key === 'Escape') closeFontSheet(); }); }
-  sh.innerHTML = fontSheetHTML(L); sh.hidden = false; document.body.classList.add('fs-open'); $('fsDone').focus(); }
-function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); }
+  sh.innerHTML = fontSheetHTML(L); sh.hidden = false; document.body.classList.add('fs-open'); $('fsDone').focus({ preventScroll: true }); requestAnimationFrame(() => paintOvl()); }
+function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); requestAnimationFrame(() => paintOvl()); }
 // ---- bottom panel (one level deep, in page flow) ----
 const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', sticker: '스티커', shape: '도형' };
 const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (DATA_STK[L.k] ? DATA_STK[L.k].n + ' 스티커' : ICON_NAMES[L.k] ? ICON_NAMES[L.k] + ' 아이콘' : STK_NAMES[L.k] || (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커') : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
