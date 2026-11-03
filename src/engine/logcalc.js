@@ -3,8 +3,14 @@
 
 const p2 = n => String(n).padStart(2, '0');
 
-// 'YYYY-MM-DD' → day number (UTC, so DST / time zones never shift a calendar date)
-const dayNum = iso => { const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(iso || ''); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) / 864e5 : NaN; };
+// 'YYYY-MM-DD' → day number (UTC, so DST / time zones never shift a calendar date).
+// Impossible dates ('2026-02-29', '2026-04-31') are NaN instead of rolling over into the next month.
+const dayNum = iso => {
+  const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(iso || ''); if (!m) return NaN;
+  const t = Date.UTC(+m[1], +m[2] - 1, +m[3]), d = new Date(t);
+  return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3] ? t / 864e5 : NaN;
+};
+export const isISODate = iso => isFinite(dayNum(iso));
 export const isoToday = (d = new Date()) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
 
 // '29:38' | '1:02:03' | '2938' → seconds (null when empty/invalid)
@@ -27,14 +33,17 @@ export function fmtDur(sec) {
 export const paceSec = (km, sec) => km > 0 && sec > 0 ? sec / km : null;
 export function fmtPace(spk) { if (spk == null || !isFinite(spk)) return ''; let m = Math.floor(spk / 60), s = Math.round(spk - m * 60); if (s === 60) { m++; s = 0; } return `${m}:${p2(s)}`; }
 export const fmtPaceFull = spk => spk == null ? '' : fmtPace(spk) + '/km';
+// distance in km: a positive number or null ('-3', '0', 'abc' → null)
+export const posKm = v => { const n = num(v); return n != null && n > 0 ? n : null; };
 export const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); return isFinite(n) ? n : null; };
 export const fmtKm = (km, fixed = 2) => km == null ? '' : Number.isInteger(km) && fixed !== 2 ? String(km) : km.toFixed(fixed);
 
-// dayN = (log date − startDate) + 1, by calendar date
-export function dayN(date, startDate) { const a = dayNum(date), b = dayNum(startDate); return isFinite(a) && isFinite(b) ? a - b + 1 : null; }
+// dayN = (log date − startDate) + 1, by calendar date. A date before the start has no Day (null, never Day 0 / Day -3).
+export function dayN(date, startDate) { const a = dayNum(date), b = dayNum(startDate); return isFinite(a) && isFinite(b) && a >= b ? a - b + 1 : null; }
 export function startDateOf(profile, logs) {
-  if (profile && profile.dayCountMode === 'first-log') { const d = (logs || []).filter(l => l.type === 'run' && l.date).map(l => l.date).sort()[0]; return d || (profile && profile.startDate) || null; }
-  return (profile && profile.startDate) || null;
+  const own = profile && isISODate(profile.startDate) ? profile.startDate : null;
+  if (profile && profile.dayCountMode === 'first-log') { const d = (logs || []).filter(l => l.type === 'run' && isISODate(l.date)).map(l => l.date).sort()[0]; return d || own; }
+  return own;
 }
 // D-17 · D-DAY · D+3
 export function ddayLabel(raceDate, from) { const a = dayNum(raceDate), b = dayNum(from); if (!isFinite(a) || !isFinite(b)) return ''; const n = a - b; return n > 0 ? `D-${n}` : n === 0 ? 'D-DAY' : `D+${-n}`; }
@@ -57,15 +66,15 @@ export function bindValues(log, ctx = {}) {
   const d = log.data || {}, logs = ctx.logs || [], V = { date: fmtDate(log.date), dateMD: fmtMD(log.date) };
   const sd = startDateOf(ctx.profile, logs), n = sd ? dayN(log.date, sd) : null; V.dayN = n != null ? `Day ${n}` : '';
   if (log.type === 'run') {
-    const km = num(d.distance), sec = parseDur(d.time); V.distance = km != null ? fmtKm(km) : ''; V.time = sec ? fmtDur(sec) : ''; V.pace = fmtPace(paceSec(km, sec)); V.weather = d.weather || ''; V.note = d.note || '';
+    const km = posKm(d.distance), sec = parseDur(d.time); V.distance = km != null ? fmtKm(km) : ''; V.time = sec ? fmtDur(sec) : ''; V.pace = fmtPace(paceSec(km, sec)); V.weather = d.weather || ''; V.note = d.note || '';
   } else if (log.type === 'race') {
-    const r = (d.raceId && (ctx.races || []).find(x => x.id === d.raceId)) || d, km = num(r.distance ?? d.distance), res = parseDur(d.result || r.result), goal = parseDur(d.goal || r.goal);
+    const r = (d.raceId && (ctx.races || []).find(x => x.id === d.raceId)) || d, km = posKm(r.distance ?? d.distance), res = parseDur(d.result || r.result), goal = parseDur(d.goal || r.goal);
     V.raceName = r.name || d.name || ''; V.dateMD = fmtMD(r.date || log.date); V.date = fmtDate(r.date || log.date);
     V.dday = ddayLabel(r.date || log.date, log.date); V.distance = km != null ? fmtKm(km, 0) : ''; V.time = goal ? fmtDur(goal) : ''; V.result = res ? fmtDur(res) : '';
     V.pace = fmtPace(paceSec(km, res || goal)); V.note = d.note || '';
   } else if (log.type === 'diet') {
     V.meal = d.meal || ''; V.menu = d.menu || ''; V.time = d.time || ''; V.note = d.note || '';
-    let km = num(d.distance); if (km == null) { const run = logs.find(l => l.type === 'run' && l.date === log.date && num(l.data && l.data.distance) != null); if (run) km = num(run.data.distance); }
+    let km = posKm(d.distance); if (km == null) { const run = logs.find(l => l.type === 'run' && l.date === log.date && posKm(l.data && l.data.distance) != null); if (run) km = posKm(run.data.distance); }
     V.distance = km != null ? fmtKm(km) : '';
   }
   return V;
