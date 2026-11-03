@@ -1,34 +1,32 @@
 ---
-title: "결과 화면은 탭으로 하나씩 보여주되, 결과 공유 이미지에는 세 탭 내용을 모두 펼쳐 담는다"
+title: "글꼴을 고르거나 글자를 입력하는 동안에는 편집기가 선택한 요소 쪽으로 캔버스 화면만 확대한다"
 author: Claude
 date: 2026-11-03
-branch: claude/zealous-cray-v8e4gb
-cost: { minutes: 11, tokens: 155983 }
-id: l-236caf5c
+branch: claude/serene-noether-wuh075
+cost: { minutes: 3, tokens: 27265 }
+id: l-c7127977
 scope: repo
 status: active
 src: agent
 touches:
-  - app/index.html
-  - index.html
-  - log/index.html
-  - result/index.html
-  - src/app/boot.js
-  - src/styles/app.css
-  - sw.js
+  - README.md
+  - src/editor/assets.js
   - src/editor/editor.js
+  - sw.js
+  - tools/build_stickers.py
+  - tools/build_templates.mjs
+  - src/styles/app.css
 ---
 
 ## Decided
-- 리디자인 2단계(결과 화면): 티어표·예상 기록·훈련 페이스를 탭으로 묶어 한 번에 하나만 보인다. 그런데 결과 공유 PNG(#resShare)는 #resBody를 복제해 그리므로, 복제본에서는 탭 패널을 모두 펼치고 탭·상단 바·위 요약·펼치기 버튼을 지운다. 그래야 공유 이미지 내용이 예전처럼 티어표+예상 기록+훈련 페이스 전부다.
-- 하단 고정 바는 사용자가 골랐다: 큰 버튼 "공유 이미지 만들기"는 아래 공유 이미지 편집기(#tplCard)로 스크롤, 공유 아이콘 버튼이 기존 #resShare(결과 PNG 공유).
-- "다른 기록 넣기"(#barResult)는 HTML 위치 그대로(결과 요약과 편집기 사이). 상단 "‹ 다시 입력"은 #again을 대신 눌러서 같은 뒤로 가기 규칙을 탄다.
+- 글꼴 창이 열려 있거나 입력 모드일 때는 캔버스가 화면 절반 이하로 줄어든다. 그래서 선택한 작은 글자(예: '평균 페이스' 라벨)는 실기기에서 글꼴이 바뀌는 게 안 보였다. 사용자가 손가락으로 확대하면 브라우저 전체가 확대되고, 편집기는 그대로 작게 남았다(사용자 실기기 제보). 그래서 이 두 상태에서는 #stage에 CSS transform(translate + scale)을 걸어, 선택한 요소를 편집 영역 가운데에 크게 보여 준다.
+- 배율은 요소가 편집 영역 폭의 80%, 높이의 45% 안에 들어오는 값으로 정하고, 최대 3배다. 4배는 1080px 원본이 늘어나서 글자가 흐려졌기 때문이다. 1.2배보다 작게 나오면 확대하지 않는다.
+- 확대 중에는 선택 표시와 크기 조절 핸들(#ovl)을 opacity 0으로 숨긴다. 핸들도 함께 커져서 글자를 가렸기 때문이다. visibility:hidden을 쓰면 캔버스 탭이 먹히지 않아서 opacity를 쓴다.
 
 ## Watch out
-- 하단 바는 "다른 기록 넣기"나 편집기가 조금이라도 보이면 숨긴다. 위쪽 작은 티어 요약은 편집기가 화면 위쪽 40%까지 올라와야 숨긴다. 같은 조건으로 묶으면 탭 내용이 짧을 때(예상 기록 탭) 편집기 윗부분이 화면 아래에 걸려서 요약이 영영 안 나온다.
-- 이름 충돌: 홈 사다리를 `.ladder`로 지었다가 결과 화면의 `section.card.ladder`와 `.ladder i`(행의 점)에 걸렸다. 홈 쪽을 `.tier-ladder`로 바꿨다. 결과 공유 캡처 상자가 `.res-cap` 클래스를 쓰니 그 이름도 피한다.
-- `font:700 15px/1.2 inherit`처럼 단축 속성에 inherit를 섞으면 선언 전체가 무효다(굵기·크기가 안 먹음). 예전 `.seg button`에도 같은 줄이 있다.
+- 저장되는 이미지는 바뀌지 않는다. 화면 표시만 확대된다. 포인터 좌표는 getBoundingClientRect로 계산하기 때문에 확대 중에도 맞는다.
+- 확대 위치는 글꼴을 고른 직후와 글자를 입력할 때마다 다시 계산한다(setTimeout 60ms). 렌더가 끝나야 박스 크기가 바뀌기 때문이다.
 
 In the code:
-- src/editor/editor.js renderResult(), bindResultUi(), resCaptureNode()의 탭 패널 펼치기
-- src/styles/app.css "결과 리디자인 · 피그마 시안 B·C" 블록
+- src/editor/editor.js: focusZoom() (sheet 블록 위), openFontSheet/closeFontSheet/pickFont 이후, updTyping, tText input에서 호출
+- src/styles/app.css: #tplCard.zoomed 규칙
