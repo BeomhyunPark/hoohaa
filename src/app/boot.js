@@ -58,7 +58,14 @@ $('tq').addEventListener('input', e => {
   e.target.value = digitsToDisplay(d);
   validate();
 });
-$('tq').addEventListener('blur', () => { const t = parseTimeDigits(prevDigits); if (t && !t.error) $('tq').value = `${t.h}:${p2(t.m)}:${p2(t.s)}`; });
+$('tq').addEventListener('blur', () => { const t = parseTimeDigits(prevDigits); if (t && !t.error) $('tq').value = `${t.h}:${p2(t.m)}:${p2(t.s)}`; paintTq(); });
+// display only: the input text is transparent and this mirror draws the same string on top, with leading 0/: dimmed
+function paintTq() {
+  const m = $('tqMirror'); if (!m) return;
+  const v = $('tq').value, k = (v.match(/^[0:]+(?=[1-9])/) || [''])[0].length;
+  m.innerHTML = k ? `<span class="dim">${esc(v.slice(0, k))}</span>${esc(v.slice(k))}` : esc(v);
+}
+const KM = { '5K': 5, '10K': 10, half: 21.0975, full: 42.195 };
 $('by').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); validate(); });
 $('km').addEventListener('input', e => { const [a, ...b] = e.target.value.replace(/[^\d.]/g, '').split('.'); e.target.value = b.length ? `${a}.${b.join('')}` : a; validate(); }); // one decimal point: 1.5.5 -> 1.55
 // Enter (Android keyboard 이동/완료, hardware keyboard) submits like the button
@@ -85,7 +92,13 @@ function readInput() {
 }
 function validate() {
   const { t, by, km } = readInput();
-  $('tqHint').textContent = t && t.error ? t.error : '숫자만 입력하면 자동으로 변환돼요 · 2327 → 0:23:27';
+  $('tqHint').textContent = t && t.error ? t.error : '숫자만 눌러요 · 5000 → 50:00';
+  paintTq();
+  if ($('tqPace')) { // live pace next to the 기록 label
+    const dist = state.ev === 'custom' ? +km : KM[state.ev], ps = t && !t.error && dist > 0 ? Math.round(t.sec / dist) : 0;
+    $('tqPace').textContent = ps > 0 && ps < 3600 ? `${Math.floor(ps / 60)}:${p2(ps % 60)} /km` : '';
+  }
+  if ($('byAge')) { const a = /^\d{4}$/.test(by) ? new Date().getFullYear() - +by : -1; $('byAge').textContent = a >= 0 && a <= 120 ? `${a}세` : ''; }
   $('tqHint').classList.toggle('bad', !!(t && t.error));
   $('tq').setAttribute('aria-invalid', String(!!(t && t.error)));
   const kmOk = state.ev !== 'custom' || (+km > 0);
@@ -181,7 +194,7 @@ $('again').addEventListener('click', () => { if (document.body.classList.contain
 let logsP = null;
 const logs = () => logsP ||= import('./logs.js').then(m => m.mountLogs({ $, esc, show, navBack, openEditor: async () => { await Promise.all([enableCardCss(), ensureEditor()]); return ensureEditor(); } }));
 async function openLogs() { try { (await logs()).open(); } catch (e) { console.error(e); $('err').textContent = '기록 화면을 열지 못했어요. 다시 시도해 주세요.'; } }
-if ($('logGo')) $('logGo').addEventListener('click', (e) => { e.preventDefault(); openLogs(); });
+for (const a of document.querySelectorAll('#logGo, [data-log-go]')) a.addEventListener('click', (e) => { e.preventDefault(); openLogs(); });
 const wantLog = new URLSearchParams(location.search).has('log') || /^\/log\/?$/.test(location.pathname);
 const wantResult = /^\/result\/?$/.test(location.pathname);
 // /log/, /result/ and old ?log=1 links: keep home (/) as the base entry (old ?log=1 is dropped silently), then open the screen

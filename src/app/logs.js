@@ -3,6 +3,7 @@ import * as db from '../storage/logdb.js';
 import { bindValues, defaultTemplate, sortLogs, parseDur, fmtPace, paceSec, num, posKm, isoToday, startDateOf, dayN, TPL_IDS, normTplId } from '../engine/logcalc.js';
 
 const TYPES = [['run', '러닝'], ['race', '대회'], ['diet', '식단']];
+const TCOL = { run: '#B5C96A', race: '#E08A62', diet: '#6FB894' }, TICON = { run: '🏃', race: '🏅', diet: '🥗' };
 const TNAME = Object.fromEntries(TYPES);
 // 신발(gear) is parked until login: old gear logs/stores stay in IndexedDB and backups, but are hidden here
 const SHOWN = l => l && Object.prototype.hasOwnProperty.call(TNAME, l.type);
@@ -65,25 +66,31 @@ export function mountLogs(env) {
   async function reload() { try { const a = await db.loadAll(); S = { profile: a.profile, logs: (a.logs || []).filter(SHOWN), races: a.races || [] }; } catch (e) { console.error(e); say('이 브라우저에서는 기기 저장소(IndexedDB)를 쓸 수 없어요'); } }
 
   const field = (id, label, input, hint = '') => `<div class="field"><label class="lbl sm" for="${id}">${label}</label>${input}${hint ? `<p class="hint">${hint}</p>` : ''}</div>`;
-  const photoField = () => field('lgPhoto', '사진 (선택)', '<input id="lgPhoto" type="file" accept="image/*"><div id="lgPhotoPrev" class="lg-prev" hidden></div>', '사진은 이 기기에만 저장되고 서버로 보내지 않아요');
+  // 입력 묶음의 한 줄: 왼쪽 라벨 · 가운데 값 · 오른쪽 단위/보조 정보 (+ 아래 작은 안내)
+  const row = (id, label, input, aux = '', hint = '') => `<div class="lg-r"><label class="lr-l" for="${id}">${label}</label>${input}${aux ? `<span class="lr-a">${aux}</span>` : ''}${hint ? `<p class="hint">${hint}</p>` : ''}</div>`;
+  const photoField = () => '<div class="lg-photo"><input id="lgPhoto" type="file" accept="image/*" class="vh"><label class="lg-drop" for="lgPhoto"><span class="ld-ic" aria-hidden="true">＋</span><span class="ld-tx"><b>사진 추가 (선택)</b><small>사진은 이 기기에만 저장돼요</small></span></label><div id="lgPhotoPrev" class="lg-prev" hidden></div></div>';
   const durInput = (id, ph) => `<input id="${id}" inputmode="numeric" autocomplete="off" placeholder="${ph}">`;
   function formHTML() {
-    const today = isoToday(), dateF = field('lgDate', '날짜', `<input id="lgDate" type="date" value="${today}">`);
+    const today = isoToday(), dateF = row('lgDate', '날짜', `<input id="lgDate" type="date" value="${today}">`, '<span id="lgToday">오늘</span>');
+    const card = (rows, after = '') => `<div class="lg-card">${rows}</div>${after}${photoField()}`;
     if (type === 'run') {
-      return dateF + `<div class="lg-row">${field('lgDist', '거리', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="5.20"><span>km</span></div>')}${field('lgTime', '시간', durInput('lgTime', '23:00'), '숫자만 입력하면 2300이 23:00이 돼요')}</div>`
-        + `<p class="hint lg-pace">페이스 <b id="lgPace">–</b> <span>(거리와 시간으로 자동 계산)</span></p>`
-        + field('lgWx', '날씨', '<div class="wxrow"><input id="lgWx" autocomplete="off" placeholder="예: 12°C 맑음"><button type="button" class="chip-btn" id="lgWxGo">📍 불러오기</button></div>', '위치는 날씨 조회에 한 번만 쓰이고 저장되지 않아요 (Open-Meteo)')
-        + field('lgNote', '메모 (선택)', '<input id="lgNote" autocomplete="off" maxlength="40">') + photoField();
+      return card(dateF + row('lgDist', '거리', '<input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="5.20">', 'km')
+        + row('lgTime', '시간', durInput('lgTime', '23:00'), '<b id="lgPace"></b>', '숫자만 입력하면 2300이 23:00이 돼요')
+        + row('lgWx', '날씨', '<input id="lgWx" autocomplete="off" placeholder="12°C 맑음">', '<button type="button" class="lr-btn" id="lgWxGo">📍 불러오기</button>', '위치는 날씨 조회에 한 번만 쓰이고 저장되지 않아요 (Open-Meteo)')
+        + row('lgNote', '메모', '<input id="lgNote" autocomplete="off" maxlength="40" placeholder="오늘 러닝 한 줄 남기기">'));
     }
-    if (type === 'race') return dateF + field('lgName', '대회명', '<input id="lgName" autocomplete="off" placeholder="○○ 마라톤 10K">')
-      + `<div class="lg-row">${field('lgRDate', '대회 날짜', `<input id="lgRDate" type="date" value="${today}">`)}${field('lgDist', '거리', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="10"><span>km</span></div>')}</div>`
-      + `<div class="lg-row">${field('lgGoal', '목표 기록', durInput('lgGoal', '50:00'), '숫자만 입력하면 5000이 50:00이 돼요')}${field('lgRes', '결과 기록 (선택)', durInput('lgRes', '대회 후 입력'))}</div>`
-      + '<p class="hint">결과 기록을 비우면 D-day 카드, 넣으면 결과 카드가 만들어져요</p>' + photoField();
+    if (type === 'race') return card(dateF + row('lgName', '대회명', '<input id="lgName" autocomplete="off" placeholder="○○ 마라톤 10K">')
+      + row('lgRDate', '대회 날짜', `<input id="lgRDate" type="date" value="${today}">`)
+      + row('lgDist', '거리', '<input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="10">', 'km')
+      + row('lgGoal', '목표 기록', durInput('lgGoal', '50:00'), '', '숫자만 입력하면 5000이 50:00이 돼요')
+      + row('lgRes', '결과 기록', durInput('lgRes', '대회 후 입력 (선택)')),
+      '<p class="hint lg-note">결과 기록을 비우면 D-day 카드, 넣으면 결과 카드가 만들어져요</p>');
     const now = new Date(), hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    return dateF + field('lgMeal', '식사', `<input id="lgMeal" list="lgMeals" autocomplete="off" placeholder="러닝 전"><datalist id="lgMeals">${MEALS.map(m => `<option value="${m}">`).join('')}</datalist>`)
-      + field('lgMenu', '메뉴 메모', '<input id="lgMenu" autocomplete="off" maxlength="30" placeholder="오트밀과 커피">')
-      + `<div class="lg-row">${field('lgClock', '시간', `<input id="lgClock" type="time" value="${hm}">`)}${field('lgDist', '이후 러닝', '<div class="suffix"><input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="같은 날 러닝"><span>km</span></div>')}</div>`
-      + field('lgNote', '메모 (선택)', '<input id="lgNote" autocomplete="off" maxlength="20" placeholder="가볍게">') + photoField();
+    return card(dateF + row('lgMeal', '식사', `<input id="lgMeal" list="lgMeals" autocomplete="off" placeholder="러닝 전"><datalist id="lgMeals">${MEALS.map(m => `<option value="${m}">`).join('')}</datalist>`)
+      + row('lgMenu', '메뉴', '<input id="lgMenu" autocomplete="off" maxlength="30" placeholder="오트밀과 커피">')
+      + row('lgClock', '시간', `<input id="lgClock" type="time" value="${hm}">`)
+      + row('lgDist', '이후 러닝', '<input id="lgDist" inputmode="decimal" autocomplete="off" placeholder="같은 날 러닝">', 'km')
+      + row('lgNote', '메모', '<input id="lgNote" autocomplete="off" maxlength="20" placeholder="가볍게 (선택)">'));
   }
   function summary(l) {
     const v = bindValues(l, ctx());
@@ -91,15 +98,24 @@ export function mountLogs(env) {
     if (l.type === 'race') return [v.raceName, v.result ? '결과 ' + v.result : v.dday].filter(Boolean).join(' · ');
     return [v.meal, v.menu].filter(Boolean).join(' · ');
   }
+  // 최근 기록 미리보기 카드의 큰 글자 · 작은 글자
+  function face(l) {
+    const v = bindValues(l, ctx()), md = (l.date || '').slice(5).replace('-', '.');
+    if (l.type === 'run') return [v.dayN || (v.distance ? v.distance + 'km' : md), v.dayN ? [v.distance && v.distance + 'km', v.time].filter(Boolean).join(' · ') : v.time || ''];
+    if (l.type === 'race') return [v.result || v.dday || md, v.raceName];
+    return [v.meal || '식단', v.menu];
+  }
   function listHTML() {
     const L = sortLogs(S.logs);
     if (!L.length) return '<p class="hint">아직 기록이 없어요. 위에서 첫 기록을 남겨 보세요.</p>';
-    return `<ol class="lg-list">${L.map(l => `<li><span class="lg-t t-${l.type}">${TNAME[l.type]}</span><span class="lg-s"><b>${esc((l.date || '').replaceAll('-', '.'))}</b><small>${esc(summary(l))}</small></span><button type="button" class="chip-btn" data-card="${esc(l.id)}">카드</button><button type="button" class="chip-btn quiet" data-edit="${esc(l.id)}" aria-label="기록 수정">수정</button><button type="button" class="chip-btn quiet" data-del="${esc(l.id)}" aria-label="기록 삭제">삭제</button></li>`).join('')}</ol>`;
+    return `<ol class="lg-cards">${L.map(l => { const [big, sub] = face(l), dt = esc((l.date || '').replaceAll('-', '.'));
+      return `<li style="--c:${TCOL[l.type]}"><button type="button" class="lc-card" data-card="${esc(l.id)}" aria-label="${dt} ${TNAME[l.type]} 카드 열기 · ${esc(summary(l))}"><span class="lc-d">${esc((l.date || '').slice(5).replace('-', '.'))} · ${TNAME[l.type]}</span><b>${esc(big)}</b><small>${esc(sub)}</small></button>`
+        + `<span class="lc-acts"><button type="button" class="chip-btn quiet" data-edit="${esc(l.id)}" aria-label="${dt} 기록 수정">수정</button><button type="button" class="chip-btn quiet" data-del="${esc(l.id)}" aria-label="${dt} 기록 삭제">삭제</button></span></li>`; }).join('')}</ol>`;
   }
   function settingsHTML() {
     const p = S.profile, sd = startDateOf(p, S.logs), n = sd ? dayN(isoToday(), sd) : null;
     const dayHint = n ? `오늘은 Day ${n}` : sd ? '아직 시작일 전이에요 · 시작일이 Day 1이에요' : '시작일을 정하면 러닝 카드에 Day N이 자동으로 들어가요';
-    return `<details class="card lg-set"><summary>설정 · 백업</summary>
+    return `<details class="card lg-set" id="lgSet"><summary>설정 · 백업</summary>
       ${field('lgStartDate', '시작일 (Day 1)', `<input id="lgStartDate" type="date" value="${esc(p.startDate || '')}">`, dayHint)}
       <div class="field"><span class="lbl sm" id="lgModeL">Day 계산 기준</span><div class="seg n2" id="lgMode" role="radiogroup" aria-labelledby="lgModeL"><button type="button" role="radio" data-v="custom" aria-checked="${p.dayCountMode !== 'first-log'}">직접 정한 시작일</button><button type="button" role="radio" data-v="first-log" aria-checked="${p.dayCountMode === 'first-log'}">첫 러닝 기록일</button></div></div>
       ${field('lgHandle', '핸들', `<input id="lgHandle" autocomplete="off" maxlength="30" placeholder="@my_runs" value="${esc(p.handle || '')}">`)}
@@ -110,11 +126,11 @@ export function mountLogs(env) {
   function paint() {
     capture();
     root.innerHTML = `<header class="top lg-top"><button type="button" class="icon-btn" id="lgBack" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1 id="hLog">공유 카드 만들기</h1></header>
-      <section class="card"><div class="seg n3" id="lgType" role="radiogroup" aria-label="기록 종류">${TYPES.map(([k, n]) => `<button type="button" role="radio" data-v="${k}" aria-checked="${k === type}">${n}</button>`).join('')}</div>
-      <form id="lgForm" data-t="${type}" class="lg-form" autocomplete="off">${editBanner()}${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">${editLog() ? '고치고 카드 만들기' : '저장하고 카드 만들기'}</button></div></form></section>
-      <section class="card" aria-labelledby="hLgList"><h2 id="hLgList">기록</h2>${listHTML()}</section>
+      <div class="lg-types" id="lgType" role="radiogroup" aria-label="기록 종류">${TYPES.map(([k, n]) => `<button type="button" role="radio" data-v="${k}" aria-checked="${k === type}" style="--c:${TCOL[k]}"><span class="lt-c" aria-hidden="true">${TICON[k]}</span><span class="lt-n">${n}</span></button>`).join('')}</div>
+      <form id="lgForm" data-t="${type}" class="lg-form" autocomplete="off">${editBanner()}${formHTML()}<p class="err" id="lgMsg" role="status" aria-live="polite">${esc(msg)}</p><div class="actions"><button type="submit" class="btn primary" id="lgSave">${editLog() ? '고치고 카드 만들기' : '저장하고 카드 만들기'}</button></div></form>
+      <section class="lg-recent" aria-labelledby="hLgList"><div class="lgr-head"><h2 id="hLgList">최근 기록</h2><button type="button" class="lgr-set" id="lgSetGo" aria-controls="lgSet">설정 · 백업</button></div>${listHTML()}</section>
       ${settingsHTML()}`;
-    bind(); restore(); livePace(); persist();
+    bind(); restore(); livePace(); paintToday(); persist();
   }
   function editBanner() { const l = editLog(); return l ? `<p class="hint lg-editing">${esc((l.date || '').replaceAll('-', '.'))} ${TNAME[l.type]} 기록을 고치는 중이에요 <button type="button" class="chip-btn quiet" id="lgEditX">새 기록으로</button></p>` : ''; }
   // load a stored record into its tab's form; saving then updates the same record (id, createdAt, photo kept)
@@ -130,7 +146,8 @@ export function mountLogs(env) {
     const f = $('lgForm'); if (f && f.scrollIntoView) f.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
   const val = id => { const e = $(id); return e ? e.value.trim() : ''; };
-  function livePace() { const o = $('lgPace'); if (!o) return; const p = fmtPace(paceSec(num(val('lgDist')), parseDur(val('lgTime')))); o.textContent = p ? p + '/km' : '–'; }
+  function livePace() { const o = $('lgPace'); if (!o) return; const p = fmtPace(paceSec(num(val('lgDist')), parseDur(val('lgTime')))); o.textContent = p ? p + ' /km' : ''; }
+  function paintToday() { const t = $('lgToday'); if (t) t.hidden = val('lgDate') !== isoToday(); }
   // same digit entry as the home record field: 2300 → 23:00, 10203 → 1:02:03
   function digitsToDisplay(d) { d = d.replace(/^0+(?=\d)/, ''); if (d.length <= 2) return d; if (d.length <= 4) return `${d.slice(0, -2)}:${d.slice(-2)}`; return `${d.slice(0, -4)}:${d.slice(-4, -2)}:${d.slice(-2)}`; }
   function bindDur(id) { const el = $(id); if (!el) return; el.addEventListener('input', e => { let d = e.target.value.replace(/\D/g, ''); const prev = e.target.dataset.digits || ''; if (e.inputType === 'deleteContentBackward' && d === prev) d = d.slice(0, -1); d = d.slice(0, 6); e.target.dataset.digits = d; e.target.value = digitsToDisplay(d); if (id === 'lgTime') livePace(); }); }
@@ -140,7 +157,9 @@ export function mountLogs(env) {
     on('lgType', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; capture(); type = b.dataset.v; msg = ''; paint(); });
     on('lgForm', 'input', () => { capture(); persist(); }); on('lgForm', 'change', () => { capture(); persist(); });
     on('lgEditX', 'click', () => { drafts[type] = {}; msg = ''; $('lgForm').remove(); paint(); });
-    on('lgDist', 'input', livePace);
+    on('lgDist', 'input', livePace); on('lgDate', 'input', paintToday); on('lgDate', 'change', paintToday);
+    on('lgSetGo', 'click', () => { const d = $('lgSet'); if (!d) return; d.open = true; d.scrollIntoView({ block: 'start', behavior: 'smooth' }); });
+    on('lgType', 'keydown', e => { const bs = [...root.querySelectorAll('#lgType [data-v]')], i = bs.indexOf(document.activeElement), n = { ArrowRight: i + 1, ArrowLeft: i - 1 }[e.key]; if (i < 0 || n == null) return; e.preventDefault(); bs[(n + bs.length) % bs.length].click(); const f = root.querySelector(`#lgType [data-v="${type}"]`); if (f) f.focus(); });
     on('lgPhoto', 'change', e => { const f = e.target.files && e.target.files[0], d = draft(); d.file = f || null; d.lostPhoto = ''; paintPhoto(); persist(); }); bindDur('lgTime'); bindDur('lgGoal'); bindDur('lgRes');
     on('lgWxGo', 'click', async () => {
       say('날씨를 불러오는 중…');
