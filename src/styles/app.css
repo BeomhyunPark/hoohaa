@@ -477,3 +477,11 @@ body.log-mode .st-fit{flex:none;height:min(48dvh,480px)}
 .st-tools button b svg{display:block;width:22px;height:22px}
 #tplCard .st-chrome .stp svg{display:block;width:22px;height:22px;margin:auto}
 .mini.compact{gap:2px;padding:2px}.mini.compact button{min-width:38px;height:38px}.mini.compact small{display:none}
+/* typing mode (text field focused, keyboard up): only canvas + one input row stay */
+#tplCard.sheet-on.typing .st-chrome,#tplCard.sheet-on.typing .st-tools,#tplCard.sheet-on.typing .sheet-grab,#tplCard.sheet-on.typing .pv-hint,#tplCard.sheet-on.typing .mini{display:none}
+#tplCard.sheet-on.typing .st-fit{min-height:80px}
+#tplCard.sheet-on.typing .panel{display:flex;align-items:center;gap:8px;max-height:none;overflow:visible;margin-top:6px;padding:8px 14px;border-radius:16px 16px 0 0}
+#tplCard.sheet-on.typing .panel>*:not(.sh-head):not(#tText){display:none}
+#tplCard.sheet-on.typing .panel .sh-head{order:2;position:static;flex:none;margin:0;padding:0;background:none}
+#tplCard.sheet-on.typing .panel .sh-head>*:not(#pDone){display:none}
+#tplCard.sheet-on.typing #tText{order:1;flex:1 1 auto;min-width:0;min-height:44px;height:44px;resize:none;padding:10px 12px}

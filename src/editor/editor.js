@@ -1052,6 +1052,15 @@ if (!$('sheetGrab')) { const g = document.createElement('button'); g.type = 'but
     if (dy < -24) { c.classList.add('sheet-xl'); requestAnimationFrame(() => paintOvl()); } else if (dy > 24 && c.classList.contains('sheet-xl')) { c.classList.remove('sheet-xl'); requestAnimationFrame(() => paintOvl()); } else closeSheet(); });
   g.addEventListener('pointercancel', () => { y0 = null; });
   g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeSheet(); } }); }
+// typing mode: while the text field has focus the on-screen keyboard takes ~half the screen, so the sheet, tools and top bar
+// step aside and only [text field][입력 완료] stays under the canvas (otherwise sheet + keyboard leave a stamp-sized canvas)
+{ const P = $('panel'); let tOut = 0;
+  const done = () => { const b = $('pDone'); if (b) b.textContent = $('tplCard').classList.contains('typing') ? '입력 완료' : '완료'; };
+  P.addEventListener('focusin', e => { if (e.target.id !== 'tText') return; clearTimeout(tOut); $('tplCard').classList.add('typing'); done(); fitSheet(); requestAnimationFrame(() => paintOvl()); });
+  P.addEventListener('focusout', e => { if (e.target.id !== 'tText') return; $('tplCard').dataset.typedAt = Date.now();
+    tOut = setTimeout(() => { if (document.activeElement && document.activeElement.id === 'tText') return; $('tplCard').classList.remove('typing'); done(); requestAnimationFrame(() => paintOvl()); }, 120); });
+  // 입력 완료 while typing = close the keyboard and stay on this text (font/colour come next); tapping it blurs first, hence the timestamp
+  P.addEventListener('click', e => { if (!e.target.closest('#pDone')) return; const c = $('tplCard'); if (c.classList.contains('typing') || Date.now() - (+c.dataset.typedAt || 0) < 500) { e.stopImmediatePropagation(); c.dataset.typedAt = 0; document.activeElement && document.activeElement.blur(); } }, true); }
 document.addEventListener('keydown', e => { if (e.key !== 'Escape' || !sheetOn() || e.defaultPrevented) return; const t = e.target; if (t && (t.closest('.fsheet,.fs-card') || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; closeSheet(); });
 // tool icons: one stroke style instead of mixed text glyphs and a colour emoji (markup is duplicated in 4 pages, so swap here)
 { const sv = d => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
