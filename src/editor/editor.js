@@ -975,11 +975,11 @@ function openFontSheet() { const L = getL(sel); if (!L) return; let sh = $('fShe
     sh.addEventListener('click', e => { const L2 = getL(sel); if (e.target === sh || e.target.closest('#fsDone')) return closeFontSheet(); const b = e.target.closest('button'); if (!b || !L2) return; const d = b.dataset;
       if (d.c && b.closest('#fCats')) { fontCat = d.c; for (const x of $('fCats').children) x.setAttribute('aria-checked', String(x === b)); $('fList').innerHTML = libHTML(L2); }
       else if (d.star) { const f = favs(); LS('runtier:fontfav', f.includes(d.star) ? f.filter(x => x !== d.star) : [d.star, ...f]); $('fList').innerHTML = libHTML(L2); }
-      else if (d.fk !== undefined) pickFont(d.fk || null).then(() => { if (!$('fSheet').hidden) $('fList').innerHTML = libHTML(getL(sel)); }); });
+      else if (d.fk !== undefined) pickFont(d.fk || null).then(() => { setTimeout(focusZoom, 60); if (!$('fSheet').hidden) $('fList').innerHTML = libHTML(getL(sel)); }); });
     sh.addEventListener('input', e => { if (e.target.id === 'fSearch') $('fList').innerHTML = libHTML(getL(sel)); });
     sh.addEventListener('keydown', e => { if (e.key === 'Escape') closeFontSheet(); }); }
-  sh.innerHTML = fontSheetHTML(L); sh.hidden = false; document.body.classList.add('fs-open'); $('fsDone').focus({ preventScroll: true }); requestAnimationFrame(() => paintOvl()); }
-function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); requestAnimationFrame(() => paintOvl()); }
+  sh.innerHTML = fontSheetHTML(L); sh.hidden = false; document.body.classList.add('fs-open'); $('fsDone').focus({ preventScroll: true }); requestAnimationFrame(() => { paintOvl(); focusZoom(); }); }
+function closeFontSheet() { const sh = $('fSheet'); if (sh) sh.hidden = true; document.body.classList.remove('fs-open'); paintPanel(); requestAnimationFrame(() => { focusZoom(); paintOvl(); }); }
 // ---- bottom panel (one level deep, in page flow) ----
 const NAMES = { text: '텍스트', card: '티어 카드', photo: '사진', sticker: '스티커', shape: '도형' };
 const lname = L => L.type === 'stat' ? STATS[L.stat][0] + (L.v === 4 ? ' 라벨' : '') : L.type === 'sticker' ? (DATA_STK[L.k] ? DATA_STK[L.k].n + ' 스티커' : ICON_NAMES[L.k] ? ICON_NAMES[L.k] + ' 아이콘' : STK_NAMES[L.k] || (STICKERS.find(s => s[0] === L.k) || [])[1] || '스티커') : L.type === 'text' ? `텍스트 '${(L.t || '').slice(0, 10)}'` : NAMES[L.type];
@@ -1054,6 +1054,17 @@ const stkBtn = (k, n, kind) => `<button type="button" class="pre stk" data-${kin
 // ---- bottom sheet: while a tool or a selection is open the editor fills the screen (fixed), the canvas takes the top and the
 // options sit in a capped, self-scrolling sheet under the tools — no page scrolling back and forth between canvas and options.
 // DOM-only state (no module-level let) so status()/paintPanel() can run before this point is reached.
+// focus zoom: while the font sheet or typing mode squeezes the canvas, magnify the view (not the image) around the selected
+// element so the font/text change is readable. CSS transform only — pointer maths use getBoundingClientRect, so it stays correct.
+function focusZoom() { const st = document.getElementById('stage'), fit = document.getElementById('tplEd'), c = document.getElementById('tplCard'); if (!st || !fit || !c) return;
+  const want = c.classList.contains('typing') || (document.body.classList.contains('fs-open') && c.classList.contains('sheet-on'));
+  st.style.transform = ''; st.style.transformOrigin = ''; c.classList.remove('zoomed'); const b = want && sel && boxes.find(q => q.id === sel); if (!b) return;
+  const sr = st.getBoundingClientRect(), fr = fit.getBoundingClientRect(); if (!sr.width || !fr.width) return;
+  const kx = sr.width / 1080, ky = sr.height / FH(), cs = corners(b), xs = cs.map(q => q[0] * kx), ys = cs.map(q => q[1] * ky);
+  const bw = Math.max(8, Math.max(...xs) - Math.min(...xs)), bh = Math.max(8, Math.max(...ys) - Math.min(...ys)), cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
+  const z = Math.min(3, fr.width * .8 / bw, fr.height * .45 / bh); if (z < 1.2) return;
+  const tx = fr.left + fr.width / 2 - sr.left - z * cx, ty = fr.top + fr.height / 2 - sr.top - z * cy;
+  st.style.transformOrigin = '0 0'; st.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; c.classList.add('zoomed'); }
 function sheetOn() { const c = document.getElementById('tplCard'); return !!(c && c.classList.contains('sheet-on')); }
 function fitSheet() { const c = document.getElementById('tplCard'); if (!c || !c.classList.contains('sheet-on')) return; const v = window.visualViewport;
   c.style.setProperty('--vvh', (v ? v.height : innerHeight) + 'px'); c.style.setProperty('--vvt', (v ? v.offsetTop : 0) + 'px'); }
@@ -1077,7 +1088,7 @@ if (!$('sheetGrab')) { const g = document.createElement('button'); g.type = 'but
 { const P = $('panel'), V = window.visualViewport; let tOut = 0, vMax = 0, vW = 0;
   const kbUp = () => { if (!V) return false; if (V.width !== vW) { vW = V.width; vMax = 0; } vMax = Math.max(vMax, V.height); return V.height < vMax * .75; };
   const updTyping = () => { const c = $('tplCard'); if (!c) return; const on = !!(document.activeElement && document.activeElement.id === 'tText') && kbUp() && sheetOn();
-    if (on === c.classList.contains('typing')) return; c.classList.toggle('typing', on); const b = $('pDone'); if (b) b.textContent = on ? '입력 완료' : '완료'; requestAnimationFrame(() => paintOvl()); };
+    if (on === c.classList.contains('typing')) return; c.classList.toggle('typing', on); const b = $('pDone'); if (b) b.textContent = on ? '입력 완료' : '완료'; requestAnimationFrame(() => { focusZoom(); paintOvl(); }); };
   if (V) V.addEventListener('resize', updTyping); kbUp();
   P.addEventListener('focusin', e => { if (e.target.id !== 'tText') return; clearTimeout(tOut); updTyping(); });
   P.addEventListener('focusout', e => { if (e.target.id !== 'tText') return; const c = $('tplCard'); if (c.classList.contains('typing')) c.dataset.typedAt = Date.now(); clearTimeout(tOut); tOut = setTimeout(updTyping, 120); });
@@ -1176,7 +1187,7 @@ function bindWx(L) { const on = (id, ev, f) => { const e = $(id); if (e) e.addEv
 function bindPanel(L) {
   const P = $('panel'), on = (id, ev, f) => { const e = $(id); if (e) e.addEventListener(ev, f); };
   on('pDone', 'click', () => { sel = null; multi.clear(); multiSnap = null; libOpen = false; paintPanel(); paintOvl(); });
-  on('tText', 'input', e => { L.t = e.target.value; if (L.bind) delete L.bind; changed(); $('pName').textContent = lname(L); });
+  on('tText', 'input', e => { L.t = e.target.value; if (L.bind) delete L.bind; changed(); $('pName').textContent = lname(L); if ($('tplCard').classList.contains('typing')) setTimeout(focusZoom, 60); });
   on('raceIn', 'input', e => { doc.race = e.target.value; changed(); });
   const segOn = (id, f) => { const s = $(id); if (s) s.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { f(b.dataset.v); changed(true); paintPanel(); } }); };
   segOn('pV', v => { if (L.type === 'stat' && L.look == null) L.look = L.v === 3 ? 'run' : 'std'; L.v = +v; }); segOn('pBox', v => L.box = v); segOn('pCT', v => { colMode = v; }); on('pBgNone', 'click', () => { if (L.v === 2) { delete L.bcol; delete L.bo; } else { L.box = 'none'; } changed(true); paintPanel(); }); segOn('pAl', v => L.al = v); segOn('pMask', v => L.mask = v); segOn('pFilter', v => L.filter = v); on('bgFilter', 'click', e => { const b = e.target.closest('[data-v]'); if (!b) return; const target = doc.bg.type === 'photo' ? doc.bg : doc.bgKeep; if (target && target.type === 'photo') target.filter = b.dataset.v; for (const x of e.currentTarget.querySelectorAll('[data-v]')) x.setAttribute('aria-checked', String(x === b)); changed(true); });
