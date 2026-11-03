@@ -66,7 +66,7 @@ export function bindValues(log, ctx = {}) {
   const d = log.data || {}, logs = ctx.logs || [], V = { date: fmtDate(log.date), dateMD: fmtMD(log.date) };
   const sd = startDateOf(ctx.profile, logs), n = sd ? dayN(log.date, sd) : null; V.dayN = n != null ? `Day ${n}` : '';
   if (log.type === 'run') {
-    const km = posKm(d.distance), sec = parseDur(d.time); V.distance = km != null ? fmtKm(km) : ''; V.time = sec ? fmtDur(sec) : ''; V.pace = fmtPace(paceSec(km, sec)); V.weather = d.weather || ''; V.note = d.note || '';
+    const km = posKm(d.distance), sec = parseDur(d.time); V.distance = km != null ? fmtKm(km) : ''; V.time = sec ? fmtDur(sec) : ''; V.pace = fmtPace(paceSec(km, sec)); V.weather = celsius(d.weather); V.note = d.note || '';
   } else if (log.type === 'race') {
     const r = (d.raceId && (ctx.races || []).find(x => x.id === d.raceId)) || d, km = posKm(r.distance ?? d.distance), res = parseDur(d.result || r.result), goal = parseDur(d.goal || r.goal);
     V.raceName = r.name || d.name || ''; V.dateMD = fmtMD(r.date || log.date); V.date = fmtDate(r.date || log.date);
@@ -81,3 +81,6 @@ export function bindValues(log, ctx = {}) {
 }
 // newest first: by record date, then creation time
 export const sortLogs = logs => [...logs].sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0));
+
+// Temperatures are always shown in Celsius: '12', '12°', '12도', '12℃', '12 °c' → '12°C'. Fahrenheit and other text stay as typed.
+export const celsius = s => String(s ?? '').replace(/(^|[^\d.])(-?\d+(?:\.\d+)?)\s*(?:°(?:\s*[cC](?![a-zA-Z]))?|℃|도|[cC](?![a-zA-Z]))(?!\s*[fF])/g, '$1$2°C').replace(/^\s*(-?\d+(?:\.\d+)?)\s*$/, '$1°C');
