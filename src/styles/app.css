@@ -485,3 +485,12 @@ body.log-mode .st-fit{flex:none;height:min(48dvh,480px)}
 #tplCard.sheet-on.typing .panel .sh-head{order:2;position:static;flex:none;margin:0;padding:0;background:none}
 #tplCard.sheet-on.typing .panel .sh-head>*:not(#pDone){display:none}
 #tplCard.sheet-on.typing #tText{order:1;flex:1 1 auto;min-width:0;min-height:44px;height:44px;resize:none;padding:10px 12px}
+/* font sheet over the editor: lower half only, no dimming; the editor gives the canvas the whole upper half so the font change is visible live */
+body.fs-open .fsheet{background:transparent}
+body.fs-open .fs-card{height:calc(var(--fs-h,48dvh));max-height:none}
+body.fs-open #tplCard.sheet-on{padding-bottom:var(--fs-h,48dvh)}
+body.fs-open #tplCard.sheet-on .st-chrome,body.fs-open #tplCard.sheet-on .st-tools,body.fs-open #tplCard.sheet-on .sheet-grab,body.fs-open #tplCard.sheet-on .pv-hint,body.fs-open #tplCard.sheet-on .panel,body.fs-open #tplCard.sheet-on .st-tpls,body.fs-open #tplCard.sheet-on .mini{display:none}
+body.fs-open{--fs-h:54dvh}
+body.fs-open .fs-card>.hint{display:none}
+body.fs-open .fs-card .sh-head{margin:4px 0 6px}
+body.fs-open .fs-card .fcats{margin:6px 0 4px}
