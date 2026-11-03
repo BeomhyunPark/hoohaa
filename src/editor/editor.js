@@ -1058,16 +1058,20 @@ const stkBtn = (k, n, kind) => `<button type="button" class="pre stk" data-${kin
 // element so the font/text change is readable. CSS transform only — pointer maths use getBoundingClientRect, so it stays correct.
 function focusZoom() { const st = document.getElementById('stage'), fit = document.getElementById('tplEd'), c = document.getElementById('tplCard'); if (!st || !fit || !c) return;
   const want = c.classList.contains('typing') || (document.body.classList.contains('fs-open') && c.classList.contains('sheet-on'));
-  st.style.transform = ''; st.style.transformOrigin = ''; c.classList.remove('zoomed'); const b = want && sel && boxes.find(q => q.id === sel); if (!b) return;
-  const sr = st.getBoundingClientRect(), fr = fit.getBoundingClientRect(); if (!sr.width || !fr.width) return;
+  const b = want && sel && boxes.find(q => q.id === sel);
+  if (!b) { st.style.transform = ''; st.style.transformOrigin = ''; c.classList.remove('zoomed'); delete st._zb; return; }
+  // measure the unzoomed stage once per zoom session: resetting the transform on every font pick made the view jump 1x→3x each time
+  if (!st._zb || !c.classList.contains('zoomed')) { st.style.transform = ''; st.style.transformOrigin = ''; const r = st.getBoundingClientRect(); st._zb = { left: r.left, top: r.top, width: r.width, height: r.height }; }
+  const sr = st._zb, fr = fit.getBoundingClientRect(); if (!sr.width || !fr.width) return;
   const kx = sr.width / 1080, ky = sr.height / FH(), cs = corners(b), xs = cs.map(q => q[0] * kx), ys = cs.map(q => q[1] * ky);
   const bw = Math.max(8, Math.max(...xs) - Math.min(...xs)), bh = Math.max(8, Math.max(...ys) - Math.min(...ys)), cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
-  const z = Math.min(3, fr.width * .8 / bw, fr.height * .45 / bh); if (z < 1.2) return;
+  const z = Math.min(3, fr.width * .8 / bw, fr.height * .45 / bh); if (z < 1.2) { st.style.transform = ''; st.style.transformOrigin = ''; c.classList.remove('zoomed'); delete st._zb; return; }
   const tx = fr.left + fr.width / 2 - sr.left - z * cx, ty = fr.top + fr.height / 2 - sr.top - z * cy;
   st.style.transformOrigin = '0 0'; st.style.transform = `translate(${tx}px,${ty}px) scale(${z})`; c.classList.add('zoomed'); }
 function sheetOn() { const c = document.getElementById('tplCard'); return !!(c && c.classList.contains('sheet-on')); }
 function fitSheet() { const c = document.getElementById('tplCard'); if (!c || !c.classList.contains('sheet-on')) return; const v = window.visualViewport;
-  c.style.setProperty('--vvh', (v ? v.height : innerHeight) + 'px'); c.style.setProperty('--vvt', (v ? v.offsetTop : 0) + 'px'); }
+  c.style.setProperty('--vvh', (v ? v.height : innerHeight) + 'px'); c.style.setProperty('--vvt', (v ? v.offsetTop : 0) + 'px');
+  if (c.classList.contains('zoomed')) { const st = document.getElementById('stage'); if (st) delete st._zb; requestAnimationFrame(() => focusZoom()); } } // keyboard still sliding: re-measure
 function sheet(on) { const c = document.getElementById('tplCard'); if (!c) return; delete c.dataset.sheetWant; if (on === sheetOn()) return;
   const o = document.getElementById('ovl'); if (o && o.dataset.down) { c.dataset.sheetWant = on ? '1' : '0'; return; } // finger still on the canvas: resize after it lifts, not under it
   if (on) { const ph = document.createElement('div'); ph.className = 'sheet-ph'; ph.setAttribute('aria-hidden', 'true'); ph.style.height = c.offsetHeight + 'px'; c.before(ph); c.classList.add('sheet-on'); fitSheet(); }
