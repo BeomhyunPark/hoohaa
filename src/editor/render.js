@@ -277,8 +277,9 @@ export async function renderDoc(ctx, d, doc, photos = {}, cv) {
   await Promise.all([...new Set(doc.layers.map(l => l.font).filter(Boolean))].map(ctx.loadFont));
   if (doc.layers.some(l => l.type === 'card')) await Promise.all([chipLoad(d.key), cardFontsReady()]);
   await Promise.all(doc.layers.filter(l => l.type === 'sticker').map(l => l.k.startsWith('ph:') ? imgOf(iconSVG(l.k, tokCol(doc, l.col) || TOKENS.text)) : stkLoad(l.k, l)));
-  if (doc.log) await ctx.loadFont('notokr'); await Promise.all(doc.layers.filter(l => l.type === 'sticker' && l.k.startsWith('data_')).map(l => imgOf(dataArt(l.k, dataFields(l)))));
-  { const txt = doc.layers.map(l => l.type === 'text' ? (l.t || '') : l.type === 'stat' ? statValue(d, doc, l.stat, l) + (l.lab || statLabel(d, l.stat)) : l.f ? Object.values(l.f).join('') : '').join('') + (doc.race || '');
+  if (doc.log) await ctx.loadFont('notokr'); if (doc.layers.some(l => l.type === 'sticker' && l.k === 'data_memo')) await ctx.loadFont('gaegu'); // memo sticker is drawn in Gaegu (v4Sticker)
+  await Promise.all(doc.layers.filter(l => l.type === 'sticker' && l.k.startsWith('data_')).map(l => imgOf(dataArt(l.k, dataFields(l)))));
+  { const txt = doc.layers.map(l => l.type === 'text' ? (l.t || '') : l.type === 'stat' ? statValue(d, doc, l.stat, l) + (l.lab || statLabel(d, l.stat)) : l.type === 'sticker' && l.k.startsWith('data_') ? Object.values(dataFields(l)).join('') : l.f ? Object.values(l.f).join('') : '').join('') + (doc.race || ''); // data stickers: their default text too (sticker-tab previews carry no l.f)
     const fk = []; if (needFull(txt)) fk.push('pretendardk'); if (doc.layers.some(l => l.font === 'blackhan' || (l.sp && l.sp.f === 'blackhan')) && needFull(txt, true)) fk.push('blackhank'); await Promise.all(fk.map(ctx.loadFont)); }
   const rc = { ...ctx, H: fmtH(doc.fmt), fx: null }; cv = cv || document.createElement('canvas'); cv.width = W_; cv.height = rc.H; const c = cv.getContext('2d');
   c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; bgDraw(rc, c, doc, d, photos);
