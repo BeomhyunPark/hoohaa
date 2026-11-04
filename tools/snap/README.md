@@ -47,3 +47,19 @@ node tools/snap.mjs --check
 ## 아직 안 찍는 것
 
 - 사진이 들어간 문서, 스티커, 내 템플릿, 공유 카드 만들기(오늘 기록) 템플릿. 사진 케이스는 B6(사진 처리 분리)에서 `tools/snap/fixtures/`에 테스트 사진을 넣고 추가한다.
+
+## 스티커는 `tools/stkcmp.mjs`로 비교한다
+
+스냅샷에는 스티커가 없다. 그래서 스티커 코드를 건드리는 PR에서는 `node tools/stkcmp.mjs`로 비교한다.
+
+- 하는 일: 결과 화면에서 minimal 템플릿을 고른 뒤 스티커 탭마다 스티커를 하나씩 넣는다. 그때마다 미리보기 캔버스와 저장 이미지의 해시를 한 줄씩 남긴다. 날짜, 입력, 외부 요청 차단은 snap.mjs와 같다.
+- 기준 이미지가 없어서 다른 체크아웃과 비교한다. main과 비교하려면 이렇게 한다:
+
+```bash
+git worktree add /tmp/hoohaa-main origin/main
+node tools/stkcmp.mjs --against /tmp/hoohaa-main
+git worktree remove /tmp/hoohaa-main
+```
+
+- 한 줄이라도 다르거나, 페이지 에러가 나거나, 스티커 버튼이 사라지면 exit 1로 끝난다. 양쪽이 같은 곳에서 똑같이 깨졌는데 "같음"으로 통과하는 일을 막기 위해서다.
+- 지금 스티커 탭에 없는 v3 캔버스 스티커(`wordmark`, `emblem` 등)는 그리지 않는다.
