@@ -137,13 +137,18 @@ async function refreshTpl() { // called from renderResult
   if (!doc) { const s = LS('runtier:v3doc'); doc = s && Array.isArray(s.layers) && s.bg ? s : newDoc(); syncTier(); hist = [JSON.stringify(doc)]; hi = 0; restorePhotos(); }
   changed(true); paintPanel(); thumbs();
 }
+// Thumbnails render one by one (await renderDoc). A newer thumbs()/logThumbs() run, or leaving the 공유 카드 mode
+// (renderResult → leaveLog nulls doc/logCtx, then refreshTpl starts a new run), makes an older run stop instead of
+// reading state that is gone or drawing into buttons that were replaced.
+let thumbGen = 0;
 async function thumbs() {
   if (doc && doc.log) return logThumbs();
+  const gen = ++thumbGen, f0 = doc.fmt || 'story';
   const mine = (LS('runtier:mytpl') || []).map((m, i) => ({ ...m, _i: i })).filter(m => !m.log);
   $('tplList').innerHTML = TEMPLATES.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-t="${k}" aria-checked="${doc.tpl === k}"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${n}</span></button>`).join('') +
     mine.map(m => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${m._i}" aria-checked="false"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${m._i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
   const all = LS('runtier:mytpl') || [];
-  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { const d2 = relayout(b.dataset.t ? templateDoc(b.dataset.t, state.story) : clone(all[+b.dataset.m]), doc.fmt || 'story'); const cv = await renderDoc(rctx, state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
+  for (const b of $('tplList').querySelectorAll('.tpl-btn')) { if (gen !== thumbGen) return; const d2 = relayout(b.dataset.t ? templateDoc(b.dataset.t, state.story) : clone(all[+b.dataset.m]), f0); const cv = await renderDoc(rctx, state.story, d2, photos); if (gen !== thumbGen) return; const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
 }
 const userLayers = d => (d.layers || []).filter(l => l && !l.sid).map(clone);
 $('tplList').addEventListener('click', e => { const del = e.target.closest('[data-mdel]'); if (del) { const m = LS('runtier:mytpl') || []; m.splice(+del.dataset.mdel, 1); LS('runtier:mytpl', m); thumbs(); return; }
@@ -655,12 +660,13 @@ const { renderResult } = mountResult(env, { leaveLog: () => { if (doc && doc.log
   function setAccent(hex) { if (!doc || !doc.tok) return; doc.tok.acc = hex; changed(true); thumbs(); }
   function setLogBackground(photoOn) { if (!doc || !doc.log) return; setLogBg(doc, photoOn ? logCtx && logCtx.pid : null); changed(true); }
   async function logThumbs() {
+    const gen = ++thumbGen, lc = logCtx, acc = doc.tok.acc;
     const mine = (LS('runtier:mytpl') || []).map((m, i) => ({ ...m, _i: i })).filter(m => m.log);
     $('tplList').innerHTML = LOG_TPLS.map(([k, n]) => `<button type="button" role="radio" class="tpl-btn" data-lt="${k}" aria-checked="${doc.log.tpl === k}"><canvas width="108" height="${Math.round(108 * FH() / 1080)}"></canvas><span class="tn">${n}</span></button>`).join('') +
       mine.map(m => `<span class="tpl-mine"><button type="button" role="radio" class="tpl-btn" data-m="${m._i}" aria-checked="false"><canvas width="108" height="${Math.round(108 * fmtH(m.fmt) / 1080)}"></canvas><span class="tn">${esc(m.n)}</span></button><button type="button" class="tpl-del" data-mdel="${m._i}" aria-label="${esc(m.n)} 삭제">✕</button></span>`).join('');
     const all = LS('runtier:mytpl') || [], f0 = doc.fmt || 'story';
-    for (const b of $('tplList').querySelectorAll('.tpl-btn')) { let d2; if (b.dataset.lt) { d2 = buildLogDoc(b.dataset.lt, logCtx.vals, { pid: logCtx.pid, acc: doc.tok.acc }); if (f0 !== 'thumb') relayout(d2, f0); } else d2 = fillBindings(clone(all[+b.dataset.m]), logCtx.vals);
-      const cv = await renderDoc(rctx, state.story, d2, photos); const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
+    for (const b of $('tplList').querySelectorAll('.tpl-btn')) { if (gen !== thumbGen) return; let d2; if (b.dataset.lt) { d2 = buildLogDoc(b.dataset.lt, lc.vals, { pid: lc.pid, acc }); if (f0 !== 'thumb') relayout(d2, f0); } else d2 = fillBindings(clone(all[+b.dataset.m]), lc.vals);
+      const cv = await renderDoc(rctx, state.story, d2, photos); if (gen !== thumbGen) return; const t0 = b.querySelector('canvas'), t = t0.getContext('2d'); t.imageSmoothingQuality = 'high'; t.drawImage(cv, 0, 0, t0.width, t0.height); }
   }
   function pickLogTpl(b) { const f0 = doc.fmt || 'story', acc = b.dataset.lt && doc.tok && kindOf(doc.log.tpl) === kindOf(b.dataset.lt) ? doc.tok.acc : undefined;
     const kept = b.dataset.lt ? userLayers(doc) : [], keepBg = doc.bg.type === 'photo' && photos[doc.bg.pid] ? clone(doc.bg) : null;
