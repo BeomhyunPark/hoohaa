@@ -35,6 +35,12 @@ node tools/snap.mjs --check
 - `/result/`를 열면 저장된 입력으로 결과 화면과 편집기가 뜬다. 거기서 **이미지 형식 4종(story 9:16, feed 4:5, square 1:1, thumb 3:4) × 템플릿 6종**을 하나씩 고르고 최종 PNG를 뽑는다. 파일 이름은 `<템플릿>-<형식>.png`다. 템플릿과 형식 목록은 편집기 화면(`#tplList`, `#fmtSeg`)에서 읽으니, 템플릿이 늘면 `--update`로 기준을 다시 만든다(없는 기준은 MISSING, 남는 기준은 STALE로 실패한다).
 - 고르는 순서는 형식 버튼 → 템플릿 버튼이다. 템플릿 버튼이 그 형식으로 새 문서를 만든다(`newDoc(t, fmt)`).
 - PNG는 편집기의 `exportCanvas`(= `finalCanvas`)로 뽑는다. 테스트 훅 `window.__exportSig()`가 `finalCanvas()`를 부르고 결과 캔버스를 `window.__lastStory`에 남기므로, 그 캔버스를 `toDataURL`로 받는다. 분리할 때 `window.__exportSig`, `window.__lastStory`, `window.__doc` 이름을 그대로 둬야 이 테스트가 돈다.
+- 템플릿 케이스 다음에 **사진 케이스 3개**를 찍는다(story 형식, minimal 템플릿). 테스트 사진은 `fixtures/runner.jpg`다. Pillow로 그린 합성 그림(2000×2500, 실제 사람 아님)이라 `addPhotoFile`이 1600px로 줄이는 경로도 지난다. 다시 만들 때는 `python3 tools/snap/fixtures/make_runner.py <출력>`.
+  - `photo-bg-story`: 배경 사진 + 필터(warm) + 90° 회전 + 밝기 30
+  - `photo-layer-story`: 사진 레이어 + 좌우 반전 + 1:1 자르기 + 필터(bw) + 대비 40
+  - `photo-cut-story`: 배경 사진(golden) 위 글자를 '인물 뒤로' + 사진 레이어 '인물만 남기기' + 누끼 테두리 20px. MediaPipe 인물 분리를 실제로 돌린다
+  - 사진 케이스는 편집기 버튼(`#tools [data-tool="photo"]`, `#phBg`, `#phAdd`, `#peFilter`, `#peRot`, `#peFlip`, `#peCrop`, `#peCut`, `#peOl`, `#miniBar [data-mb="behind"]`)을 눌러서 만들고, 파일은 `#photo`에 `setInputFiles`로 넣는다. 케이스마다 페이지를 다시 연다(템플릿을 바꿔도 배경 사진과 추가한 레이어는 남기 때문).
+  - MediaPipe 지연 로드도 확인한다. `photo-cut-story` 전에 `/seg/` 요청이 하나라도 있으면, 또는 그 케이스에서 `/seg/vision_bundle.mjs`를 받지 않으면 실패한다. 받은 파일 목록은 끝에 찍는다.
 - 글꼴 때문에 흔들리지 않게 `document.fonts.ready`를 기다린 뒤 두 번 내보내고, 두 번째 결과를 쓴다.
 - 비교는 브라우저 안에서 PNG를 디코드해서 한다(추가 npm 패키지 없음). 차이 이미지는 기준을 회색으로 흐리게 깔고 바뀐 픽셀을 빨갛게 칠한다. 같은 폴더에 이번 실행 결과 `<이름>.actual.png`도 남긴다.
 
@@ -42,11 +48,11 @@ node tools/snap.mjs --check
 
 - 기준은 이 레포의 클라우드 세션 환경(Playwright 기본 Chromium, Linux)에서 만들었다. 같은 환경에서는 두 번 연속 실행해도 바이트까지 같았다.
 - 다른 OS나 다른 Chromium 버전에서는 글자 안티에일리어싱이 달라서 기준과 어긋날 수 있다. 그럴 때는 기준을 바꾸지 말고, **먼저 main에서 `--update`로 그 환경의 기준을 만든 뒤(커밋하지 않음) 작업 브랜치에서 `--check`**를 돌린다.
-- 기준 이미지는 24장, 약 26MB다. 그림이 의도적으로 바뀌는 PR에서만 `--update`해서 커밋한다. 분리 PR("옮기기만")에서는 기준을 바꾸지 않는다.
+- 기준 이미지는 27장(템플릿 24 + 사진 3), 약 29MB다. 그림이 의도적으로 바뀌는 PR에서만 `--update`해서 커밋한다. 분리 PR("옮기기만")에서는 기준을 바꾸지 않는다.
 
 ## 아직 안 찍는 것
 
-- 사진이 들어간 문서, 스티커, 내 템플릿, 공유 카드 만들기(오늘 기록) 템플릿. 사진 케이스는 B6(사진 처리 분리)에서 `tools/snap/fixtures/`에 테스트 사진을 넣고 추가한다.
+- 스티커, 내 템플릿, 공유 카드 만들기(오늘 기록) 템플릿. 사진은 story 형식 3케이스만 찍는다.
 
 ## 스티커는 `tools/stkcmp.mjs`로 비교한다
 

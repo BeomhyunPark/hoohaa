@@ -12,6 +12,13 @@
 //            --tol <0-255>         per-channel tolerance before a pixel counts as different (default 0)
 //            --max <ratio>         allowed share of different pixels per image (default 0)
 //
+// After the template cases come three photo cases (story format, minimal template) that add
+// tools/snap/fixtures/runner.jpg through the editor's own photo buttons: photo-bg-story
+// (background photo: filter, 90° turn, brightness), photo-layer-story (photo layer: flip, 1:1 crop,
+// filter, contrast) and photo-cut-story (MediaPipe: text behind the person + a cut-out layer with
+// an outline). The run also checks that /seg/ (MediaPipe) is requested only once photo-cut-story
+// starts, i.e. the model is still lazy-loaded on first use.
+//
 // Needs the preinstalled Playwright + Chromium (do not run `playwright install`).
 import http from 'node:http';
 import { createRequire } from 'node:module';
@@ -31,6 +38,8 @@ const TOL = +opt('--tol', 0), MAX = +opt('--max', 0);
 // Fixed input and clock. Noon in Seoul so the date never rolls over during a run.
 const NOW = Date.parse('2026-05-15T12:00:00+09:00');
 const INPUT = { ev: '10K', km: '', digits: '5000', sex: 'M', by: '1991' }; // 2026 - 1991 = 35 → 30대
+// Synthetic 2000×2500 photo of a runner (made with Pillow, no real person). Bigger than 1600px so addPhotoFile downscales it.
+const PHOTO = join(SNAP, 'fixtures', 'runner.jpg');
 
 // ---- static server (repo root, dir → index.html) ----
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
@@ -80,12 +89,18 @@ async function main() {
     });
     await ctx.addInitScript(initScript, { now: NOW, input: INPUT });
     const page = await ctx.newPage();
+    const segReqs = []; // MediaPipe files, in request order, with the case that was running
+    let curCase = '(load)';
+    page.on('request', (r) => { const u = new URL(r.url()); if (u.pathname.startsWith('/seg/')) segReqs.push({ path: u.pathname, during: curCase }); });
     const errs = [];
     page.on('pageerror', (e) => errs.push(String(e)));
 
-    await page.goto(base + '/result/');
-    await page.waitForFunction(() => typeof window.__exportSig === 'function' && document.querySelectorAll('#tplList .tpl-btn[data-t]').length > 0, null, { timeout: 30000 });
-    await page.evaluate(() => document.fonts.ready);
+    const open = async () => {
+      await page.goto(base + '/result/');
+      await page.waitForFunction(() => typeof window.__exportSig === 'function' && document.querySelectorAll('#tplList .tpl-btn[data-t]').length > 0, null, { timeout: 30000 });
+      await page.evaluate(() => document.fonts.ready);
+    };
+    await open();
     const story = await page.evaluate(() => { const s = window.__story && window.__story(); return s ? { key: s.key, pct: s.pct } : null; }).catch(() => null);
     const tpls = await page.$$eval('#tplList .tpl-btn[data-t]', (bs) => bs.map((b) => b.dataset.t));
     const fmts = await page.$$eval('#fmtSeg [data-v]', (bs) => bs.map((b) => b.dataset.v));
@@ -104,6 +119,7 @@ async function main() {
     const results = [];
     for (const [t, f] of cases) {
       const name = `${t}-${f}`;
+      curCase = name;
       // format first (relayouts the current doc), then the template (newDoc in that format)
       const b64 = await page.evaluate(async ({ t, f }) => {
         const fb = document.querySelector(`#fmtSeg [data-v="${f}"]`); fb.click();
@@ -120,6 +136,29 @@ async function main() {
       writeFileSync(join(outDir, name + '.png'), png);
       results.push({ name, png });
     }
+
+    const photoCases = PHOTO_CASES.filter((c) => !ONLY || c.name.includes(ONLY));
+    if (photoCases.length) console.log(`snap: ${photoCases.length} photo cases (fixtures/runner.jpg)`);
+    for (const c of photoCases) {
+      curCase = c.name;
+      // Reopen the page for a fresh editor: switching templates keeps the background photo and added layers.
+      // The init script clears localStorage on every load, so the editor starts from a new doc.
+      await open();
+      await page.evaluate(() => {
+        document.querySelector('#fmtSeg [data-v="story"]').click();
+        document.querySelector('#tplList .tpl-btn[data-t="minimal"]').click();
+      });
+      if (c.seg && segReqs.length) { console.log(`  FAIL  /seg/ was requested before ${c.name}: ${segReqs.map((r) => `${r.path} (${r.during})`).join(', ')}`); failed = true; }
+      await c.run(page);
+      const png = Buffer.from(await page.evaluate(async () => {
+        await document.fonts.ready; await window.__exportSig(); await document.fonts.ready; await window.__exportSig();
+        return window.__lastStory.toDataURL('image/png').split(',')[1];
+      }), 'base64');
+      if (c.seg && !segReqs.some((r) => r.path === '/seg/vision_bundle.mjs')) { console.log(`  FAIL  ${c.name} did not load /seg/vision_bundle.mjs`); failed = true; }
+      writeFileSync(join(outDir, c.name + '.png'), png);
+      results.push({ name: c.name, png });
+    }
+    if (photoCases.some((c) => c.seg)) console.log(`snap: MediaPipe requests: ${[...new Set(segReqs.map((r) => `${r.path} (${r.during})`))].join(', ')}`);
 
     if (CHECK) {
       const bdir = join(SNAP, 'baseline');
@@ -155,6 +194,60 @@ async function main() {
   }
   process.exit(failed ? 1 : 0);
 }
+
+// ---- photo cases: driven through the editor's buttons, like a person would ----
+// Opens the photo tool and picks the fixture for the background (phBg) or as a new photo layer (phAdd).
+async function addPhoto(page, btn) {
+  const before = await page.evaluate(() => window.__photos());
+  await page.evaluate((btn) => {
+    const t = document.querySelector('#tools [data-tool="photo"]');
+    if (t.getAttribute('aria-pressed') !== 'true') t.click();
+    document.getElementById(btn).click(); // sets photoTarget, then clicks #photo (no file chooser in headless)
+  }, btn);
+  await page.setInputFiles('#photo', PHOTO);
+  await page.waitForFunction((n) => window.__photos() > n, before, { timeout: 30000 });
+  await page.waitForTimeout(50); // let changed()/paintPanel() after the await in the change handler run
+}
+const click = (page, sel) => page.evaluate((sel) => { const e = document.querySelector(sel); if (!e) throw new Error('no ' + sel); e.click(); }, sel);
+const slide = (page, id, v) => page.evaluate(({ id, v }) => { const e = document.getElementById(id); if (!e) throw new Error('no #' + id); e.value = String(v); e.dispatchEvent(new Event('input', { bubbles: true })); }, { id, v });
+const openAdj = (page) => page.evaluate(() => { const b = document.getElementById('peMore'); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); });
+const until = (page, fn, arg) => page.waitForFunction(fn, arg, { timeout: 90000 });
+
+const PHOTO_CASES = [
+  { name: 'photo-bg-story', run: async (page) => {
+    await addPhoto(page, 'phBg');
+    await until(page, () => window.__doc().bg.type === 'photo');
+    await click(page, '#peFilter [data-v="warm"]');
+    await click(page, '#peRot');
+    await openAdj(page); await slide(page, 'pa_br', 30);
+    await until(page, () => { const b = window.__doc().bg; return b.filter === 'warm' && b.rot === 1 && b.adj && b.adj.br === 30; });
+  } },
+  { name: 'photo-layer-story', run: async (page) => {
+    await addPhoto(page, 'phAdd');
+    await until(page, () => window.__doc().layers.some((l) => l.type === 'photo' && l.pid));
+    await click(page, '#peFlip');
+    await click(page, '#peCrop'); await click(page, '#crRatio [data-v="1:1"]'); await click(page, '#crApply');
+    await click(page, '#peFilter [data-v="bw"]');
+    await openAdj(page); await slide(page, 'pa_ct', 40);
+    await until(page, () => { const L = window.__doc().layers.find((l) => l.type === 'photo'); return L && L.flip && L.crop && L.filter === 'bw' && L.adj && L.adj.ct === 40; });
+  } },
+  { name: 'photo-cut-story', seg: true, run: async (page) => {
+    await addPhoto(page, 'phBg');
+    await until(page, () => window.__doc().bg.type === 'photo');
+    await click(page, '#peFilter [data-v="golden"]');
+    await click(page, '#tools [data-tool="text"]');
+    await until(page, () => window.__doc().layers.some((l) => l.type === 'text' && l.t === '텍스트'));
+    await click(page, '#miniBar [data-mb="behind"]'); // 인물 뒤로: first use loads MediaPipe
+    await until(page, () => window.__doc().layers.some((l) => l.behind) && window.__mask() >= 1);
+    await addPhoto(page, 'phAdd');
+    await until(page, () => window.__doc().layers.some((l) => l.type === 'photo' && l.pid));
+    await click(page, '#peCut'); // 인물만 남기기
+    await until(page, () => window.__doc().layers.some((l) => l.type === 'photo' && l.cut) && window.__mask() >= 2);
+    await click(page, '#peOl');
+    await slide(page, 'olW', 20);
+    await until(page, () => { const L = window.__doc().layers.find((l) => l.type === 'photo'); return L && L.ol && L.ol.on && L.ol.w === 20; });
+  } },
+];
 
 // Runs in a browser page: decodes two PNGs, counts pixels whose RGBA differs by more than tol,
 // and returns a diff PNG (baseline dimmed to grey, changed pixels red).
