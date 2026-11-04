@@ -19,6 +19,10 @@
 // an outline). The run also checks that /seg/ (MediaPipe) is requested only once photo-cut-story
 // starts, i.e. the model is still lazy-loaded on first use.
 //
+// Then 내 템플릿 (MINE: three saved v3 docs × every format: v3 canvas stickers + tier card, text effects
+// + every stat style, shapes + empty photo slots + data stickers) and the 공유 카드 (오늘 기록) templates
+// × every format, opened by saving a run on /log/ (LOG_CASES).
+//
 // Needs the preinstalled Playwright + Chromium (do not run `playwright install`).
 import http from 'node:http';
 import { createRequire } from 'node:module';
@@ -59,7 +63,7 @@ function serve() {
 }
 
 // Runs in the page before any app script: fixed clock + no outside network.
-function initScript({ now, input }) {
+function initScript({ now, input, mytpl }) {
   const Real = Date, t0 = performance.now();
   const cur = () => now + Math.floor(performance.now() - t0); // stays on the fixed day; timers still see time move
   class FixedDate extends Real {
@@ -68,7 +72,7 @@ function initScript({ now, input }) {
   }
   FixedDate.UTC = Real.UTC; FixedDate.parse = Real.parse;
   globalThis.Date = FixedDate;
-  try { localStorage.clear(); localStorage.setItem('runtier:last', JSON.stringify(input)); } catch (e) {}
+  try { localStorage.clear(); localStorage.setItem('runtier:last', JSON.stringify(input)); if (mytpl) localStorage.setItem('runtier:mytpl', JSON.stringify(mytpl)); } catch (e) {}
 }
 
 async function main() {
@@ -81,13 +85,22 @@ async function main() {
   const blocked = new Set();
   let failed = false;
   try {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
-    await ctx.route('**/*', (route) => {
-      const u = new URL(route.request().url());
-      if (u.origin === base || u.protocol === 'data:' || u.protocol === 'blob:') return route.continue();
-      blocked.add(u.origin + u.pathname); return route.abort(); // weather, analytics, anything off this machine
-    });
-    await ctx.addInitScript(initScript, { now: NOW, input: INPUT });
+    const newCtx = async (extra) => {
+      const cx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
+      await cx.route('**/*', (route) => {
+        const u = new URL(route.request().url());
+        if (u.origin === base || u.protocol === 'data:' || u.protocol === 'blob:') return route.continue();
+        blocked.add(u.origin + u.pathname); return route.abort(); // weather, analytics, anything off this machine
+      });
+      await cx.addInitScript(initScript, { now: NOW, input: INPUT, ...extra });
+      return cx;
+    };
+    const openResult = async (pg) => {
+      await pg.goto(base + '/result/');
+      await pg.waitForFunction(() => typeof window.__exportSig === 'function' && document.querySelectorAll('#tplList .tpl-btn[data-t]').length > 0, null, { timeout: 30000 });
+      await pg.evaluate(() => document.fonts.ready);
+    };
+    const ctx = await newCtx({});
     const page = await ctx.newPage();
     const segReqs = []; // MediaPipe files, in request order, with the case that was running
     let curCase = '(load)';
@@ -95,11 +108,7 @@ async function main() {
     const errs = [];
     page.on('pageerror', (e) => errs.push(String(e)));
 
-    const open = async () => {
-      await page.goto(base + '/result/');
-      await page.waitForFunction(() => typeof window.__exportSig === 'function' && document.querySelectorAll('#tplList .tpl-btn[data-t]').length > 0, null, { timeout: 30000 });
-      await page.evaluate(() => document.fonts.ready);
-    };
+    const open = () => openResult(page);
     await open();
     const story = await page.evaluate(() => { const s = window.__story && window.__story(); return s ? { key: s.key, pct: s.pct } : null; }).catch(() => null);
     const tpls = await page.$$eval('#tplList .tpl-btn[data-t]', (bs) => bs.map((b) => b.dataset.t));
@@ -160,6 +169,64 @@ async function main() {
     }
     if (photoCases.some((c) => c.seg)) console.log(`snap: MediaPipe requests: ${[...new Set(segReqs.map((r) => `${r.path} (${r.during})`))].join(', ')}`);
 
+    // ---- 내 템플릿 (v3 docs saved by the user): v3 canvas stickers, text effects, every stat style, the tier card, shapes ----
+    // Own context: the my-template list has to be in localStorage before the editor mounts (it builds #tplList then).
+    const mineCases = [];
+    for (const f of fmts) MINE.forEach((m, i) => { const name = `mine-${m.key}-${f}`; if (!ONLY || name.includes(ONLY)) mineCases.push({ name, i, f, key: m.key }); });
+    if (mineCases.length) {
+      console.log(`snap: ${mineCases.length} my-template cases (${MINE.length} docs × ${fmts.length} formats)`);
+      const mctx = await newCtx({ mytpl: MINE.map((m) => m.doc) });
+      const mp = await mctx.newPage(); mp.on('pageerror', (e) => errs.push(String(e)));
+      await openResult(mp);
+      for (const c of mineCases) {
+        curCase = c.name;
+        const b64 = await mp.evaluate(async ({ i, f, key }) => {
+          document.querySelector(`#fmtSeg [data-v="${f}"]`).click();
+          document.querySelector(`#tplList .tpl-btn[data-m="${i}"]`).click();
+          const d = window.__doc();
+          if (d.mineKey !== key || (d.fmt || 'story') !== f) throw new Error(`doc is ${d.mineKey}/${d.fmt}, wanted ${key}/${f}`);
+          for (let k = 0, s0 = ''; k < 60; k++) { const s1 = JSON.stringify(window.__doc()); if (s1 === s0) break; s0 = s1; await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); } // let clampIn() settle
+          await document.fonts.ready; await window.__exportSig(); await document.fonts.ready; await window.__exportSig();
+          return window.__lastStory.toDataURL('image/png').split(',')[1];
+        }, c);
+        const png = Buffer.from(b64, 'base64');
+        writeFileSync(join(outDir, c.name + '.png'), png); results.push({ name: c.name, png });
+      }
+      await mctx.close();
+    }
+
+    // ---- 공유 카드 만들기 (오늘 기록): save a run on /log/ (10 km, 50:00, a note), then every card template × format.
+    // Cards are laid out on LOG_H = 1440 (3:4) and moved for 9:16 / 4:5 / 1:1 (ltPos, the hardest user of the canvas height) ----
+    const logCases = [];
+    for (const [lt, f] of LOG_CASES) { const name = `log-${lt}-${f}`; if (!ONLY || name.includes(ONLY)) logCases.push({ name, lt, f }); }
+    if (logCases.length) {
+      console.log(`snap: ${logCases.length} log-card cases`);
+      const lctx = await newCtx({});
+      const lp = await lctx.newPage(); lp.on('pageerror', (e) => errs.push(String(e)));
+      await lp.goto(base + '/log/');
+      await lp.waitForSelector('#lgForm #lgDist', { timeout: 30000 });
+      await lp.fill('#lgDist', '10'); await lp.fill('#lgTime', '50:00'); await lp.fill('#lgNote', '오늘도 가볍게 한 바퀴');
+      await lp.click('#lgSave');
+      await lp.waitForFunction(() => typeof window.__logDoc === 'function' && window.__logDoc() && document.querySelectorAll('#tplList .tpl-btn[data-lt]').length > 0, null, { timeout: 30000 });
+      const lts = await lp.$$eval('#tplList .tpl-btn[data-lt]', (bs) => bs.map((b) => b.dataset.lt));
+      for (const c of logCases) {
+        curCase = c.name;
+        if (!lts.includes(c.lt)) throw new Error(`no log template ${c.lt} (have ${lts.join(', ')})`);
+        const b64 = await lp.evaluate(async ({ lt, f }) => {
+          const fb = document.querySelector(`#fmtSeg [data-v="${f}"]`); if (fb.getAttribute('aria-checked') !== 'true') fb.click();
+          document.querySelector(`#tplList .tpl-btn[data-lt="${lt}"]`).click();
+          const d = window.__logDoc();
+          if (d.log.tpl !== lt || (d.fmt || 'story') !== f) throw new Error(`log doc is ${d.log.tpl}/${d.fmt}, wanted ${lt}/${f}`);
+          for (let k = 0, s0 = ''; k < 60; k++) { const s1 = JSON.stringify(window.__doc()); if (s1 === s0) break; s0 = s1; await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); } // let clampIn() settle
+          await document.fonts.ready; await window.__exportSig(); await document.fonts.ready; await window.__exportSig();
+          return window.__lastStory.toDataURL('image/png').split(',')[1];
+        }, c);
+        const png = Buffer.from(b64, 'base64');
+        writeFileSync(join(outDir, c.name + '.png'), png); results.push({ name: c.name, png });
+      }
+      await lctx.close();
+    }
+
     if (CHECK) {
       const bdir = join(SNAP, 'baseline');
       const have = new Set(existsSync(bdir) ? readdirSync(bdir).filter((n) => n.endsWith('.png')).map((n) => n.slice(0, -4)) : []);
@@ -194,6 +261,55 @@ async function main() {
   }
   process.exit(failed ? 1 : 0);
 }
+
+// ---- 내 템플릿 docs (saved v3 docs, as '내 템플릿 저장' would store them). Each doc carries mineKey so the case can check it was picked.
+// v3: every v3 canvas sticker (STICKERS in util.js, not in the sticker tab) + both tier card layers on the tier background.
+// text: text effects (그림자·외곽선·글로우 = the render context's fx), text boxes, every stat display style, on a gradient.
+// misc: shapes, empty photo slots with every mask, data/icon stickers, on the dark background.
+const lay = (id, type, p) => ({ id, type, x: 540, y: 960, s: 1, r: 0, o: 1, ...p });
+const V3_STK = ['wordmark', 'emblem', 'runner', 'shoe', 'dist', 'sun', 'date', 'flag', 'sparkle', 'heart', 'bolt', 'star', 'rect', 'circle', 'line'];
+const MINE = [
+  { key: 'v3', doc: { n: 'snap v3', tpl: 'mine', mineKey: 'v3', race: '', bg: { type: 'tier' }, layers: [
+    ...V3_STK.map((k, i) => lay('S' + i, 'sticker', { k, x: 180 + (i % 4) * 240, y: 260 + Math.floor(i / 4) * 300, s: k === 'wordmark' ? .5 : .7, r: i % 3 === 1 ? -.12 : 0, col: i % 2 ? '#FFD36B' : undefined })),
+    lay('C0', 'card', { y: 1520, s: .9 }),
+    lay('C1', 'card', { v: 1, y: 1780, s: .9 }),
+  ] } },
+  { key: 'text', doc: { n: 'snap text', tpl: 'mine', mineKey: 'text', race: '한강 나이트런', bg: { type: 'grad', c1: '#1B2A4A', c2: '#7A2E3A' }, layers: [
+    lay('T0', 'text', { t: '그림자 SHADOW', y: 180, size: 72, fsh: true }),
+    lay('T1', 'text', { t: '외곽선 OUTLINE', y: 300, size: 72, font: 'anton', fol: { col: '#000000', w: 5 } }),
+    lay('T2', 'text', { t: '글로우 GLOW', y: 420, size: 72, font: 'bebas', col: '#BFF5FF', fgl: { col: '@text', r: 40 } }),
+    lay('T3', 'text', { t: '반투명 상자\nsecond line', y: 580, size: 56, box: 'semi', al: 'left', fsh: [4, 6, 10, 'rgba(0,0,0,.6)'] }),
+    lay('T4', 'text', { t: 'FULL BOX', y: 730, size: 60, font: 'playfair', box: 'full', col: '#F4F2EC' }),
+    lay('T5', 'text', { t: '색 상자 mono', y: 840, size: 52, font: 'mono', box: 'full', bcol: '#2F6F5E', bo: .8, fol: { col: '#102030', w: 2 } }),
+    lay('T6', 'text', { t: '검은고딕 한 줄', y: 950, size: 64, font: 'blackhan', col: '@tier', fgl: { col: '#FF6A3D', r: 25 } }),
+    lay('A0', 'stat', { stat: 'rec', x: 300, y: 1110, s: .8, fsh: true }),
+    lay('A1', 'stat', { stat: 'pace', v: 1, x: 780, y: 1110, s: .8, fol: { col: '#000000', w: 3 } }),
+    lay('A2', 'stat', { stat: 'top', v: 2, x: 300, y: 1290, s: .8 }),
+    lay('A3', 'stat', { stat: 'tier', v: 3, x: 760, y: 1290, s: .7, fgl: { col: '@text', r: 30 } }),
+    lay('A4', 'stat', { stat: 'vdot', v: 4, x: 300, y: 1430, s: 1 }),
+    lay('A5', 'stat', { stat: 'race', x: 760, y: 1440, s: .7, box: 'semi' }),
+    lay('A6', 'stat', { stat: 'date', x: 540, y: 1560, s: 1, col: '@tierL' }),
+    lay('A7', 'stat', { stat: 'next', x: 540, y: 1660, s: 1, look: 'run' }),
+    lay('A8', 'stat', { stat: 'event', v: 3, x: 540, y: 1790, s: .8, col: '@m1' }),
+  ] } },
+  { key: 'misc', doc: { n: 'snap misc', tpl: 'mine', mineKey: 'misc', race: '', bg: { type: 'dark' }, layers: [
+    lay('P0', 'shape', { k: 'paper', w: 900, h: 420, y: 300, col: '#F4F2EC' }),
+    lay('P1', 'shape', { k: 'circle', w: 220, h: 220, x: 220, y: 680, col: '#E08A62' }),
+    lay('P2', 'shape', { k: 'dash', w: 600, h: 8, y: 840, col: '#B5C96A' }),
+    lay('P3', 'shape', { k: 'rect', w: 260, h: 160, x: 820, y: 680, rad: 32, col: '#7FA8C9', o: .8 }),
+    lay('F0', 'photo', { pid: null, mask: 'polaroid', x: 270, y: 1100, s: .5 }),
+    lay('F1', 'photo', { pid: null, mask: 'circle', x: 810, y: 1060, s: .5 }),
+    lay('F2', 'photo', { pid: null, mask: 'round', x: 810, y: 1380, s: .45, r: .08 }),
+    lay('D0', 'sticker', { k: 'data_course', x: 240, y: 1520, s: .5 }),
+    lay('D1', 'sticker', { k: 'data_bib', x: 560, y: 1640, s: .45, f: { num: '777', race: 'SNAP 10K' } }),
+    lay('D2', 'sticker', { k: 'data_weather', x: 860, y: 1700, s: .4, f: { icon: 'cloud', temp: '18°C', label: '흐림' } }),
+    lay('I0', 'sticker', { k: 'ph:timer', x: 160, y: 1800, s: .25, col: '#B5C96A' }),
+    lay('X0', 'text', { t: '사진 없는 칸 · 도형 · 데이터 스티커', y: 300, size: 44, col: '#17181B' }),
+  ] } },
+];
+// 공유 카드 templates × every format (3:4 is their own; the others move the lower half off LOG_H = 1440)
+const LOG_TPL_IDS = ['run-photo', 'run-solid', 'race-dday', 'race-result', 'diet', 'va-run-photo', 'va-run-solid', 'va-race-result', 'vc-run-photo', 'vc-run-solid', 'vc-race-result', 'vc-diet', 'vd-run-solid'];
+const LOG_CASES = ['thumb', 'story', 'feed', 'square'].flatMap((f) => LOG_TPL_IDS.map((t) => [t, f]));
 
 // ---- photo cases: driven through the editor's buttons, like a person would ----
 // Opens the photo tool and picks the fixture for the background (phBg) or as a new photo layer (phAdd).
