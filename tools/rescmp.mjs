@@ -4,7 +4,8 @@
 // For a few fixed inputs (different tiers, both sexes, the top tier with no next tier) it opens /result/ and records:
 // the #resBody markup, state.story (window.__story()), a full-page screenshot, the markup after using the screen
 // (tabs, 전체 단계 보기, ⓘ, a pace row, 주간 km), and the shared result image (window.__resultImage()).
-// Then it opens a 공유 카드 from /log/ and goes to a result from there (renderResult has to leave the card mode).
+// Then it opens a 공유 카드 from /log/ and goes straight to a result from there, while the card thumbnails are still
+// rendering (renderResult has to leave the card mode; an older thumbnail run must stop instead of reading logCtx).
 // Same fixed clock and blocked network as tools/snap.mjs. CSS animations are switched off (the top-tier cards shimmer).
 //
 //   node tools/rescmp.mjs                      print one line per step for this checkout
@@ -126,7 +127,7 @@ async function run(browser, root) {
       await page.click('#lgSave');
       await page.waitForFunction(() => typeof window.__logDoc === 'function' && window.__logDoc() && document.body.classList.contains('log-mode'), null, { timeout: 30000 });
       await step('log→result before', async () => (await page.evaluate(() => [document.body.classList.contains('log-mode'), !!window.__logDoc(), document.querySelectorAll('#tplList [data-lt]').length].join(','))));
-      await page.waitForTimeout(3000); // let the card thumbnails (logThumbs) finish first
+      // no wait: go to the result while the card thumbnails (logThumbs) are still rendering (that used to throw)
       await page.evaluate(() => document.getElementById('go').click());
       await page.waitForFunction(ready, null, { timeout: 30000 });
       await settle(page);
