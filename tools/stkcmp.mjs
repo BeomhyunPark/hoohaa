@@ -9,6 +9,9 @@
 //   node tools/stkcmp.mjs                      print one line per step for this checkout
 //   node tools/stkcmp.mjs --root <dir>         ...for another checkout of the repo
 //   node tools/stkcmp.mjs --against <dir>      run this checkout and <dir>, exit 1 if any line differs
+//   node tools/stkcmp.mjs --race               run this checkout twice, the second time with the CPU 6× slower,
+//                                              exit 1 if any line differs: a preview or export that depends on what
+//                                              happened to load first (a font, an image) shows up here
 //
 // Compare a branch with main:
 //   git worktree add /tmp/hoohaa-main origin/main
@@ -29,7 +32,8 @@ import { fileURLToPath } from 'node:url';
 const here = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(n); return i >= 0 && args[i + 1] != null ? resolve(args[i + 1]) : null; };
-const ROOT = opt('--root') || here, AGAINST = opt('--against');
+const ROOT = opt('--root') || here, AGAINST = opt('--against'), RACE = args.includes('--race');
+const RACE_RATE = 6; // Chrome DevTools CPU throttling for --race
 
 const NOW = Date.parse('2026-05-15T12:00:00+09:00');
 const INPUT = { ev: '10K', km: '', digits: '5000', sex: 'M', by: '1991' };
@@ -64,7 +68,7 @@ function initScript({ now, input }) {
 
 const hash = (s) => createHash('sha1').update(s).digest('hex').slice(0, 12);
 
-async function run(browser, root) {
+async function run(browser, root, throttle = 0) {
   const srv = await serve(root);
   const base = `http://127.0.0.1:${srv.address().port}`;
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'ko-KR', timezoneId: 'Asia/Seoul', serviceWorkers: 'block' });
@@ -75,6 +79,7 @@ async function run(browser, root) {
     });
     await ctx.addInitScript(initScript, { now: NOW, input: INPUT });
     const page = await ctx.newPage();
+    if (throttle > 1) await (await ctx.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: throttle });
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e)));
     await page.goto(base + '/result/');
@@ -139,6 +144,15 @@ async function main() {
   const browser = await pw.chromium.launch();
   try {
     const a = await run(browser, ROOT);
+    if (RACE) {
+      const b = await run(browser, ROOT, RACE_RATE);
+      const p = [...problems('normal', a), ...problems(`${RACE_RATE}× slower`, b)];
+      const n = Math.max(a.lines.length, b.lines.length);
+      for (let i = 0; i < n; i++) if (a.lines[i] !== b.lines[i]) p.push(`differs when slower:\n    normal: ${a.lines[i] ?? '(none)'}\n    ${RACE_RATE}× slower: ${b.lines[i] ?? '(none)'}`);
+      if (p.length) { console.error(p.map((x) => '✗ ' + x).join('\n')); console.error(`\nstkcmp --race: ${p.length} problem(s)`); process.exitCode = 1; return; }
+      console.log(`stkcmp --race ok · ${a.lines.length} steps match at normal speed and ${RACE_RATE}× slower · no page errors`);
+      return;
+    }
     if (!AGAINST) {
       console.log(a.lines.join('\n'));
       console.log(`stkcmp: ${a.lines.length} steps · tabs ${a.cats.join(',')} · ${a.errors.length} page error(s)`);
