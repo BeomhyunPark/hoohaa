@@ -1,4 +1,5 @@
 import { calculate } from '../engine/tier.js';
+import { readTime, showTime } from '../engine/parse.js';
 import { LS, wipeDevice } from '../storage/device.js';
 
 function enableCardCss() {
@@ -29,27 +30,14 @@ function enableCardCss() {
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const p2 = n => String(n).padStart(2, '0');
-const HMAX = 29;
 const PH = { '5K': '25:00', '10K': '55:00', half: '2:00:00', full: '4:30:00', custom: '1:15:00' };
 const EVN = { '5K': '5K', '10K': '10K', half: '하프', full: '풀' };
 const state = { ev: '5K', sex: '', last: null, tpl: 'card', tplPicked: false };
 
 // ---------- time field: one numeric input, live auto-format ----------
-function digitsToDisplay(d) {
-  d = d.replace(/^0+(?=\d)/, '');
-  if (d.length <= 2) return d;
-  if (d.length <= 4) return `${d.slice(0, -2)}:${d.slice(-2)}`;
-  return `${d.slice(0, -4)}:${d.slice(-4, -2)}:${d.slice(-2)}`;
-}
-function parseTimeDigits(d) { // -> {sec} | {error} | null
-  d = d.replace(/^0+(?=\d)/, '');
-  if (!d) return null;
-  if (+d === 0) return { error: '0초는 계산할 수 없어요. 기록을 입력해 주세요.' };
-  if (d.length > 6) return { error: '기록을 다시 확인해 주세요.' };
-  const s = +d.slice(-2), m = +(d.slice(-4, -2) || 0), h = +(d.slice(0, -4) || 0);
-  if (s > 59 || m > 59 || h > HMAX) return { error: `분·초는 59까지, 시간은 ${HMAX}까지 입력할 수 있어요.` };
-  return { sec: h * 3600 + m * 60 + s, h, m, s };
-}
+// 숫자만 받아 뒤에서부터 2자리씩 읽는 규칙은 계산기 페이지와 같다 (src/engine/parse.js)
+const digitsToDisplay = showTime;
+const parseTimeDigits = (d) => readTime(d, { zero: 'error' }); // -> {sec} | {error} | null
 let prevDigits = '';
 $('tq').addEventListener('input', e => {
   let d = e.target.value.replace(/\D/g, '');

@@ -65,15 +65,15 @@ footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:
 </div>
 <script>document.querySelectorAll('[data-at]').forEach(w=>w.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;for(let k=0;k<5;k++)w.classList.remove('s'+k);w.classList.add('s'+b.dataset.i);w.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b))}))</script><script type="module">
 import { calculate, vdot, timeForVdot, fmtTime, fmtPace, parseTime } from '../src/engine/tier.js';
-window.RT = { calculate, vdot, timeForVdot, fmtTime, fmtPace, parseTime };
+import { readTime, readPace, showTime, showPace } from '../src/engine/parse.js';
+window.RT = { calculate, vdot, timeForVdot, fmtTime, fmtPace, parseTime, readTime, readPace, showTime, showPace };
 dispatchEvent(new Event('rt-ready'));
 </script>
 <script>
 addEventListener('rt-ready', function () {
 (function(){
 const o=document.getElementById('vOut'),p2=n=>String(n).padStart(2,'0'),hint='숫자만 입력하면 자동으로 변환돼요 · 5000 → 50:00';
-const show=d=>{d=d.replace(/^0+(?=\d)/,'');if(d.length<=2)return d;if(d.length<=4)return d.slice(0,-2)+':'+d.slice(-2);return d.slice(0,-4)+':'+d.slice(-4,-2)+':'+d.slice(-2);};
-function read(d){d=d.replace(/^0+(?=\d)/,'');if(!d||+d===0)return null;if(d.length>6)return {error:'기록을 다시 확인해 주세요.'};const s=+d.slice(-2),m=+(d.slice(-4,-2)||0),h=+(d.slice(0,-4)||0);if(s>59||m>59||h>29)return {error:'분·초는 59까지, 시간은 29까지 입력할 수 있어요.'};return {sec:h*3600+m*60+s,h,m,s};}
+const show=RT.showTime,read=RT.readTime;
 let prev=vT.value.replace(/\D/g,'');
 function run(){const t=read(prev);vHint.textContent=t&&t.error?t.error:hint;vHint.classList.toggle('bad',!!(t&&t.error));vT.setAttribute('aria-invalid',String(!!(t&&t.error)));if(!t){o.textContent='기록을 넣어 주세요';return;}if(t.error){o.textContent=t.error;return;}const ev=vEv.value,r=RT.calculate({birthYear:1992,sex:'M',event:ev,time:t.sec,today:new Date('2026-10-13')});if(!r.ok||r.vdot<=0){o.textContent='기록을 다시 확인해 주세요.';return;}const K={'5K':'5K','10K':'10K',half:'하프',full:'풀코스'};o.innerHTML='<div class="kpi"><div><b>'+r.vdot+'</b><span>VDOT (≈ VO2max 추정)</span></div><div><b>'+r.pace+'</b><span>평균 페이스</span></div></div><div class="tw"><table><thead><tr><th>종목</th><th>예상 기록</th><th>페이스</th></tr></thead><tbody>'+Object.keys(K).map(k=>'<tr><th>'+K[k]+'</th><td>'+r.predicted[k].replace(/^0:0?/,'')+'</td><td>'+r.predictedPace[k]+'</td></tr>').join('')+'</tbody></table></div><div class="tw"><table><thead><tr><th>훈련</th><th>페이스</th></tr></thead><tbody>'+[['E 이지','E'],['M 마라톤','M'],['T 역치','T'],['I 인터벌','I'],['R 리피티션','R']].map(x=>'<tr><th>'+x[0]+'</th><td>'+r.trainingPaces[x[1]]+'</td></tr>').join('')+'</tbody></table></div>';}
 vT.addEventListener('input',e=>{let d=e.target.value.replace(/\D/g,'');if(e.inputType==='deleteContentBackward'&&d===prev)d=d.slice(0,-1);prev=d.slice(0,7);e.target.value=show(prev);run();});
