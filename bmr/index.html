@@ -74,7 +74,8 @@ footer{margin-top:44px;border-top:1px solid var(--b);padding-top:16px;font-size:
 <nav class="lanenav" aria-label="기록 가이드"><div class="lane"><span class="ln"><b aria-hidden="true">1</b>5K</span><div class="ls"><a href="../5k/">티어표</a><a href="../5k/20min/">20분</a><a href="../5k/25min/">25분</a><a href="../5k/30min/">30분</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">2</b>10K</span><div class="ls"><a href="../10k/">티어표</a><a href="../10k/40min/">40분</a><a href="../10k/45min/">45분</a><a href="../10k/50min/">50분</a><a href="../10k/55min/">55분</a><a href="../10k/60min/">1시간</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">3</b>하프</span><div class="ls"><a href="../half/">티어표·계산기</a><a href="../half/1h30/">1:30</a><a href="../half/1h45/">1:45</a><a href="../half/2h/">2:00</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">4</b>풀</span><div class="ls"><a href="../full/">티어표·예상 기록</a><a class="sub2" href="../full/sub2/">SUB2</a><a href="../full/sub3/" class="sub3">SUB3</a><a href="../full/sub330/" class="sub330">SUB3:30</a><a href="../full/sub4/" class="sub4">SUB4</a><a href="../full/sub430/" class="sub430">SUB4:30</a><a href="../full/sub5/" class="sub5">SUB5</a><a href="../predictor/">기록 예측기</a><a href="../splits/">구간 기록표</a></div></div><div class="lane"><span class="ln"><b aria-hidden="true">5</b>공통</span><div class="ls"><a href="../men/">남자 기준</a><a href="../women/">여자 기준</a><a href="../pace/">훈련 페이스</a><a href="../pace-calculator/">페이스 계산기</a><a href="../vdot/">VDOT</a><a href="../vo2max/">VO2max</a><a href="../tier-guide/">티어 기준</a><a href="../age/20s-30s/">20·30대</a><a href="../age/40s/">40대</a><a href="../age/50s/">50대</a><a href="../age/60s/">60대+</a><a href="../guide/">전체 가이드</a></div></div></nav>
 </main>
 <footer>hoohaa · <a href="../">홈</a> · <a href="../pace-calculator/">페이스 계산기</a> · <a href="../privacy/">개인정보</a> · <a href="../guide/">러닝 가이드 전체</a></footer>
-</div><script>
+</div><script type="module">
+import { energy } from '../src/engine/bmr.js';
 (function(){
 const $=id=>document.getElementById(id);let sex='m';
 const fmt=n=>Math.round(n).toLocaleString('ko-KR')+' kcal';
@@ -82,10 +83,10 @@ function setSex(s){sex=s;$('sM').setAttribute('aria-pressed',s==='m');$('sF').se
 function vals(){return{a:+$('bAge').value,h:+$('bH').value,w:+$('bW').value,k:+$('bAct').value};}
 function calc(){
  const v=vals();const ids=['oBmr','oTdee','oCut','oKeep','oBulk'];
- if(!(v.a>=10&&v.a<=100&&v.h>=100&&v.h<=230&&v.w>=25&&v.w<=250)){ids.forEach(i=>$(i).textContent='-');$('oMul').textContent='';$('bMsg').textContent='값을 모두 넣으면 바로 계산돼요.';return;}
- const bmr=10*v.w+6.25*v.h-5*v.a+(sex==='m'?5:-161),t=bmr*v.k;
- $('oBmr').textContent=fmt(bmr);$('oTdee').textContent=fmt(t);$('oMul').textContent='기초대사량 × '+v.k;
- $('oCut').textContent=fmt(Math.max(t-500,bmr));$('oKeep').textContent=fmt(t);$('oBulk').textContent=fmt(t+300);
+ const e=energy({sex,age:v.a,height:v.h,weight:v.w,factor:v.k});
+ if(!e){ids.forEach(i=>$(i).textContent='-');$('oMul').textContent='';$('bMsg').textContent='값을 모두 넣으면 바로 계산돼요.';return;}
+ $('oBmr').textContent=fmt(e.bmr);$('oTdee').textContent=fmt(e.tdee);$('oMul').textContent='기초대사량 × '+v.k;
+ $('oCut').textContent=fmt(e.cut);$('oKeep').textContent=fmt(e.keep);$('oBulk').textContent=fmt(e.bulk);
  $('bMsg').textContent='하루 기준이에요.';
  const q=new URLSearchParams({s:sex,a:v.a,h:v.h,w:v.w,k:v.k});history.replaceState(null,'','?'+q);
 }

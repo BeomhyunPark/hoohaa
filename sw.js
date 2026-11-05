@@ -1,4 +1,4 @@
-const CACHE = 'hoohaa-shell-50';
+const CACHE = 'hoohaa-shell-51';
 const SHELL = [
   '/app/',
   '/app/index.html',
@@ -14,6 +14,7 @@ const SHELL = [
   '/src/app/boot.js',
   '/src/engine/tier.js',
   '/src/engine/data.js',
+  '/src/engine/parse.js',
   '/src/storage/device.js',
   '/src/styles/app.css',
   '/privacy/',

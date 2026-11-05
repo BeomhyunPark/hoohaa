@@ -121,6 +121,7 @@ python3 -m http.server 8000
 
 테스트는 `node tools/test.mjs`로 `src/` 아래 `*.test.mjs`를 모두 돌려요(Node 22, 설치할 것 없음).
 `node tools/check-sw.mjs`는 `sw.js` 캐시 목록(SHELL·ON_USE)의 파일이 실제로 있는지, 앱·편집기가 import하는 모듈이 빠짐없이 들어 있는지 확인해요.
+`node tools/calccmp.mjs --against <다른 체크아웃>`은 계산기 페이지(페이스·예상 기록·스플릿·VDOT·VO2max·기초대사량)와 홈 기록 칸에 같은 입력을 넣어 두 체크아웃의 화면이 같은지 Playwright로 비교해요.
 
 `seg/`의 모듈과 wasm 파일은 `file://`로는 불러오지 못할 수 있으니, 로컬 서버로 여는 걸 추천해요.
 
