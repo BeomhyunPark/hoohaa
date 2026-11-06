@@ -42,6 +42,16 @@ flowchart LR
 
 경로를 화면에서 어떻게 쓸지. 기록을 어느 서버에 둘지. 가져온 곳, 기록 번호, 가져온 시각의 항목 이름. 두 기록이 같은 운동인지 보는 기준.
 
+**제안.** 가져온 곳, 기록 번호, 가져온 시각의 항목 이름. 폰 앱 코드에 이렇게 두었다. 사용자가 확인하기 전까지 결정이 아니다. 코드는 [mobile/src/record/types.ts](../../../mobile/src/record/types.ts)의 `RecordOrigin`이다.
+
+| 항목 | 이름 | 값 |
+|---|---|---|
+| 가져온 곳 | `origin.source` | `apple_health`, `health_connect`, `manual` |
+| 그곳의 기록 번호 | `origin.sourceRecordId` | 애플 건강은 운동의 uuid, 헬스 커넥트는 운동 기록의 metadata.id. 직접 입력은 없음(null) |
+| 가져온 시각 | `origin.importedAt` | 폰이 읽어 온 시각, ISO 8601 UTC. 운동 시각이 아니다 |
+
+이 제안에 함께 넣은 것: 기록 타입에 이름이 없는 원본 항목은 원본 경로를 키로 `extra`에 그대로 담는다. 같은 길이를 여러 단위로 적은 값(헬스 커넥트의 inKilometers, inMiles 등)은 미터 값이 이름 붙은 자리에 들어간 경우에만 나머지 단위를 버린다. 두 기록이 같은 운동인지 보는 기준은 정하지 않았다.
+
 ## 지금 hoohaa
 
 로그인과 서버가 없다. 성별, 출생연도, 카드 사진은 기기에만 있다.
