@@ -16,3 +16,22 @@ jobs:
         run: node tools/test.mjs
       - name: Service worker cache lists
         run: node tools/check-sw.mjs
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Jest
+        run: npm test -- --ci
