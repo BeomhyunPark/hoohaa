@@ -55,6 +55,15 @@ import { D } from '@hoohaa/engine/data.js';
 - `modulePaths`가 없으면, Babel이 엔진 파일에 넣은 `@babel/runtime` 헬퍼를 레포 루트 쪽에서 찾다가 `Cannot find module '@babel/runtime/helpers/interopRequireDefault'`로 실패한다(레포 루트에는 node_modules가 없다).
 - `__tests__/engine.test.ts`는 10K 50:00 같은 기록의 티어·VDOT가 웹의 `src/engine/tier.test.mjs`와 같은지, 그리고 같은 파일을 plain node로 돌린 결과와 한 글자도 다르지 않은지 본다.
 
+## 운동 기록
+
+`src/record/`에 운동 기록 모양과 건강 앱 원본 → 기록 변환이 있다. 화면, 저장, 서버 호출은 없다.
+
+- `types.ts`: 기록 하나(`WorkoutRecord`). 가져온 곳(`origin`), 측정된 데이터(`measured`), 사용자가 넣은 데이터(`userInput`, 체감 피로·메모), 경로(`route`), 이름이 없는 원본 항목 전부(`extra`, 원본 경로 → 값).
+- `apple-health.ts`, `health-connect.ts`: 원본 → 기록 순수 함수. 원본을 경로마다 펼친 뒤 이름 있는 항목만 꺼내고 나머지는 모두 `extra`로 넘기므로, 모르는 항목이 있어도 버려지지 않는다(`fields.ts`).
+- `fixtures/`: `@kingstinct/react-native-healthkit` 16.2.0과 `react-native-health-connect` 4.1.3이 돌려주는 모양의 샘플 러닝. 기준은 각 파일 위 주석에 있다. 값은 지어낸 것이라 실제 기기에서 한 번 비교해 봐야 한다.
+- `health-reader.ts`: 건강 앱을 읽는 자리(`HealthReader`). 지금은 샘플을 돌려주는 가짜 구현만 있다. 두 라이브러리는 아직 설치하지 않았다(개발 빌드가 있는 폰이 생기면 붙인다).
+
 ## 테스트
 
 ```bash
