@@ -1,6 +1,6 @@
 # hoohaa 폰 앱
 
-iPhone과 Android를 한 코드로 만드는 Expo(SDK 58) · React Native · TypeScript(strict) 앱이다. 지금은 "hoohaa" 글자 하나만 있는 빈 화면이다. 웹(hoohaa.run)과는 따로 돌고, 웹 파일을 불러오지 않는다.
+iPhone과 Android를 한 코드로 만드는 Expo(SDK 58) · React Native · TypeScript(strict) 앱이다. 지금은 "hoohaa" 글자 하나만 있는 빈 화면이다. 웹(hoohaa.run)과는 따로 돌지만, 티어·VDOT 계산은 웹의 `src/engine/tier.js`와 `data.js`를 복사하지 않고 그대로 불러온다(아래 "웹 계산 엔진 불러오기").
 
 건강 앱 권한 때문에 Expo Go가 아니라 개발 빌드(`expo-dev-client`, prebuild)로 돌린다. `ios/`와 `android/`는 prebuild가 만드는 폴더라 커밋하지 않는다.
 
@@ -33,6 +33,28 @@ npm start
 
 아직 `ios.bundleIdentifier`와 `android.package`를 정하지 않았다(스토어 단계에서 정한다). 처음 빌드할 때 Expo가 물어보면 임시 값을 넣되, `app.json`에 커밋하지 않는다.
 
+## 웹 계산 엔진 불러오기
+
+앱 코드에서는 이렇게 쓴다.
+
+```ts
+import { calculate, vdot } from '@hoohaa/engine/tier.js';
+import { D } from '@hoohaa/engine/data.js';
+```
+
+`@hoohaa/engine/`은 npm 패키지가 아니라 레포의 `../src/engine/` 폴더를 가리키는 이름이다. 파일을 복사하거나 공통 패키지로 옮기지 않고, 웹 파일과 웹의 import 경로는 그대로 둔다([../docs/v4/az.md](../docs/v4/az.md) G절). mobile/ 밖의 파일이라 세 곳에서 따로 이어 준다.
+
+| 어디 | 설정 | 빼면 |
+|---|---|---|
+| Metro (앱 번들) | `metro.config.js`: `watchFolders`에 `../src/engine`, `resolver.extraNodeModules`에 `@hoohaa/engine` | `Unable to resolve "@hoohaa/engine/tier.js"` |
+| Jest | `package.json`의 `jest.moduleNameMapper`(`../src/engine/$1`)와 `jest.modulePaths`(`<rootDir>/node_modules`) | 아래 참고 |
+| TypeScript | `tsconfig.json`의 `paths`가 `types/engine/*.d.ts`를 가리킨다 | `Cannot find module '@hoohaa/engine/tier.js'` |
+
+- 타입은 `types/engine/tier.d.ts`, `data.d.ts`에만 있다. 웹 엔진의 내보내기나 결과 모양이 바뀌면 이 두 파일을 같이 고친다.
+- jest-expo는 `tsconfig.json`의 `paths`를 읽어 Jest 매퍼를 스스로 만든다. 그대로 두면 `.d.ts` 폴더를 가리켜 `Could not locate module` 오류가 난다. `package.json`의 매퍼는 같은 키(`^@hoohaa/engine/(.*)$`)로 그것을 덮어쓴다. `paths`의 이름을 바꾸면 매퍼의 키도 같이 바꾼다.
+- `modulePaths`가 없으면, Babel이 엔진 파일에 넣은 `@babel/runtime` 헬퍼를 레포 루트 쪽에서 찾다가 `Cannot find module '@babel/runtime/helpers/interopRequireDefault'`로 실패한다(레포 루트에는 node_modules가 없다).
+- `__tests__/engine.test.ts`는 10K 50:00 같은 기록의 티어·VDOT가 웹의 `src/engine/tier.test.mjs`와 같은지, 그리고 같은 파일을 plain node로 돌린 결과와 한 글자도 다르지 않은지 본다.
+
 ## 테스트
 
 ```bash
@@ -44,3 +66,22 @@ npx tsc --noEmit
 ```
 
 CI(`.github/workflows/test.yml`의 `mobile` job)도 `npm ci`, `tsc`, `jest`를 같은 순서로 돌린다.
+
+## 화면 확인 (폰이 없을 때)
+
+폰이나 시뮬레이터가 없는 곳(클라우드 세션 등)에서는 앱을 웹 번들로 만들어 폰 크기 스크린샷을 찍는다.
+
+```bash
+npm run screenshot
+```
+
+`tools/screenshot.mjs`가 `expo export --platform web`으로 임시 폴더에 웹 번들을 만들고, 127.0.0.1에서만 잠깐 띄운 뒤, Playwright(Chromium)로 iPhone(390×844)과 Android(412×915) 크기 화면을 찍어 `../docs/screenshots/v4/empty-iphone.png`, `empty-android.png`에 저장한다. 끝나면 임시 폴더를 지운다. 이름과 저장 폴더는 `--name`, `--out`으로 바꾼다.
+
+```bash
+npm run screenshot -- --name home --out /tmp/shots
+```
+
+- **이 웹 빌드는 확인용일 뿐이다. 어디에도 배포하지 않는다.** hoohaa.run과도 관계없다. 앱은 웹으로 내지 않는다.
+- react-native-web으로 그린 근사치라 글꼴, 상태 표시줄, 안전 영역은 실제 폰과 다르다. 실제 화면은 개발 빌드로 기기나 시뮬레이터에서 본다.
+- 웹 번들에 필요한 `react-dom`, `react-native-web`, `@expo/metro-runtime`은 이 확인용이라 devDependencies에 있다.
+- Playwright와 Chromium은 의존성에 넣지 않았다. 없으면 따로 깐다(`npm i -g playwright && npx playwright install chromium`).
