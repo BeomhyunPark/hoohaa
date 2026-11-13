@@ -84,8 +84,25 @@ describe.each<[string, () => RecordStore]>([
     expect(await store.findUserInput(hc.origin)).toEqual({ perceivedExertion: 8, memo: '헬스 커넥트' });
   });
 
-  test('기록 번호가 없는 기록(직접 입력)은 찾지 못한다', async () => {
-    expect(await create().findUserInput({ source: 'manual', sourceRecordId: null })).toBeNull();
+  test('지우면 그 기록의 값만 사라지고, 저장한 적 없는 기록을 지워도 된다', async () => {
+    const store = create();
+    const apple = await sample('apple_health');
+    const hc = await sample('health_connect');
+    await store.save(withUserInput(apple, { perceivedExertion: 3, memo: '' }));
+    await store.save(withUserInput(hc, { perceivedExertion: 8, memo: '' }));
+    await store.remove(apple.origin);
+    await store.remove({ source: 'manual', sourceRecordId: 'm-none' });
+    expect(await store.findUserInput(apple.origin)).toBeNull();
+    expect(await store.findUserInput(hc.origin)).toEqual({ perceivedExertion: 8, memo: null });
+  });
+
+  test('직접 입력한 기록도 가져온 곳(manual)과 앱이 붙인 번호로 찾는다', async () => {
+    const store = create();
+    const manual = withUserInput(await sample(), { perceivedExertion: 4, memo: '가볍게' });
+    manual.origin = { source: 'manual', sourceRecordId: 'm-abc-12345678', importedAt: now().toISOString() };
+    await store.save(manual);
+    expect(await store.findUserInput({ source: 'manual', sourceRecordId: 'm-abc-12345678' })).toEqual({ perceivedExertion: 4, memo: '가볍게' });
+    expect(await store.findUserInput({ source: 'manual', sourceRecordId: 'm-abc-00000000' })).toBeNull();
   });
 });
 
@@ -199,13 +216,6 @@ describe('기기 저장소', () => {
 
   test('체감 피로가 없는 기록은 저장하지 않는다', async () => {
     await expect(createDeviceRecordStore().save(await sample())).rejects.toThrow(RangeError);
-    expect(await AsyncStorage.getAllKeys()).toEqual([]);
-  });
-
-  test('기록 번호가 없는 기록(직접 입력)은 저장한 척하지 않고 실패로 알린다', async () => {
-    const manual = withUserInput(await sample(), { perceivedExertion: 7, memo: '' });
-    manual.origin = { source: 'manual', sourceRecordId: null, importedAt: now().toISOString() };
-    await expect(createDeviceRecordStore().save(manual)).rejects.toThrow();
     expect(await AsyncStorage.getAllKeys()).toEqual([]);
   });
 });
