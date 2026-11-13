@@ -148,14 +148,16 @@ hoohaa(레포 BeomhyunPark/hoohaa)의 mobile/은 v4 폰 앱이야. mobile/README
 
 이 프롬프트를 돌리면 4번의 새 문장과 자리 바꿈을 승인하는 것이 된다. 빼고 싶은 줄은 돌리기 전에 지운다.
 
+시안은 기록 직접 입력과 지난 기록 목록이 들어오기 전에 그렸다. 그래서 그림에는 평균 케이던스 칸, "지난 기록"·"기록 직접 입력"·"기록 고치기"·"기록 지우기" 버튼, 직접 입력 화면, 목록 화면이 없다. 이것들은 프롬프트에 글로 정한 규칙대로 같은 색과 모양을 입힌다.
+
 ```
-hoohaa(레포 BeomhyunPark/hoohaa)의 mobile/은 v4 폰 앱(Expo, React Native, TypeScript)이야. 운동이 끝난 뒤 첫 화면(V4)과 기기 저장(V5)이 main에 있어. 이번에는 그 화면의 모양을 확정한 피그마 시안대로 바꿔 줘. 동작과 저장 형식은 그대로야.
+hoohaa(레포 BeomhyunPark/hoohaa)의 mobile/은 v4 폰 앱(Expo, React Native, TypeScript)이야. 운동이 끝난 뒤 첫 화면(V4)과 기기 저장(V5), 기록 직접 입력과 지난 기록 목록이 main에 있어. 이번에는 첫 화면의 모양을 확정한 피그마 시안대로 바꾸고, 나머지 두 화면에는 같은 색과 모양을 입혀 줘. 동작과 저장 형식은 그대로야.
 
 먼저 읽을 것:
-- mobile/README.md, mobile/src/screens/AfterRunScreen.tsx, mobile/src/copy/after-run.ts, mobile/src/record/summary.ts
-- mobile/__tests__/after-run-screen.test.tsx, mobile/__tests__/copy-doc.test.ts, mobile/tools/screenshot.mjs
-- docs/v4/features/copy.md의 "기록과 체감 피로", docs/v4/center.md
-- 시안 그림 docs/screenshots/v4/design/states-volt.png, docs/screenshots/v4/design/notes.png
+- mobile/README.md, mobile/App.tsx, mobile/src/screens/(AfterRunScreen, ManualEntryScreen, RecordListScreen), mobile/src/copy/(after-run, manual-entry, record-list), mobile/src/record/summary.ts
+- mobile/__tests__/의 화면 테스트 셋(after-run-screen, manual-entry-screen, record-list-screen)과 App.test.tsx, copy-doc.test.ts, mobile/tools/screenshot.mjs
+- docs/v4/features/copy.md의 "기록과 체감 피로", "기록 직접 입력", "지난 기록", docs/v4/center.md
+- 시안 그림 docs/screenshots/v4/design/states-volt.png, docs/screenshots/v4/design/notes.png (시안은 직접 입력과 목록이 생기기 전에 그렸어. 그림에 없는 것은 아래 글대로 해)
 - trail ask "폰 앱 첫 화면 시안" 으로 시안을 정할 때의 결정
 - 피그마를 볼 수 있으면 https://www.figma.com/design/bkGtGykbgz2q5pDsIQc8Ff 의 "03 폰 앱 시안" 페이지에서 "3. 상태 전부 · 테마 볼트 (기본)"과 "4. 디자인 노트". 못 보면 위 그림과 아래 값으로 해.
 
@@ -188,11 +190,14 @@ hoohaa(레포 BeomhyunPark/hoohaa)의 mobile/은 v4 폰 앱(Expo, React Native, 
    - 날짜 값(14 Medium, textSecondary, 라벨 없이)과 제목 "운동 기록"(24/32 Bold).
    - 기록 카드(surface, 테두리 border, 모서리 20, 안쪽 위 18·좌우 20·아래 20, 줄 사이 14): 윗줄에 "거리" 라벨(14 Medium, textSecondary)과 오른쪽에 가져온 곳 칩(raised, 12 Medium, textSecondary). 그 아래 거리 숫자를 크게(56/60 Bold, 자간 -2%) 쓰고 단위 km는 작게(20, textSecondary). 구분선(border). 그 아래 시간·평균 페이스·평균 심박을 같은 폭 칸으로(라벨 13 textTertiary, 값 20 Bold, 단위 13 textSecondary).
    - 값이 없는 항목은 지금처럼 칸째로 숨겨. 거리가 없으면 큰 숫자 줄과 구분선을 숨기고 남은 칸만 보여 줘.
+   - 평균 케이던스는 시안에 없어. 시간·평균 페이스·평균 심박과 같은 모양의 칸으로 넣어. 칸이 넷이면 한 줄에 둘씩 두 줄로 놓아(줄 사이 14).
    - 가져온 곳 칩은 origin.source가 apple_health면 "애플 건강", health_connect면 "헬스 커넥트", manual이면 칩을 숨겨.
    - 체감 피로: 제목 "체감 피로"(20/28 Bold)와 그 오른쪽에 고르기 전에는 "밀거나 눌러서 골라요"(13, textTertiary), 고른 뒤에는 고른 숫자 알약(그 단계의 rpe 색 바탕, onRpe 글자 18 Bold). 그 아래 질문 "이번 달리기는 얼마나 힘들었어요?"(15/22, textSecondary). 그 아래 슬라이더(3번).
    - 메모: "메모"(15 Bold)와 "(선택)"(13, textTertiary), 입력칸(surface, 테두리 borderStrong, 모서리 14, 높이 64 이상, 글 16).
    - 화면 아래에 붙는 묶음(위 12, 사이 8, 안전 영역 위): 저장 버튼(높이 56, 모서리 16, 17 Bold. 누를 수 있으면 accent 바탕에 onAccent 글자, 아니면 raised 바탕에 textTertiary 글자). 피로를 고르기 전에는 버튼 위에 "체감 피로를 골라야 저장할 수 있어요."(13, textTertiary). 수정 중에는 저장 아래에 "취소"(테두리 버튼, 높이 52, 16 Bold).
    - 저장한 뒤와 다시 들어온 기록: 슬라이더와 입력칸 대신 저장한 값 카드(surface, 모서리 20). "체감 피로" 라벨과 오른쪽에 값(28 Bold, 그 단계의 rpe 색)과 "/ 10"(14, textTertiary). 그 아래 손잡이 없는 색 막대(높이 10). 메모가 있으면 구분선, "메모" 라벨, 메모 글(16/24). 아래 묶음에는 방금 저장했을 때만 체크 아이콘과 "저장했어요"(17 Bold, success), 그리고 "수정"(테두리 버튼, 높이 52).
+   - "지난 기록"과 "기록 직접 입력"은 시안에 없어. 스크롤되는 내용의 맨 아래에 테두리 버튼 둘(높이 52, 16 Bold, 사이 8)로 두고, 지금처럼 고치는 중에는 숨겨. 아래에 붙는 묶음(저장, 수정)에 넣지 마.
+   - 직접 입력한 기록의 "기록 고치기"와 "기록 지우기"도 시안에 없어. 저장한 값 카드 아래에 글자 버튼 둘(높이 44 이상, 15 Bold)로 두고, "기록 지우기"는 danger 색이야. 지우기 전에 묻는 말과 버튼, 실패 안내는 동작과 문장을 그대로 두고 색만 테마로 바꿔.
    - 화면 좌우 여백 20, 구역 사이 22. 상태 표시줄과 아래 안전 영역은 react-native-safe-area-context 값으로 비워. 상태 표시줄 글자는 밝게.
    - 읽는 중, 기록 없음, 읽기 실패, 저장 실패 화면은 동작과 문장을 그대로 두고 색만 테마로 바꿔(안내 글 16 textSecondary, "다시 읽기"는 테두리 버튼, 저장 실패는 danger 색 13과 아이콘).
 3. 피로 버튼 10개를 슬라이더로 바꿔.
@@ -210,14 +215,20 @@ hoohaa(레포 BeomhyunPark/hoohaa)의 mobile/은 v4 폰 앱(Expo, React Native, 
    - "1은 아주 편했을 때, 10은 온 힘을 다했을 때예요."는 화면에 보이지 않고 슬라이더의 낭독기 힌트로 쓴다고 표의 설명을 고쳐.
    - "기록 항목 | 날짜"는 화면에 라벨로 보이지 않고 낭독기 이름에만 쓴다고 적어.
    - 표의 "버튼 묶음", "버튼 이름" 설명은 슬라이더에 맞게 고쳐. 문장 자체는 그대로야.
-5. 테스트를 화면에 맞게 고쳐. 지켜야 하는 동작은 그대로야: 피로를 고르지 않으면 저장이 안 된다, 메모 없이도 저장된다, 저장한 값이 기록에 붙는다, 값이 없는 항목은 화면에 안 나온다, 수정과 취소, 다시 들어온 기록은 다시 묻지 않는다, "저장했어요"는 방금 저장했을 때만 보인다, 깨진 저장값, 컨디션·목표·내일 훈련·통증 판단은 보여 주지 않는다. 버튼 10개를 보던 테스트는 슬라이더로 바꿔: 값이 없다가 고르면 그 값 하나가 된다, 올리기·내리기로 1씩 바뀌고 1과 10을 넘지 않는다, 낭독기 이름·값·힌트, 누르는 영역 44 이상.
-6. mobile/tools/의 스크립트로 iPhone(390×844)과 Android(412×915) 크기에서 입력 전, 피로 선택 후, 저장 후, 다시 들어온 기록, 수정 중, 심박이 없는 기록을 찍어 docs/screenshots/v4/에 넣고 PR 본문에 붙여. 예전 흰 바탕 스크린샷은 새것으로 바꿔. docs/screenshots/v4/design/의 시안 그림은 그대로 둬.
-7. mobile/README.md의 "운동이 끝난 뒤 첫 화면"에 테마(역할 이름, 기본 볼트, 고르기는 아직 없음)와 슬라이더를 짧게 적어.
+5. 직접 입력 화면과 지난 기록 목록 화면은 시안이 없어. 구조, 동작, 문장, 검사 규칙을 그대로 두고 색과 모양만 맞춰.
+   - 바탕 bg, 제목 24/32 Bold, 구역 제목 20/28 Bold, 라벨 14 Medium textSecondary, 안내 13 textTertiary.
+   - 입력칸은 메모 입력칸과 같은 모양(surface, 테두리 borderStrong, 모서리 14, 글 16, 높이 52 이상). 틀린 칸은 테두리와 이유 글자를 danger로 하고 이유 글자 앞에 아이콘을 붙여.
+   - 목록의 한 줄은 기록 카드와 같은 면(surface, 테두리 border, 모서리 20)이고 누르는 영역은 44 이상이야. 값은 textPrimary, 라벨과 날짜는 textSecondary.
+   - 주요 버튼(저장)은 accent, 그 밖의 버튼은 테두리 버튼이야. 화면마다 accent 버튼은 하나만 둬.
+6. 테스트를 화면에 맞게 고쳐. 지켜야 하는 동작은 그대로야: 피로를 고르지 않으면 저장이 안 된다, 메모 없이도 저장된다, 저장한 값이 기록에 붙는다, 값이 없는 항목은 화면에 안 나온다, 수정과 취소, 다시 들어온 기록은 다시 묻지 않는다, "저장했어요"는 방금 저장했을 때만 보인다, 깨진 저장값, 컨디션·목표·내일 훈련·통증 판단은 보여 주지 않는다. 버튼 10개를 보던 테스트는 슬라이더로 바꿔: 값이 없다가 고르면 그 값 하나가 된다, 올리기·내리기로 1씩 바뀌고 1과 10을 넘지 않는다, 낭독기 이름·값·힌트, 누르는 영역 44 이상.
+   직접 입력 화면과 목록 화면의 테스트는 동작을 보는 것이라 그대로 통과해야 해.
+7. mobile/tools/의 스크립트로 iPhone(390×844)과 Android(412×915) 크기에서 입력 전, 피로 선택 후, 저장 후, 다시 들어온 기록, 수정 중, 심박이 없는 기록을 찍어 docs/screenshots/v4/에 넣고 PR 본문에 붙여. 직접 입력 화면과 목록 화면의 스크린샷도 다시 찍어. 예전 흰 바탕 스크린샷은 새것으로 바꿔. docs/screenshots/v4/design/의 시안 그림은 그대로 둬.
+8. mobile/README.md의 "운동이 끝난 뒤 첫 화면"에 테마(역할 이름, 기본 볼트, 고르기는 아직 없음)와 슬라이더를 짧게 적어.
 
 하지 말 것:
 - 테마 고르는 화면, 밝은 화면, 로고 이미지, 앱 아이콘 바꾸기.
 - 글꼴 파일 추가. 이번에는 시스템 글꼴 그대로 쓰고 숫자만 폭이 같은 숫자로 해. Pretendard를 넣을지는 PR 본문에 물어볼 거리로 남겨.
-- 저장 형식과 저장소 인터페이스, 기록 타입, 가짜 건강 앱 바꾸기. 실제 건강 앱 읽기, 로그인, 서버 호출.
+- 저장 형식과 저장소 인터페이스, 기록 타입, 가짜 건강 앱, 직접 입력의 검사 규칙, 화면 사이를 오가는 흐름 바꾸기. 실제 건강 앱 읽기, 로그인, 서버 호출.
 - 컨디션, 목표, 내일 훈련, 통증 판단, 티어 넣기.
 - 웹(루트의 html, src/, sw.js, icons/) 고치기.
 
