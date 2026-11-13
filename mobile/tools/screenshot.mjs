@@ -11,7 +11,7 @@
 // 파일 이름은 <흐름>-<단계>-<기기>.png다. 흐름 중간에 누르는 영역 크기(44pt 이상)도 같이 잰다.
 //
 // 쓰는 법 (mobile/ 에서):
-//   npm run screenshot                       # ../docs/screenshots/v4/after-run-1-before-iphone.png 등 8장
+//   npm run screenshot                       # ../docs/screenshots/v4/after-run-1-before-iphone.png 등 10장
 //   npm run screenshot -- --flow after-run   # 흐름 고르기(기본값 after-run)
 //   npm run screenshot -- --out /tmp/shots   # 저장 폴더 바꾸기
 //   npm run screenshot -- --dist ./dist-web  # 이미 export한 폴더를 그대로 쓰기
@@ -51,7 +51,7 @@ async function expectTouchSize(locator, what) {
 
 // 흐름 하나 = 화면을 순서대로 눌러 가며 찍는 단계들. run은 그 단계의 화면을 만들고, 끝나면 한 장을 찍는다.
 const FLOWS = {
-  // 운동이 끝난 뒤 첫 화면: 입력 전 → 체감 피로 선택 → 저장 → 수정.
+  // 운동이 끝난 뒤 첫 화면: 입력 전 → 체감 피로 선택 → 저장 → 수정 → 앱을 다시 열었을 때.
   'after-run': [
     {
       step: '1-before',
@@ -85,6 +85,29 @@ const FLOWS = {
         // 저장한 값이 채워진 채로 다시 열린다.
         await page.getByRole('radio', { name: '체감 피로 7', exact: true, checked: true }).waitFor();
         await expectTouchSize(page.getByRole('button', { name: '취소', exact: true }), '취소 버튼');
+      },
+    },
+    {
+      // 이미 저장한 기록이 다시 들어온 화면. 페이지를 새로 읽으면 앱이 처음부터 다시 뜬다(앱을 닫았다 연 것과 같다).
+      // 남는 것은 기기 저장소뿐이다. 웹 번들에서는 AsyncStorage가 브라우저의 localStorage에 쓴다.
+      step: '5-reopened',
+      async run(page) {
+        await page.getByRole('button', { name: '취소', exact: true }).click();
+        await page.reload({ waitUntil: 'networkidle' });
+        await page.getByText('운동 기록', { exact: true }).waitFor();
+        // 다시 묻지 않고(피로 버튼, 메모 칸, 저장 버튼이 없다) 저장한 값을 보여 준다.
+        // "저장했어요"는 방금 저장했을 때만 하는 말이라 여기에는 없다.
+        await page.getByLabel('체감 피로, 7', { exact: true }).waitFor();
+        await page.getByLabel('메모, 왼쪽 무릎이 조금 아파요', { exact: true }).waitFor();
+        for (const [what, locator] of [
+          ['피로 버튼', page.getByRole('radio')],
+          ['메모 칸', page.getByPlaceholder('예: 왼쪽 무릎이 조금 아파요')],
+          ['저장 버튼', page.getByRole('button', { name: '저장', exact: true })],
+          ['"저장했어요"', page.getByText('저장했어요', { exact: true })],
+        ]) {
+          if ((await locator.count()) !== 0) throw new Error(`다시 연 화면에 ${what}: 있으면 안 된다. 이미 저장한 기록은 다시 묻지 않고 값과 수정만 보여 준다`);
+        }
+        await expectTouchSize(page.getByRole('button', { name: '수정', exact: true }), '수정 버튼');
       },
     },
   ],

@@ -4,7 +4,7 @@ import { Platform, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { createFakeHealthReader, type HealthPlatform } from './src/record/health-reader';
-import { createMemoryRecordStore } from './src/record/store';
+import { createDeviceRecordStore } from './src/record/device-store';
 import { AfterRunScreen } from './src/screens/AfterRunScreen';
 
 /**
@@ -20,9 +20,10 @@ function healthPlatform(): HealthPlatform {
 }
 
 export default function App() {
-  // 건강 앱은 아직 가짜다(샘플 기록 하나). 저장은 메모리에만 한다. 앱을 닫으면 사라진다.
+  // 건강 앱은 아직 가짜다(샘플 기록 하나). 체감 피로와 메모는 기기 안에 저장한다(계정과 서버는 없다).
+  // 서버가 생기면 여기서 저장소만 바꿔 넣는다.
   const [reader] = useState(() => createFakeHealthReader(healthPlatform()));
-  const [store] = useState(() => createMemoryRecordStore());
+  const [store] = useState(() => createDeviceRecordStore());
 
   return (
     <SafeAreaProvider>

@@ -1,9 +1,10 @@
 // 운동이 끝난 뒤 첫 화면. 건강 앱에서 읽은 기록을 짧게 보여 주고, 체감 피로(필수)와 메모(선택)를 받아 기록에 붙인다.
 //
+// 체감 피로는 기록마다 한 번만 묻는다. 읽은 기록에 이미 저장해 둔 체감 피로가 있으면(앱을 닫았다 열었을 때 등)
+// 묻지 않고 저장된 값을 보여 준다. 이때 "저장했어요"는 보여 주지 않는다(방금 저장했을 때만 하는 말이다). 저장해 둔 값은 저장소(RecordStore)가 가져온 곳과 그곳의 기록 번호로 찾는다.
 // 저장한 뒤에도 사용자가 "수정"을 눌러 체감 피로와 메모를 고칠 수 있다. 앱이 다시 묻지는 않는다.
 //
 // 컨디션, 목표, 내일 훈련, 통증 판단은 서버가 생긴 다음이라 여기서 보여 주지 않는다.
-// 저장한 기록을 다시 열었을 때의 처리(다시 묻지 않기)는 다음 작업(V5)이다.
 import { useEffect, useState } from 'react';
 import {
   AccessibilityInfo,
@@ -57,13 +58,15 @@ export function AfterRunScreen({ reader, store }: Props) {
   const [memo, setMemo] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
+  /** 이 화면에서 저장한 적이 있는지. "저장했어요"는 저장을 누른 데 대한 대답이라, 이미 저장돼 다시 들어온 기록에는 보여 주지 않는다. */
+  const [savedNow, setSavedNow] = useState(false);
 
   useEffect(() => {
     let current = true;
     setLoaded({ status: 'loading' });
-    reader.readLatestWorkout().then(
-      (record) => {
-        if (current) setLoaded(record ? { status: 'ready', record, step: 'ask' } : { status: 'none' });
+    readWithSavedInput(reader, store).then(
+      (next) => {
+        if (current) setLoaded(next);
       },
       () => {
         if (current) setLoaded({ status: 'failed' });
@@ -72,7 +75,7 @@ export function AfterRunScreen({ reader, store }: Props) {
     return () => {
       current = false;
     };
-  }, [reader, attempt]);
+  }, [reader, store, attempt]);
 
   const step = loaded.status === 'ready' ? loaded.step : null;
   const asking = step === 'ask' || step === 'edit';
@@ -86,6 +89,7 @@ export function AfterRunScreen({ reader, store }: Props) {
       const record = withUserInput(loaded.record, { perceivedExertion: exertion, memo });
       await store.save(record);
       setLoaded({ status: 'ready', record, step: 'saved' });
+      setSavedNow(true);
       // 안드로이드와 웹은 아래 aria-live가 읽어 준다. 아이폰에는 그 속성이 없다.
       if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(copy.saved);
     } catch {
@@ -219,9 +223,11 @@ export function AfterRunScreen({ reader, store }: Props) {
 
         {step === 'saved' && (
           <View style={styles.section}>
-            <Text style={styles.saved} aria-live="polite">
-              {copy.saved}
-            </Text>
+            {savedNow && (
+              <Text style={styles.saved} aria-live="polite">
+                {copy.saved}
+              </Text>
+            )}
             <Pressable
               accessibilityRole="button"
               onPress={startEdit}
@@ -234,6 +240,20 @@ export function AfterRunScreen({ reader, store }: Props) {
       </ScrollView>
     </KeyboardAvoidingView>
   );
+}
+
+/**
+ * 건강 앱에서 기록을 읽고, 그 기록에 저장해 둔 체감 피로와 메모가 있는지 찾는다.
+ * 있으면 그 값을 붙여 저장한 뒤 화면(saved)으로, 없으면 처음 묻는 화면(ask)으로 간다.
+ * 측정값은 늘 방금 읽은 것을 쓴다. 저장소가 "쓸 수 없는 값"이라고 하면(null) 처음처럼 묻는다.
+ * 건강 앱이나 저장소를 읽지 못하면 reject한다(화면은 "다시 읽기"를 보여 준다).
+ */
+async function readWithSavedInput(reader: HealthReader, store: RecordStore): Promise<Loaded> {
+  const record = await reader.readLatestWorkout();
+  if (!record) return { status: 'none' };
+  const saved = await store.findUserInput(record.origin);
+  if (!saved) return { status: 'ready', record, step: 'ask' };
+  return { status: 'ready', record: { ...record, userInput: saved }, step: 'saved' };
 }
 
 /**
