@@ -14,7 +14,8 @@ export interface RecordOrigin {
   source: RecordSource;
   /**
    * 그곳의 기록 번호. 애플 건강은 HKWorkout uuid, 헬스 커넥트는 ExerciseSessionRecord metadata.id.
-   * 직접 입력은 바깥 번호가 없어 null이다.
+   * 직접 입력은 바깥 번호가 없다. 앱이 번호를 만들어 붙이기로 했다(docs/v4/features/health-import.md의 결정).
+   * 직접 입력을 만들 때 번호를 붙이고 이 타입에서 null을 뺀다. 그때까지는 null이 남아 있다.
    */
   sourceRecordId: string | null;
   /** 이 앱이 읽어 온 시각(ISO 8601, UTC). 원본의 시각이 아니다. */
@@ -43,7 +44,11 @@ export interface MeasuredData {
   startTime: string;
   /** ISO 8601 */
   endTime: string;
-  /** 애플은 HKWorkout duration(멈춘 시간 제외), 헬스 커넥트는 시간 항목이 없어 끝 − 시작. */
+  /**
+   * 움직인 시간. 멈춘 시간은 들어가지 않는다. 애플은 HKWorkout duration 그대로,
+   * 헬스 커넥트는 시간 항목이 없어 (끝 − 시작)에서 PAUSE 구간(segments)을 뺀 값이다.
+   * 기록을 쓴 앱이 PAUSE 구간을 남기지 않았으면 헬스 커넥트 쪽은 멈춘 시간을 알 수 없어 끝 − 시작 그대로다.
+   */
   durationSeconds: number | null;
   distanceMeters: number | null;
   energyKcal: number | null;

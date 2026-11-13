@@ -1,30 +1,35 @@
 ---
-title: "운동 후 첫 화면은 기록 카드 아래에 슬라이더를 두고, 질문과 고른 숫자는 크게 띄우지 않는다"
+title: "체감 피로와 메모는 기기에 그 둘만, 기록마다 키 하나로 저장하고, 깨진 값은 다시 묻되 저장소를 못 읽으면 묻지 않는다"
 author: Claude
 date: 2026-11-13
-branch: claude/friendly-cannon-mpcg94
-cost: { minutes: 10, tokens: 106315 }
+branch: claude/compassionate-brahmagupta-6bhj3z
+cost: { minutes: 9, tokens: 168926 }
 id: l-886a0956
 scope: repo
 status: active
 src: agent
 touches:
-  - docs/tasks/v4-health.md
-  - docs/v4/features/copy.md
+  - mobile/src/record/store.ts
+  - mobile/src/record/device-store.ts
+  - mobile/src/screens/AfterRunScreen.tsx
+  - mobile/App.tsx
+  - mobile/test-utils/setup.js
+  - mobile/tools/screenshot.mjs
 ---
 
 ## Decided
-- 사용자가 구조 3개 중 슬라이더 방식(구조 2)을 골랐다. 다만 "얼마나 힘들었어요?"와 고른 숫자를 화면 가운데에 크게 띄운 것은 원하지 않았다. 기록 카드(큰 거리 숫자) 아래에 보통 크기 제목과 슬라이더를 자연스럽게 두라고 했다. 그래서 화면의 주인공은 기록 카드이고, 질문은 20pt 제목, 고른 숫자는 제목 옆 작은 알약으로만 보인다.
-- 저장한 뒤와 "이미 저장한 기록이 다시 들어온 화면"은 슬라이더 대신 읽기 전용 카드(체감 피로 값, 색 막대, 메모)로 보여 준다. 체감 피로는 한 번만 묻는다는 결정에 맞춰 고치는 버튼을 두지 않았다. 사용자 확인은 아직 받지 못했다.
-- 인스타그램 로고 투표 이미지는 로고마다 테마 색 3가지를 모두 보여 준다(사용자 요청). 멘트는 "어떤 로고가 제일 괜찮은가요?".
-
-## Tried and ruled out
-- 슬라이더 한 줄에 버튼 10개를 두는 방식: 390pt 폭에서는 칸 하나가 31pt라 누르는 영역 44pt를 못 채운다. 버튼이면 2줄×5칸, 한 줄이면 슬라이더(영역 높이 44pt)여야 한다.
+- 기기에는 체감 피로와 메모만 둔다. 기록 전체(경로, 심박 표본, extra)는 넣지 않는다. 측정값은 건강 앱이 갖고 있고 앱을 열 때마다 다시 읽는다. 경로까지 넣으면 한 시간 달리기 하나가 1MB 가까이 되어 AsyncStorage(안드로이드는 한 칸 약 2MB, 전체 기본 6MB)에 맞지 않는다.
+- 기록 하나에 키 하나다. 한 칸이 깨져도 다른 기록은 그대로이고, 저장할 때 전체를 읽어 고쳐 쓰지 않아도 된다.
+- 기록은 가져온 곳 + 그곳의 기록 번호로만 찾는다(사용자 지시). 같은 운동 판별 기준은 정해지지 않았으니 넣지 않는다.
+- 저장된 값이 깨졌거나 형식이 다르면 저장한 적이 없는 것으로 보고(null) 처음처럼 다시 묻는다(사용자 지시). 기기 저장소 자체를 읽지 못한 경우(AsyncStorage 오류)는 다르게 다룬다: reject하고 화면은 "기록을 읽지 못했어요." + "다시 읽기"를 보여 준다. 값이 있는지 모르는 채로 물으면 "체감 피로는 한 번만 묻는다"는 결정에 어긋나고, 다시 답한 값이 멀쩡한 예전 값을 덮어쓸 수 있어서다.
+- 이미 저장한 기록이 다시 들어온 화면은 저장 직후 화면과 같다("저장했어요" + 수정). 새 문장을 만들지 않았다(문장의 기준은 copy.md이고 사용자가 정한다). 대신 다시 들어온 경우에는 aria-live를 꺼서 화면 낭독기가 "저장했어요"를 새 소식처럼 읽지 않게 했다.
+- 화면은 저장소가 돌려준 체감 피로와 메모를 방금 읽은 기록에 붙여서 쓴다. 저장소 인터페이스는 findUserInput(가져온 곳, 기록 번호)과 save(기록) 둘뿐이라, 서버 구현으로 바꿔도 화면은 그대로다.
 
 ## Watch out
-- 로고를 칸 가운데에 둘 때 SVG 상자 기준으로 맞추면 어긋난다. 심볼만 그릴 때 글자 'h' 높이까지 여백을 잡아서 심볼이 아래로 처졌고, 사용자가 바로 지적했다. 실제로 그려진 모양의 중심(배경과 구별되는 부분만)을 재서 맞춘다.
-- 슬라이더는 화면 읽어 주기에서 "조절" 방식으로 따로 만들어야 하고, 고르기 전에는 손잡이가 없다. V4 테스트의 "피로 버튼마다 읽어 줄 이름"과 다르므로 코드로 옮길 때 접근성 처리를 다시 정해야 한다.
+- 저장 형식의 항목 이름 source, sourceRecordId는 아직 제안인 이름을 그대로 쓴 것이다. 이름이 바뀌면 SAVED_VERSION을 올려야 하고, 옮기는 코드가 없으면 예전에 저장한 기록은 다시 묻게 된다.
+- 기록 번호가 없는 기록(직접 입력)은 기기 저장소가 저장을 거절한다(다시 찾을 기준이 없어서 저장한 척하지 않는다). 직접 입력을 만들 때 기준을 먼저 정해야 한다.
+- 확인용 웹 번들에서 AsyncStorage는 브라우저의 localStorage다. 그래서 스크린샷 흐름의 5-reopened는 page.reload()로 "앱을 다시 연 것"을 실제로 확인한다.
+- AsyncStorage의 Jest 가짜는 테스트 파일마다 새로 생기지만 한 파일 안에서는 남는다. 기기 저장소를 쓰는 테스트는 beforeEach에서 AsyncStorage.clear()로 비운다.
+- 이 클라우드 환경에서 `npx expo install`은 프록시에 막혀 403으로 끝난다. `EXPO_OFFLINE=1 npx expo install <패키지>`로 Expo SDK에 묶인 버전을 받는다.
 
-In the code:
-- 피그마 "03 폰 앱 시안" 페이지의 "3. 상태 전부" 보드 3개(테마별): 입력 전, 피로 선택 후, 저장 후, 다시 들어온 기록, 심박이 없는 기록 × iPhone 390×844, Android 412×915.
-- 새 문장 후보: "밀거나 눌러서 골라요", "아주 가벼움", "더는 못 달릴 만큼", "이미 저장한 기록이에요", "체감 피로는 기록마다 한 번만 물어요". docs/v4/features/copy.md에 넣을지는 사용자가 정한다.
+In the code: mobile/src/record/store.ts (RecordStore, RecordKey, sameRecord), mobile/src/record/device-store.ts (storageKey, parseSaved, SAVED_VERSION), mobile/src/screens/AfterRunScreen.tsx (readWithSavedInput, savedNow), mobile/App.tsx, mobile/test-utils/setup.js, mobile/tools/screenshot.mjs (5-reopened), mobile/__tests__/record-store.test.ts
