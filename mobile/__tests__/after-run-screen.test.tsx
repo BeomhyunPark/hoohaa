@@ -191,6 +191,91 @@ describe('저장', () => {
   });
 });
 
+describe('저장한 뒤 수정', () => {
+  /** 체감 피로 7과 메모를 저장한 화면. */
+  async function openSaved(platform: 'apple_health' | 'health_connect' = 'apple_health') {
+    const record = await sample(platform);
+    const store = createMemoryRecordStore();
+    const { user } = await open(record, store);
+    await user.press(screen.getByRole('radio', { name: '체감 피로 7' }));
+    await user.type(screen.getByLabelText('메모 (선택)'), '왼쪽 무릎이 조금 아파요');
+    await user.press(screen.getByRole('button', { name: '저장' }));
+    await screen.findByText('저장했어요');
+    return { record, store, user };
+  }
+
+  test('수정을 누르면 저장한 값이 채워진 채로 다시 열린다', async () => {
+    const { user } = await openSaved();
+    await user.press(screen.getByRole('button', { name: '수정' }));
+
+    expect(screen.getByRole('radio', { name: '체감 피로 7' })).toBeChecked();
+    expect(screen.getAllByRole('radio', { checked: true })).toHaveLength(1);
+    expect(screen.getByLabelText('메모 (선택)')).toHaveDisplayValue('왼쪽 무릎이 조금 아파요');
+    expect(screen.getByRole('button', { name: '저장' })).toBeEnabled();
+    // 고치는 중에는 "저장했어요"와 카드에 붙은 예전 값을 치운다.
+    expect(screen.queryByText('저장했어요')).toBeNull();
+    expect(screen.queryByLabelText('체감 피로, 7')).toBeNull();
+  });
+
+  test.each(['apple_health', 'health_connect'] as const)('고쳐서 저장하면 같은 기록의 값이 바뀐다 (%s)', async (platform) => {
+    const { record, store, user } = await openSaved(platform);
+    await user.press(screen.getByRole('button', { name: '수정' }));
+    await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+    await user.clear(screen.getByLabelText('메모 (선택)'));
+    await user.type(screen.getByLabelText('메모 (선택)'), '괜찮아졌어요');
+    await user.press(screen.getByRole('button', { name: '저장' }));
+    await screen.findByText('저장했어요');
+
+    // 기록이 하나 더 생기지 않고, 같은 기록의 체감 피로와 메모만 바뀐다.
+    expect(store.all()).toEqual([{ ...record, userInput: { perceivedExertion: 4, memo: '괜찮아졌어요' } }]);
+    expect(screen.getByLabelText('체감 피로, 4')).toBeTruthy();
+    expect(screen.getByLabelText('메모, 괜찮아졌어요')).toBeTruthy();
+    expect(screen.queryByText('왼쪽 무릎이 조금 아파요')).toBeNull();
+  });
+
+  test('메모를 지우고 저장하면 메모가 없는 기록이 된다', async () => {
+    const { store, user } = await openSaved();
+    await user.press(screen.getByRole('button', { name: '수정' }));
+    await user.clear(screen.getByLabelText('메모 (선택)'));
+    await user.press(screen.getByRole('button', { name: '저장' }));
+    await screen.findByText('저장했어요');
+
+    expect(store.all()[0].userInput).toEqual({ perceivedExertion: 7, memo: null });
+    expect(screen.queryByText('메모')).toBeNull();
+  });
+
+  test('취소하면 저장된 값 그대로이고, 다시 수정을 열어도 버린 값이 남아 있지 않다', async () => {
+    const { store, user } = await openSaved();
+    await user.press(screen.getByRole('button', { name: '수정' }));
+    await user.press(screen.getByRole('radio', { name: '체감 피로 2' }));
+    await user.type(screen.getByLabelText('메모 (선택)'), ' 그리고 발목도');
+    await user.press(screen.getByRole('button', { name: '취소' }));
+
+    expect(screen.getByText('저장했어요')).toBeTruthy();
+    expect(screen.getByLabelText('체감 피로, 7')).toBeTruthy();
+    expect(screen.getByLabelText('메모, 왼쪽 무릎이 조금 아파요')).toBeTruthy();
+    expect(store.all()).toHaveLength(1);
+    expect(store.all()[0].userInput).toEqual({ perceivedExertion: 7, memo: '왼쪽 무릎이 조금 아파요' });
+
+    await user.press(screen.getByRole('button', { name: '수정' }));
+    expect(screen.getByRole('radio', { name: '체감 피로 7' })).toBeChecked();
+    expect(screen.getByLabelText('메모 (선택)')).toHaveDisplayValue('왼쪽 무릎이 조금 아파요');
+  });
+
+  test('처음 묻는 화면에는 취소가 없다', async () => {
+    await open(await sample());
+    expect(screen.queryByRole('button', { name: '취소' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '수정' })).toBeNull();
+  });
+
+  test('수정과 취소 버튼도 누르는 영역이 44pt 이상이다', async () => {
+    const { user } = await openSaved();
+    expect(StyleSheet.flatten(screen.getByRole('button', { name: '수정' }).props.style).minHeight).toBeGreaterThanOrEqual(44);
+    await user.press(screen.getByRole('button', { name: '수정' }));
+    expect(StyleSheet.flatten(screen.getByRole('button', { name: '취소' }).props.style).minHeight).toBeGreaterThanOrEqual(44);
+  });
+});
+
 test('컨디션, 목표, 내일 훈련, 통증 판단은 보여 주지 않는다', async () => {
   const { user } = await open(await sample());
   const judged = /컨디션|목표|내일|훈련|진단|진료|통증|쉬어요|강도/;

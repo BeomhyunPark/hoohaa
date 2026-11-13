@@ -85,6 +85,29 @@ export interface HealthConnectWorkoutRaw {
   heartRate: HCHeartRateRecord[];
 }
 
+/** ExerciseSegment.EXERCISE_SEGMENT_TYPE_PAUSE. 사용자가 운동을 멈춰 둔 구간이다. */
+const SEGMENT_TYPE_PAUSE = 39;
+
+/**
+ * 세션 안에서 멈춰 있던 시간(ms). PAUSE 구간을 세션의 시작~끝 안으로 자르고, 서로 겹치는 구간은 한 번만 센다.
+ * 시각을 읽을 수 없는 구간은 세지 않는다. 구간 자체는 꺼내지 않으므로 extra에 그대로 남는다.
+ */
+function pausedMs(segments: HCExerciseSessionRecord['segments'], startMs: number, endMs: number): number {
+  const pauses = (segments ?? [])
+    .filter((g) => g.segmentType === SEGMENT_TYPE_PAUSE)
+    .map((g) => [Math.max(Date.parse(g.startTime), startMs), Math.min(Date.parse(g.endTime), endMs)] as const)
+    .filter(([from, to]) => Number.isFinite(from) && Number.isFinite(to) && to > from)
+    .sort((a, b) => a[0] - b[0]);
+  let total = 0;
+  let countedUntil = startMs;
+  for (const [from, to] of pauses) {
+    if (to <= countedUntil) continue;
+    total += to - Math.max(from, countedUntil);
+    countedUntil = to;
+  }
+  return total;
+}
+
 /** 헬스 커넥트 원본 하나를 기록으로 바꾼다. importedAt은 읽은 시각(ISO 8601). */
 export function healthConnectToRecord(raw: HealthConnectWorkoutRaw, importedAt: string): WorkoutRecord {
   const t = new FieldTaker(raw);
@@ -93,8 +116,12 @@ export function healthConnectToRecord(raw: HealthConnectWorkoutRaw, importedAt: 
   const sourceRecordId = t.string('session.metadata.id');
   const startTime = t.string('session.startTime') ?? s.startTime;
   const endTime = t.string('session.endTime') ?? s.endTime;
-  const ms = Date.parse(endTime) - Date.parse(startTime);
-  const durationSeconds = Number.isFinite(ms) ? ms / 1000 : null;
+  // 헬스 커넥트에는 시간 항목이 없다. 끝 − 시작에서 멈춘 구간을 빼서, 애플 건강의 duration(멈춘 시간 제외)과
+  // 같은 뜻으로 맞춘다. 같은 달리기가 건강 앱에 따라 다른 시간·페이스로 보이면 안 된다.
+  const startMs = Date.parse(startTime);
+  const endMs = Date.parse(endTime);
+  const durationSeconds =
+    Number.isFinite(startMs) && Number.isFinite(endMs) ? (endMs - startMs - pausedMs(s.segments, startMs, endMs)) / 1000 : null;
 
   // 거리: 세션 시간대의 Distance 기록을 더한다. 각 기록의 시각·출처는 extra에 남는다.
   let distanceMeters: number | null = null;

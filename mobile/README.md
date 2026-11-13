@@ -75,9 +75,11 @@ import { D } from '@hoohaa/engine/data.js';
 2. 체감 피로 1~10을 묻는다. 고르기 전에는 저장 버튼이 눌리지 않는다.
 3. 메모는 선택이다.
 4. 저장을 누르면 기록에 체감 피로와 메모가 붙고 "저장했어요"가 보인다.
+5. 저장한 뒤 "수정"을 누르면 저장한 값이 채워진 채로 다시 열린다. 고쳐서 저장하면 같은 기록의 값이 바뀌고, "취소"는 저장된 값으로 돌아간다. 앱이 다시 묻지는 않는다.
 
 - 컨디션, 목표, 내일 훈련, 통증 판단은 서버가 생긴 다음이라 이 화면에 없다. 기기 저장과, 앱을 다시 열었을 때 같은 기록을 다시 묻지 않는 일도 아직 없다.
-- 화면 문장은 `src/copy/after-run.ts` 한 곳에 있다. [../docs/v4/features/copy.md](../docs/v4/features/copy.md)에는 아직 없는 문장이다.
+- 화면 문장은 `src/copy/after-run.ts` 한 곳에 있다. 기준은 [../docs/v4/features/copy.md](../docs/v4/features/copy.md)의 "기록과 체감 피로" 표다. `__tests__/copy-doc.test.ts`가 코드의 문장이 그 표에 그대로 있는지 보므로, 문장을 고칠 때는 두 곳을 같이 고친다.
+- 기록의 시간은 멈춘 구간을 뺀 값이다. 헬스 커넥트는 시간 항목이 없어 끝 − 시작에서 PAUSE 구간을 뺀다(`src/record/health-connect.ts`). 그래서 같은 달리기는 두 건강 앱에서 같은 시간과 평균 페이스로 보인다.
 - 피로 버튼은 한 줄에 5개씩 두 줄이다. 10개를 한 줄에 두면 좁은 폰에서 누르는 영역이 44pt보다 작아진다. 버튼마다 화면 낭독기가 읽을 이름("체감 피로 7")이 있다.
 - 상태 표시줄과 노치는 `react-native-safe-area-context`로 피한다. 네이티브 모듈이라 Jest에서는 라이브러리의 가짜로 바꾼다(`test-utils/setup.js`).
 
@@ -105,7 +107,7 @@ npm run screenshot
 
 `tools/screenshot.mjs`가 `expo export --platform web`으로 임시 폴더에 웹 번들을 만들고, 127.0.0.1에서만 잠깐 띄운 뒤, Playwright(Chromium)로 iPhone(390×844)과 Android(412×915) 크기 화면을 찍어 `../docs/screenshots/v4/`에 저장한다. 끝나면 임시 폴더를 지운다.
 
-찍는 화면은 스크립트의 `FLOWS`에 있다. 한 흐름은 화면을 순서대로 눌러 가며 여러 장을 찍고, 파일 이름은 `<흐름>-<단계>-<기기>.png`다. 지금은 `after-run`(입력 전 `1-before`, 체감 피로 선택 후 `2-picked`, 저장 후 `3-saved`) 하나다. 이 흐름은 피로 버튼과 저장 버튼의 누르는 영역이 44 이상인지도 잰다. 흐름과 저장 폴더는 `--flow`, `--out`으로 바꾼다.
+찍는 화면은 스크립트의 `FLOWS`에 있다. 한 흐름은 화면을 순서대로 눌러 가며 여러 장을 찍고, 파일 이름은 `<흐름>-<단계>-<기기>.png`다. 지금은 `after-run`(입력 전 `1-before`, 체감 피로 선택 후 `2-picked`, 저장 후 `3-saved`, 수정을 누른 뒤 `4-edit`) 하나다. 이 흐름은 피로, 저장, 수정, 취소 버튼의 누르는 영역이 44 이상인지도 잰다. 흐름과 저장 폴더는 `--flow`, `--out`으로 바꾼다.
 
 ```bash
 npm run screenshot -- --flow after-run --out /tmp/shots

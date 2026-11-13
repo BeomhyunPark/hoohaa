@@ -11,7 +11,7 @@
 // 파일 이름은 <흐름>-<단계>-<기기>.png다. 흐름 중간에 누르는 영역 크기(44pt 이상)도 같이 잰다.
 //
 // 쓰는 법 (mobile/ 에서):
-//   npm run screenshot                       # ../docs/screenshots/v4/after-run-1-before-iphone.png 등 6장
+//   npm run screenshot                       # ../docs/screenshots/v4/after-run-1-before-iphone.png 등 8장
 //   npm run screenshot -- --flow after-run   # 흐름 고르기(기본값 after-run)
 //   npm run screenshot -- --out /tmp/shots   # 저장 폴더 바꾸기
 //   npm run screenshot -- --dist ./dist-web  # 이미 export한 폴더를 그대로 쓰기
@@ -51,7 +51,7 @@ async function expectTouchSize(locator, what) {
 
 // 흐름 하나 = 화면을 순서대로 눌러 가며 찍는 단계들. run은 그 단계의 화면을 만들고, 끝나면 한 장을 찍는다.
 const FLOWS = {
-  // 운동이 끝난 뒤 첫 화면: 입력 전 → 체감 피로 선택 → 저장.
+  // 운동이 끝난 뒤 첫 화면: 입력 전 → 체감 피로 선택 → 저장 → 수정.
   'after-run': [
     {
       step: '1-before',
@@ -75,6 +75,16 @@ const FLOWS = {
       async run(page) {
         await page.getByRole('button', { name: '저장', exact: true }).click();
         await page.getByText('저장했어요', { exact: true }).waitFor();
+        await expectTouchSize(page.getByRole('button', { name: '수정', exact: true }), '수정 버튼');
+      },
+    },
+    {
+      step: '4-edit',
+      async run(page) {
+        await page.getByRole('button', { name: '수정', exact: true }).click();
+        // 저장한 값이 채워진 채로 다시 열린다.
+        await page.getByRole('radio', { name: '체감 피로 7', exact: true, checked: true }).waitFor();
+        await expectTouchSize(page.getByRole('button', { name: '취소', exact: true }), '취소 버튼');
       },
     },
   ],

@@ -1,5 +1,7 @@
 // 운동이 끝난 뒤 첫 화면. 건강 앱에서 읽은 기록을 짧게 보여 주고, 체감 피로(필수)와 메모(선택)를 받아 기록에 붙인다.
 //
+// 저장한 뒤에도 사용자가 "수정"을 눌러 체감 피로와 메모를 고칠 수 있다. 앱이 다시 묻지는 않는다.
+//
 // 컨디션, 목표, 내일 훈련, 통증 판단은 서버가 생긴 다음이라 여기서 보여 주지 않는다.
 // 저장한 기록을 다시 열었을 때의 처리(다시 묻지 않기)는 다음 작업(V5)이다.
 import { useEffect, useState } from 'react';
@@ -33,12 +35,15 @@ for (let v = EXERTION_MIN; v <= EXERTION_MAX; v += PER_ROW) {
   EXERTION_ROWS.push(Array.from({ length: Math.min(PER_ROW, EXERTION_MAX - v + 1) }, (_, i) => v + i));
 }
 
+/**
+ * record는 지금까지의 기록이다(읽은 그대로이거나, 저장했으면 체감 피로와 메모가 붙은 것).
+ * step: ask는 처음 묻는 중, saved는 저장한 뒤, edit는 저장한 값을 고치는 중.
+ */
 type Loaded =
   | { status: 'loading' }
   | { status: 'none' }
   | { status: 'failed' }
-  | { status: 'ready'; record: WorkoutRecord }
-  | { status: 'saved'; record: WorkoutRecord };
+  | { status: 'ready'; record: WorkoutRecord; step: 'ask' | 'saved' | 'edit' };
 
 interface Props {
   reader: HealthReader;
@@ -58,7 +63,7 @@ export function AfterRunScreen({ reader, store }: Props) {
     setLoaded({ status: 'loading' });
     reader.readLatestWorkout().then(
       (record) => {
-        if (current) setLoaded(record ? { status: 'ready', record } : { status: 'none' });
+        if (current) setLoaded(record ? { status: 'ready', record, step: 'ask' } : { status: 'none' });
       },
       () => {
         if (current) setLoaded({ status: 'failed' });
@@ -69,16 +74,18 @@ export function AfterRunScreen({ reader, store }: Props) {
     };
   }, [reader, attempt]);
 
-  const canSave = loaded.status === 'ready' && exertion !== null && !saving;
+  const step = loaded.status === 'ready' ? loaded.step : null;
+  const asking = step === 'ask' || step === 'edit';
+  const canSave = asking && exertion !== null && !saving;
 
   async function save() {
-    if (loaded.status !== 'ready' || exertion === null || saving) return;
+    if (loaded.status !== 'ready' || !asking || exertion === null || saving) return;
     setSaving(true);
     setSaveFailed(false);
     try {
       const record = withUserInput(loaded.record, { perceivedExertion: exertion, memo });
       await store.save(record);
-      setLoaded({ status: 'saved', record });
+      setLoaded({ status: 'ready', record, step: 'saved' });
       // 안드로이드와 웹은 아래 aria-live가 읽어 준다. 아이폰에는 그 속성이 없다.
       if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(copy.saved);
     } catch {
@@ -86,6 +93,22 @@ export function AfterRunScreen({ reader, store }: Props) {
     } finally {
       setSaving(false);
     }
+  }
+
+  /** 저장한 값을 채운 채로 묻는 칸을 다시 연다. */
+  function startEdit() {
+    if (loaded.status !== 'ready' || loaded.step !== 'saved') return;
+    setExertion(loaded.record.userInput.perceivedExertion);
+    setMemo(loaded.record.userInput.memo ?? '');
+    setSaveFailed(false);
+    setLoaded({ ...loaded, step: 'edit' });
+  }
+
+  /** 고치던 것을 버리고 저장된 값으로 돌아간다. */
+  function cancelEdit() {
+    if (loaded.status !== 'ready' || loaded.step !== 'edit' || saving) return;
+    setSaveFailed(false);
+    setLoaded({ ...loaded, step: 'saved' });
   }
 
   return (
@@ -110,9 +133,9 @@ export function AfterRunScreen({ reader, store }: Props) {
           </View>
         )}
 
-        {(loaded.status === 'ready' || loaded.status === 'saved') && <RecordCard record={loaded.record} />}
+        {loaded.status === 'ready' && <RecordCard record={loaded.record} showUserInput={step === 'saved'} />}
 
-        {loaded.status === 'ready' && (
+        {asking && (
           <>
             <View style={styles.section}>
               <Text style={styles.heading} accessibilityRole="header">
@@ -180,15 +203,32 @@ export function AfterRunScreen({ reader, store }: Props) {
                   {copy.saveFailed}
                 </Text>
               )}
+              {step === 'edit' && (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={saving}
+                  onPress={cancelEdit}
+                  style={({ pressed }) => [styles.button, styles.buttonOutline, pressed && styles.pressed]}
+                >
+                  <Text style={styles.buttonOutlineText}>{copy.cancelEdit}</Text>
+                </Pressable>
+              )}
             </View>
           </>
         )}
 
-        {loaded.status === 'saved' && (
+        {step === 'saved' && (
           <View style={styles.section}>
             <Text style={styles.saved} aria-live="polite">
               {copy.saved}
             </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={startEdit}
+              style={({ pressed }) => [styles.button, styles.buttonOutline, pressed && styles.pressed]}
+            >
+              <Text style={styles.buttonOutlineText}>{copy.edit}</Text>
+            </Pressable>
           </View>
         )}
       </ScrollView>
@@ -196,10 +236,13 @@ export function AfterRunScreen({ reader, store }: Props) {
   );
 }
 
-/** 기록을 짧게 보여 주는 카드. 값이 없는 항목은 칸째로 빠진다. 저장한 뒤에는 체감 피로와 메모가 붙는다. */
-function RecordCard({ record }: { record: WorkoutRecord }) {
+/**
+ * 기록을 짧게 보여 주는 카드. 값이 없는 항목은 칸째로 빠진다.
+ * 저장한 뒤(showUserInput)에는 체감 피로와 메모가 붙는다. 묻거나 고치는 중에는 아래 입력칸이 그 값을 보여 준다.
+ */
+function RecordCard({ record, showUserInput }: { record: WorkoutRecord; showUserInput: boolean }) {
   const items = summarize(record);
-  const { perceivedExertion, memo } = record.userInput;
+  const { perceivedExertion, memo } = showUserInput ? record.userInput : { perceivedExertion: null, memo: null };
   return (
     <View style={styles.section}>
       <Text style={styles.heading} accessibilityRole="header">

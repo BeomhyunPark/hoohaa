@@ -40,7 +40,7 @@ export function formatPace(secondsPerKm: number): string {
 
 /**
  * 날짜, 거리, 시간, 평균 페이스, 평균 심박 순서. 값이 없거나 0 이하인 항목은 빠진다.
- * 평균 페이스는 기록의 시간 ÷ 거리다. 시간이 멈춘 구간을 빼는지는 가져온 곳마다 다르다(types.ts durationSeconds).
+ * 평균 페이스는 기록의 시간 ÷ 거리다. 시간은 멈춘 구간을 뺀 값이다(types.ts durationSeconds).
  */
 export function summarize(record: WorkoutRecord): SummaryItem[] {
   const { startTime, distanceMeters, durationSeconds, heartRate } = record.measured;

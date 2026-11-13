@@ -20,12 +20,12 @@ describe('summarize', () => {
     ]);
   });
 
-  test('헬스 커넥트 샘플: 시간이 끝 − 시작이라 멈춘 1분이 들어간다', async () => {
+  test('헬스 커넥트 샘플: 멈춘 1분을 빼서 시간과 평균 페이스가 애플 건강 샘플과 같다', async () => {
     expect(summarize(await sample('health_connect'))).toEqual([
       { key: 'date', value: '11월 6일 (금) 오전 6:30' },
       { key: 'distance', value: '5.01 km' },
-      { key: 'duration', value: '29:32' },
-      { key: 'pace', value: '5:54/km' },
+      { key: 'duration', value: '28:32' },
+      { key: 'pace', value: '5:42/km' },
       { key: 'heartRate', value: '146 bpm' },
     ]);
   });
