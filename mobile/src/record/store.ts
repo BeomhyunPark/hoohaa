@@ -21,8 +21,7 @@ export interface SavedUserInput {
 export interface RecordStore {
   /**
    * 이 기록에 저장해 둔 체감 피로와 메모. 화면은 이 값이 있으면 다시 묻지 않는다.
-   * null은 "처음처럼 물어도 된다"는 뜻이다: 저장한 적이 없거나, 저장된 값을 쓸 수 없거나(깨졌거나 형식이 다르다),
-   * 기록 번호가 없어(직접 입력) 찾을 수 없을 때.
+   * null은 "처음처럼 물어도 된다"는 뜻이다: 저장한 적이 없거나, 저장된 값을 쓸 수 없을 때(깨졌거나 형식이 다르다).
    * 저장소 자체를 읽지 못하면 null이 아니라 reject한다. 값이 있는지 모르는 채로 다시 묻지 않기 위해서다.
    */
   findUserInput(key: RecordKey): Promise<SavedUserInput | null>;
@@ -35,7 +34,7 @@ export interface RecordStore {
 }
 
 export function sameRecord(a: RecordKey, b: RecordKey): boolean {
-  return a.sourceRecordId !== null && a.source === b.source && a.sourceRecordId === b.sourceRecordId;
+  return a.source === b.source && a.sourceRecordId === b.sourceRecordId;
 }
 
 export interface MemoryRecordStore extends RecordStore {
@@ -43,7 +42,7 @@ export interface MemoryRecordStore extends RecordStore {
   all(): WorkoutRecord[];
 }
 
-/** 메모리에만 두는 저장소. 기록 번호가 없는 기록(직접 입력)은 늘 새로 넣고, 다시 찾지 못한다. */
+/** 메모리에만 두는 저장소. */
 export function createMemoryRecordStore(): MemoryRecordStore {
   const records: WorkoutRecord[] = [];
   return {

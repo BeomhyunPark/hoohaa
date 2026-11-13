@@ -87,13 +87,4 @@ describe('메모리 저장소', () => {
       ['health_connect', null],
     ]);
   });
-
-  test('기록 번호가 없는 기록(직접 입력)은 따로 저장한다', async () => {
-    const store = createMemoryRecordStore();
-    const manual = await sample('apple_health');
-    manual.origin = { source: 'manual', sourceRecordId: null, importedAt: now().toISOString() };
-    await store.save(manual);
-    await store.save(manual);
-    expect(store.all()).toHaveLength(2);
-  });
 });

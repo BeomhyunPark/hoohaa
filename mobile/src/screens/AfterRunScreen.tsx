@@ -4,6 +4,8 @@
 // 묻지 않고 저장된 값을 보여 준다. 이때 "저장했어요"는 보여 주지 않는다(방금 저장했을 때만 하는 말이다). 저장해 둔 값은 저장소(RecordStore)가 가져온 곳과 그곳의 기록 번호로 찾는다.
 // 저장한 뒤에도 사용자가 "수정"을 눌러 체감 피로와 메모를 고칠 수 있다. 앱이 다시 묻지는 않는다.
 //
+// 맨 아래의 "기록 직접 입력"은 직접 입력 화면(ManualEntryScreen)을 연다. 고치는 중에는 숨긴다(적던 값이 사라지지 않게).
+//
 // 컨디션, 목표, 내일 훈련, 통증 판단은 서버가 생긴 다음이라 여기서 보여 주지 않는다.
 import { useEffect, useState } from 'react';
 import {
@@ -49,9 +51,11 @@ type Loaded =
 interface Props {
   reader: HealthReader;
   store: RecordStore;
+  /** 기록을 직접 입력하는 화면을 연다. 없으면 버튼을 그리지 않는다. */
+  onAddManual?: () => void;
 }
 
-export function AfterRunScreen({ reader, store }: Props) {
+export function AfterRunScreen({ reader, store, onAddManual }: Props) {
   const [loaded, setLoaded] = useState<Loaded>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [exertion, setExertion] = useState<number | null>(null);
@@ -237,6 +241,17 @@ export function AfterRunScreen({ reader, store }: Props) {
             </Pressable>
           </View>
         )}
+
+        {onAddManual && loaded.status !== 'loading' && step !== 'edit' && (
+          <Pressable
+            accessibilityRole="button"
+            disabled={saving}
+            onPress={onAddManual}
+            style={({ pressed }) => [styles.button, styles.buttonPlain, pressed && styles.pressed]}
+          >
+            <Text style={styles.buttonPlainText}>{copy.addManual}</Text>
+          </Pressable>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -349,6 +364,8 @@ const styles = StyleSheet.create({
   buttonDisabledText: { fontSize: 17, fontWeight: '700', color: colors.sub },
   buttonOutline: { borderWidth: 1, borderColor: colors.ink },
   buttonOutlineText: { fontSize: 17, fontWeight: '700', color: colors.ink },
+  buttonPlain: { alignSelf: 'center' },
+  buttonPlainText: { fontSize: 16, fontWeight: '600', color: colors.ink, textDecorationLine: 'underline' },
   pressed: { opacity: 0.6 },
 
   saved: { fontSize: 20, fontWeight: '700', color: colors.ink },

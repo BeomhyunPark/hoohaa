@@ -14,10 +14,9 @@ export interface RecordOrigin {
   source: RecordSource;
   /**
    * 그곳의 기록 번호. 애플 건강은 HKWorkout uuid, 헬스 커넥트는 ExerciseSessionRecord metadata.id.
-   * 직접 입력은 바깥 번호가 없다. 앱이 번호를 만들어 붙이기로 했다(docs/v4/features/health-import.md의 결정).
-   * 직접 입력을 만들 때 번호를 붙이고 이 타입에서 null을 뺀다. 그때까지는 null이 남아 있다.
+   * 직접 입력은 바깥 번호가 없어, 저장할 때 앱이 번호를 만들어 붙인다(manual.ts의 newManualRecordId).
    */
-  sourceRecordId: string | null;
+  sourceRecordId: string;
   /** 이 앱이 읽어 온 시각(ISO 8601, UTC). 원본의 시각이 아니다. */
   importedAt: string;
 }
@@ -53,6 +52,11 @@ export interface MeasuredData {
   distanceMeters: number | null;
   energyKcal: number | null;
   heartRate: HeartRate | null;
+  /**
+   * 평균 케이던스(1분에 걸음 수). 지금은 직접 입력한 기록에만 값이 있다.
+   * 건강 앱 기록은 null이고, 원본에 걸음 항목이 있으면 extra에 그대로 남아 있다.
+   */
+  averageCadenceSpm: number | null;
 }
 
 /** 사용자가 직접 넣은 데이터. 건강 앱에서 가져온 직후에는 둘 다 비어 있다. */
@@ -88,6 +92,7 @@ export interface WorkoutRecord {
   /**
    * 원본에 있었지만 위에 이름이 없는 항목 전부. 키는 원본의 경로(예: "workout.metadata.HKIndoorWorkout"),
    * 값은 원본 그대로다. "그 운동에 들어 있는 항목은 빠짐없이 가져온다"는 결정 때문에 버리지 않고 여기에 둔다.
+   * 직접 입력한 기록에는 "manual.startTimeEntered"(시작 시각을 적었는지) 하나가 있다(manual.ts).
    */
   extra: Record<string, RawValue>;
 }

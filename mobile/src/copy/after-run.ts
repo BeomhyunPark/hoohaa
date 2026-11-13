@@ -20,6 +20,7 @@ export const afterRunCopy = {
     duration: '시간',
     pace: '평균 페이스',
     heartRate: '평균 심박',
+    cadence: '평균 케이던스',
   },
 
   exertionTitle: '체감 피로',
@@ -41,6 +42,9 @@ export const afterRunCopy = {
   savedMemoLabel: '메모',
   edit: '수정',
   cancelEdit: '취소',
+
+  /** 기록을 직접 입력하는 화면으로 가는 버튼. */
+  addManual: '기록 직접 입력',
 } as const;
 
 /** 화면 낭독기가 읽는 피로 버튼 하나의 이름. 양 끝 값에는 뜻을 붙인다. */

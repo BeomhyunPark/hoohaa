@@ -37,3 +37,39 @@ test('체감 피로와 메모를 저장하고 앱을 닫았다 열면, 다시 �
   expect(screen.queryByText('저장했어요')).toBeNull();
   expect(screen.getByRole('button', { name: '수정' })).toBeTruthy();
 });
+
+test('기록을 직접 입력하면 바로 그 기록의 체감 피로를 묻고, 앱을 닫았다 열어도 그 기록이 저장된 값과 함께 보인다', async () => {
+  const user = userEvent.setup();
+  await render(<App />);
+  await screen.findByText('운동 기록');
+  await user.press(screen.getByRole('button', { name: '기록 직접 입력' }));
+
+  // 날짜는 오늘로 채워져 있다. 샘플 달리기(11월 6일)보다 뒤라서 다시 열었을 때 이 기록이 가장 최근이다.
+  await user.type(screen.getByLabelText('거리 (km)'), '10');
+  await user.type(screen.getByLabelText('시간'), '5500');
+  await user.type(screen.getByLabelText('평균 케이던스 (spm)'), '176');
+  await user.press(screen.getByRole('button', { name: '저장' }));
+
+  expect(await screen.findByLabelText('거리, 10.00 km')).toBeTruthy();
+  expect(screen.getByLabelText('시간, 55:00')).toBeTruthy();
+  expect(screen.getByLabelText('평균 케이던스, 176 spm')).toBeTruthy();
+  expect(screen.getByText('이번 달리기는 얼마나 힘들었어요?')).toBeTruthy();
+  await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+  await user.press(screen.getByRole('button', { name: '저장' }));
+  await screen.findByText('저장했어요');
+  await screen.unmount();
+
+  await render(<App />);
+  expect(await screen.findByLabelText('거리, 10.00 km')).toBeTruthy();
+  expect(screen.getByLabelText('체감 피로, 4')).toBeTruthy();
+  expect(screen.queryByText('이번 달리기는 얼마나 힘들었어요?')).toBeNull();
+});
+
+test('직접 입력을 취소하면 보던 기록으로 돌아간다', async () => {
+  const user = userEvent.setup();
+  await render(<App />);
+  await screen.findByText('운동 기록');
+  await user.press(screen.getByRole('button', { name: '기록 직접 입력' }));
+  await user.press(screen.getByRole('button', { name: '취소' }));
+  expect(await screen.findByText('5:42/km')).toBeTruthy();
+});

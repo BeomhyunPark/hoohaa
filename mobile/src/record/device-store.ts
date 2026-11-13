@@ -1,7 +1,8 @@
 // 기기 안에 두는 저장소(AsyncStorage). 앱을 닫았다 열어도 남는다. 계정과 서버는 없다.
 //
-// 기기에는 체감 피로와 메모만 둔다. 거리, 심박, 경로 같은 측정값은 건강 앱이 갖고 있고 앱을 열 때마다 다시 읽으므로
+// 여기에는 체감 피로와 메모만 둔다. 거리, 심박, 경로 같은 측정값은 건강 앱이 갖고 있고 앱을 열 때마다 다시 읽으므로
 // 여기에 복사하지 않는다(경로와 심박 표본까지 넣으면 기록 하나가 AsyncStorage의 한 칸에 담기에 너무 커진다).
+// 직접 입력한 기록의 측정값은 건강 앱에 없어서 manual-store.ts가 따로 둔다. 체감 피로와 메모는 그 기록도 여기에 둔다.
 //
 // 기록 하나 = 키 하나. 한 칸이 깨져도 다른 기록은 그대로다.
 //   키: hoohaa/user-input/<가져온 곳>/<그곳의 기록 번호>
@@ -19,10 +20,10 @@ export const SAVED_VERSION = 1;
 
 const KEY_PREFIX = 'hoohaa/user-input/';
 
-/** 기록 하나의 저장 키. 기록 번호가 없는 기록(직접 입력)은 키가 없다. */
-export function storageKey(key: RecordKey): string | null {
+/** 기록 하나의 저장 키. */
+export function storageKey(key: RecordKey): string {
   // 가져온 곳은 빗금이 없는 정해진 값이라, 기록 번호에 어떤 글자가 있어도 키가 겹치지 않는다.
-  return key.sourceRecordId === null ? null : `${KEY_PREFIX}${key.source}/${key.sourceRecordId}`;
+  return `${KEY_PREFIX}${key.source}/${key.sourceRecordId}`;
 }
 
 /**
@@ -49,20 +50,12 @@ export function parseSaved(text: string, key: RecordKey): SavedUserInput | null 
 export function createDeviceRecordStore(): RecordStore {
   return {
     async findUserInput(key) {
-      const at = storageKey(key);
-      if (at === null) return null;
       // getItem이 실패하면(기기 저장소를 읽지 못함) 그대로 reject한다. 화면이 "다시 읽기"를 보여 준다.
-      const text = await AsyncStorage.getItem(at);
+      const text = await AsyncStorage.getItem(storageKey(key));
       return text === null ? null : parseSaved(text, key);
     },
 
     async save(record) {
-      const at = storageKey(record.origin);
-      if (at === null) {
-        // 번호가 없으면 다시 찾을 수 없다. 저장한 척하지 않는다.
-        // 직접 입력 기록은 앱이 번호를 만들어 붙이기로 했으므로(health-import.md), 그 뒤로는 여기에 오지 않는다.
-        throw new Error('기록 번호가 없는 기록은 기기에 저장할 수 없다');
-      }
       const { perceivedExertion, memo } = record.userInput;
       if (!isPerceivedExertion(perceivedExertion)) {
         throw new RangeError(`체감 피로는 1~10의 정수여야 한다: ${perceivedExertion}`);
@@ -74,7 +67,7 @@ export function createDeviceRecordStore(): RecordStore {
         perceivedExertion,
         memo,
       };
-      await AsyncStorage.setItem(at, JSON.stringify(saved));
+      await AsyncStorage.setItem(storageKey(record.origin), JSON.stringify(saved));
     },
   };
 }

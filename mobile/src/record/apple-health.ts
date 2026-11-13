@@ -153,6 +153,8 @@ export function appleHealthToRecord(raw: AppleHealthWorkoutRaw, importedAt: stri
   const t = new FieldTaker(raw);
 
   const sourceRecordId = t.string('workout.uuid');
+  // 애플 건강의 운동에는 늘 uuid가 있다. 없으면 다시 찾을 수 없는 기록이라 받지 않는다.
+  if (sourceRecordId === null) throw new Error('애플 건강 원본에 운동의 uuid가 없다');
   const startTime = t.string('workout.startDate') ?? raw.workout.startDate;
   const endTime = t.string('workout.endDate') ?? raw.workout.endDate;
 
@@ -214,6 +216,7 @@ export function appleHealthToRecord(raw: AppleHealthWorkoutRaw, importedAt: stri
       distanceMeters: t.meters('workout.totalDistance'),
       energyKcal: t.kcal('workout.totalEnergyBurned'),
       heartRate,
+      averageCadenceSpm: null,
     },
     userInput: { perceivedExertion: null, memo: null },
     route,
