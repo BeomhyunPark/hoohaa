@@ -45,6 +45,16 @@ export const afterRunCopy = {
 
   /** 기록을 직접 입력하는 화면으로 가는 버튼. */
   addManual: '기록 직접 입력',
+  /** 지난 기록 목록으로 가는 버튼. */
+  openList: '지난 기록',
+
+  /** 직접 입력한 기록에만 있는 버튼. 날짜, 거리, 시간 같은 적은 값을 고치거나 기록을 지운다. */
+  editRecord: '기록 고치기',
+  deleteRecord: '기록 지우기',
+  deleteQuestion: '이 기록을 지울까요? 체감 피로와 메모도 같이 지워져요.',
+  deleteConfirm: '지우기',
+  deleteCancel: '취소',
+  deleteFailed: '지우지 못했어요. 다시 눌러 주세요.',
 } as const;
 
 /** 화면 낭독기가 읽는 피로 버튼 하나의 이름. 양 끝 값에는 뜻을 붙인다. */

@@ -190,3 +190,20 @@ export function manualRecord(id: string, createdAt: string, fields: ManualFields
     extra: { [START_TIME_ENTERED]: fields.startTimeEntered },
   };
 }
+
+/** 직접 입력한 기록 → 입력칸의 글자. 적어 둔 기록을 고칠 때 칸을 채운다. 기기 시간대로 적는다. */
+export function manualFormOf(record: WorkoutRecord): ManualForm {
+  const { startTime, durationSeconds, distanceMeters, heartRate, averageCadenceSpm } = record.measured;
+  const start = new Date(startTime);
+  const s = Math.round(durationSeconds ?? 0);
+  const [h, m] = [Math.floor(s / 3600), Math.floor((s % 3600) / 60)];
+  const text = (n: number | null | undefined) => (typeof n === 'number' ? String(n) : '');
+  return {
+    date: formatDateInput(start),
+    distance: typeof distanceMeters === 'number' ? String(distanceMeters / 1000) : '',
+    duration: s > 0 ? (h ? `${h}:${p2(m)}:${p2(s % 60)}` : `${m}:${p2(s % 60)}`) : '',
+    startTime: record.extra[START_TIME_ENTERED] === true ? `${p2(start.getHours())}:${p2(start.getMinutes())}` : '',
+    heartRate: text(heartRate?.averageBpm),
+    cadence: text(averageCadenceSpm),
+  };
+}

@@ -84,6 +84,18 @@ describe.each<[string, () => RecordStore]>([
     expect(await store.findUserInput(hc.origin)).toEqual({ perceivedExertion: 8, memo: '헬스 커넥트' });
   });
 
+  test('지우면 그 기록의 값만 사라지고, 저장한 적 없는 기록을 지워도 된다', async () => {
+    const store = create();
+    const apple = await sample('apple_health');
+    const hc = await sample('health_connect');
+    await store.save(withUserInput(apple, { perceivedExertion: 3, memo: '' }));
+    await store.save(withUserInput(hc, { perceivedExertion: 8, memo: '' }));
+    await store.remove(apple.origin);
+    await store.remove({ source: 'manual', sourceRecordId: 'm-none' });
+    expect(await store.findUserInput(apple.origin)).toBeNull();
+    expect(await store.findUserInput(hc.origin)).toEqual({ perceivedExertion: 8, memo: null });
+  });
+
   test('직접 입력한 기록도 가져온 곳(manual)과 앱이 붙인 번호로 찾는다', async () => {
     const store = create();
     const manual = withUserInput(await sample(), { perceivedExertion: 4, memo: '가볍게' });

@@ -12,7 +12,7 @@
 //
 // 쓰는 법 (mobile/ 에서):
 //   npm run screenshot                       # ../docs/screenshots/v4/after-run-1-before-iphone.png 등 10장
-//   npm run screenshot -- --flow manual      # 흐름 고르기(기본값 after-run). manual은 기록 직접 입력
+//   npm run screenshot -- --flow manual      # 흐름 고르기(기본값 after-run). manual은 기록 직접 입력, list는 지난 기록
 //   npm run screenshot -- --out /tmp/shots   # 저장 폴더 바꾸기
 //   npm run screenshot -- --dist ./dist-web  # 이미 export한 폴더를 그대로 쓰기
 //
@@ -159,6 +159,70 @@ const FLOWS = {
         await page.getByLabel('거리, 10.00 km', { exact: true }).waitFor();
         await page.getByLabel('평균 케이던스, 176 spm', { exact: true }).waitFor();
         await expectTouchSize(page.getByRole('radio'), '피로 버튼');
+      },
+    },
+  ],
+
+  // 지난 기록: 지난 날짜로 기록을 적어 두고 → 목록 → 그 기록 열기 → 고치는 화면 → 지울지 묻기 → 지운 뒤 목록.
+  list: [
+    {
+      step: '1-list',
+      async run(page) {
+        await page.getByText('운동 기록', { exact: true }).waitFor();
+        // 샘플 달리기(11월 6일)보다 앞선 날짜로 적는다. 가장 최근 기록이 아니라서 목록에서만 찾을 수 있다.
+        await page.getByRole('button', { name: '기록 직접 입력', exact: true }).click();
+        await page.getByLabel('날짜', { exact: true }).fill('');
+        await page.getByLabel('날짜', { exact: true }).pressSequentially('20261101');
+        await page.getByLabel('거리 (km)', { exact: true }).fill('10');
+        await page.getByLabel('시간', { exact: true }).pressSequentially('5500');
+        await page.getByRole('button', { name: '저장', exact: true }).click();
+        await page.getByRole('radio', { name: '체감 피로 4', exact: true }).click();
+        await page.getByRole('button', { name: '저장', exact: true }).click();
+        await page.getByText('저장했어요', { exact: true }).waitFor();
+        await expectTouchSize(page.getByRole('button', { name: '지난 기록', exact: true }), '지난 기록 버튼');
+        await page.getByRole('button', { name: '지난 기록', exact: true }).click();
+        await page.getByText('직접 입력 · 체감 피로 4', { exact: true }).waitFor();
+        await expectTouchSize(page.getByRole('button', { name: /km/ }), '기록 한 줄');
+        await expectTouchSize(page.getByRole('button', { name: '돌아가기', exact: true }), '돌아가기 버튼');
+      },
+    },
+    {
+      step: '2-record',
+      async run(page) {
+        await page.getByRole('button', { name: /, 직접 입력/ }).click();
+        await page.getByLabel('날짜, 11월 1일 (일)', { exact: true }).waitFor();
+        await page.getByLabel('체감 피로, 4', { exact: true }).waitFor();
+        await expectTouchSize(page.getByRole('button', { name: '기록 고치기', exact: true }), '기록 고치기 버튼');
+        await expectTouchSize(page.getByRole('button', { name: '기록 지우기', exact: true }), '기록 지우기 버튼');
+      },
+    },
+    {
+      step: '3-edit',
+      async run(page) {
+        await page.getByRole('button', { name: '기록 고치기', exact: true }).click();
+        await page.getByText('자세히 (선택)', { exact: true }).waitFor();
+        for (const [label, value] of [['날짜', '2026-11-01'], ['거리 (km)', '10'], ['시간', '55:00']]) {
+          const got = await page.getByLabel(label, { exact: true }).inputValue();
+          if (got !== value) throw new Error(`고치는 화면의 ${label} 칸: ${got} (기대: ${value})`);
+        }
+      },
+    },
+    {
+      step: '4-delete',
+      async run(page) {
+        await page.getByRole('button', { name: '취소', exact: true }).click();
+        await page.getByRole('button', { name: '기록 지우기', exact: true }).click();
+        await page.getByText('이 기록을 지울까요? 체감 피로와 메모도 같이 지워져요.', { exact: true }).waitFor();
+        await expectTouchSize(page.getByRole('button', { name: '지우기', exact: true }), '지우기 버튼');
+      },
+    },
+    {
+      step: '5-deleted',
+      async run(page) {
+        await page.getByRole('button', { name: '지우기', exact: true }).click();
+        await page.getByText('지난 기록', { exact: true }).waitFor();
+        await page.getByRole('button', { name: /^11월 6일/ }).waitFor();
+        if ((await page.getByRole('button', { name: /, 직접 입력/ }).count()) !== 0) throw new Error('지운 기록이 목록에 남아 있다');
       },
     },
   ],

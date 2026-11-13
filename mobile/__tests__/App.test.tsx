@@ -73,3 +73,48 @@ test('직접 입력을 취소하면 보던 기록으로 돌아간다', async () 
   await user.press(screen.getByRole('button', { name: '취소' }));
   expect(await screen.findByText('5:42/km')).toBeTruthy();
 });
+
+test('지난 날짜로 적은 기록도 목록에서 찾아 고치고 지울 수 있다', async () => {
+  const user = userEvent.setup();
+  await render(<App />);
+  await screen.findByText('운동 기록');
+
+  // 샘플 달리기(11월 6일)보다 앞선 날짜로 적는다.
+  await user.press(screen.getByRole('button', { name: '기록 직접 입력' }));
+  await user.clear(screen.getByLabelText('날짜'));
+  await user.type(screen.getByLabelText('날짜'), '20261101');
+  await user.type(screen.getByLabelText('거리 (km)'), '10');
+  await user.type(screen.getByLabelText('시간'), '5500');
+  await user.press(screen.getByRole('button', { name: '저장' }));
+  await screen.findByLabelText('거리, 10.00 km');
+  await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+  await user.press(screen.getByRole('button', { name: '저장' }));
+  await screen.findByText('저장했어요');
+
+  // 목록: 샘플이 앞, 지난 날짜로 적은 기록이 뒤.
+  await user.press(screen.getByRole('button', { name: '지난 기록' }));
+  const typed = await screen.findByRole('button', { name: '11월 1일 (일), 10.00 km, 55:00, 5:30/km, 직접 입력, 체감 피로 4' });
+  expect(screen.getByRole('button', { name: /^11월 6일/ })).toBeTruthy();
+
+  // 열어서 거리를 고친다. 체감 피로는 그대로 붙어 있다.
+  await user.press(typed);
+  await screen.findByLabelText('체감 피로, 4');
+  await user.press(screen.getByRole('button', { name: '기록 고치기' }));
+  await user.clear(screen.getByLabelText('거리 (km)'));
+  await user.type(screen.getByLabelText('거리 (km)'), '11');
+  await user.press(screen.getByRole('button', { name: '저장' }));
+  expect(await screen.findByLabelText('거리, 11.00 km')).toBeTruthy();
+  expect(screen.getByLabelText('체감 피로, 4')).toBeTruthy();
+  expect(screen.queryByText('이번 달리기는 얼마나 힘들었어요?')).toBeNull();
+
+  // 지우면 목록으로 가고, 기기에 그 기록의 것은 아무것도 남지 않는다.
+  await user.press(screen.getByRole('button', { name: '기록 지우기' }));
+  await user.press(screen.getByRole('button', { name: '지우기' }));
+  expect(await screen.findByRole('button', { name: /^11월 6일/ })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /, 직접 입력/ })).toBeNull();
+  expect(await AsyncStorage.getAllKeys()).toEqual([]);
+
+  // 돌아가면 가장 최근 기록(샘플)이다.
+  await user.press(screen.getByRole('button', { name: '돌아가기' }));
+  expect(await screen.findByText('5:42/km')).toBeTruthy();
+});

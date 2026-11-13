@@ -5,6 +5,8 @@ import type { ManualError, ManualField } from '../record/manual';
 
 export const manualEntryCopy = {
   title: '기록 직접 입력',
+  /** 적어 둔 기록을 고칠 때의 제목. */
+  editTitle: '기록 고치기',
   intro: '날짜, 거리, 시간만 적으면 돼요.',
 
   labels: {

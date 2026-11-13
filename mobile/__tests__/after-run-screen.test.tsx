@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 
 import { createDeviceRecordStore, storageKey } from '../src/record/device-store';
 import { createFakeHealthReader, type HealthReader } from '../src/record/health-reader';
+import { manualRecord } from '../src/record/manual';
 import { createMemoryRecordStore, type RecordStore } from '../src/record/store';
 import type { WorkoutRecord } from '../src/record/types';
 import { AfterRunScreen } from '../src/screens/AfterRunScreen';
@@ -486,4 +487,66 @@ test('컨디션, 목표, 내일 훈련, 통증 판단은 보여 주지 않는다
 
   // 사용자가 적은 메모는 그대로 보이지만, 그 밖에 판단하는 말은 없다.
   expect(screen.getAllByText(judged).map((el) => el.props.children)).toEqual(['종아리 통증']);
+});
+
+describe('직접 입력한 기록 고치기와 지우기', () => {
+  const typed = () =>
+    manualRecord('m-1', now().toISOString(), {
+      startTime: '2026-11-04T21:10:00.000Z',
+      startTimeEntered: true,
+      durationSeconds: 3300,
+      distanceMeters: 10000,
+      averageBpm: null,
+      averageCadenceSpm: null,
+    });
+
+  async function openWith(record: WorkoutRecord, onDeleteRecord = jest.fn<Promise<void>, [WorkoutRecord]>().mockResolvedValue()) {
+    const onEditRecord = jest.fn<void, [WorkoutRecord]>();
+    await render(
+      <AfterRunScreen reader={readerOf(record)} store={createMemoryRecordStore()} onEditRecord={onEditRecord} onDeleteRecord={onDeleteRecord} />,
+    );
+    await screen.findByText('운동 기록');
+    return { onEditRecord, onDeleteRecord, user: userEvent.setup() };
+  }
+
+  test('건강 앱 기록에는 고치기와 지우기가 없다', async () => {
+    await openWith(await sample());
+    expect(screen.queryByRole('button', { name: '기록 고치기' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '기록 지우기' })).toBeNull();
+  });
+
+  test('기록 고치기를 누르면 그 기록을 넘긴다', async () => {
+    const { onEditRecord, user } = await openWith(typed());
+    await user.press(screen.getByRole('button', { name: '기록 고치기' }));
+    expect(onEditRecord).toHaveBeenCalledWith(typed());
+  });
+
+  test('기록 지우기는 한 번 묻고, 지우기를 눌러야 지운다', async () => {
+    const { onDeleteRecord, user } = await openWith(typed());
+    await user.press(screen.getByRole('button', { name: '기록 지우기' }));
+    expect(screen.getByText('이 기록을 지울까요? 체감 피로와 메모도 같이 지워져요.')).toBeTruthy();
+    expect(onDeleteRecord).not.toHaveBeenCalled();
+
+    await user.press(screen.getByRole('button', { name: '지우기' }));
+    expect(onDeleteRecord).toHaveBeenCalledWith(typed());
+  });
+
+  test('묻는 중에 취소하면 지우지 않고 버튼이 돌아온다', async () => {
+    const { onDeleteRecord, user } = await openWith(typed());
+    await user.press(screen.getByRole('button', { name: '기록 지우기' }));
+    await user.press(screen.getByRole('button', { name: '취소' }));
+    expect(onDeleteRecord).not.toHaveBeenCalled();
+    expect(screen.queryByText(/이 기록을 지울까요/)).toBeNull();
+    expect(screen.getByRole('button', { name: '기록 지우기' })).toBeTruthy();
+  });
+
+  test('지우지 못하면 알리고, 다시 누를 수 있다', async () => {
+    const onDeleteRecord = jest.fn<Promise<void>, [WorkoutRecord]>().mockRejectedValueOnce(new Error('실패')).mockResolvedValue();
+    const { user } = await openWith(typed(), onDeleteRecord);
+    await user.press(screen.getByRole('button', { name: '기록 지우기' }));
+    await user.press(screen.getByRole('button', { name: '지우기' }));
+    expect(await screen.findByText('지우지 못했어요. 다시 눌러 주세요.')).toBeTruthy();
+    await user.press(screen.getByRole('button', { name: '지우기' }));
+    expect(onDeleteRecord).toHaveBeenCalledTimes(2);
+  });
 });

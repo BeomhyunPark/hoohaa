@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { createFakeHealthReader, createLatestWorkoutReader } from '../src/record/health-reader';
+import { createFakeHealthReader, createLatestWorkoutReader, createRecordLister } from '../src/record/health-reader';
 import {
   formatDateInput,
+  manualFormOf,
   manualRecord,
   newManualRecordId,
   readManualForm,
@@ -216,6 +217,20 @@ describe.each<[string, () => ManualRecordStore]>([
     expect(rec(await store.latest()).measured.distanceMeters).toBe(10000);
   });
 
+  test('저장한 기록을 전부 돌려주고, 지우면 그 기록만 사라진다', async () => {
+    const store = create();
+    await store.save(manualRecord('m-1', now.toISOString(), fields({ date: '2026-11-12' })));
+    await store.save(manualRecord('m-2', now.toISOString(), fields({ date: '2026-11-01' })));
+    expect((await store.all()).map((r) => r.origin.sourceRecordId).sort()).toEqual(['m-1', 'm-2']);
+
+    await store.remove('m-1');
+    expect((await store.all()).map((r) => r.origin.sourceRecordId)).toEqual(['m-2']);
+    expect(rec(await store.latest()).origin.sourceRecordId).toBe('m-2');
+    // 없는 번호를 지워도 된다.
+    await store.remove('m-1');
+    expect(await store.all()).toHaveLength(1);
+  });
+
   test('건강 앱 기록은 받지 않는다', async () => {
     const health = rec(await createFakeHealthReader('apple_health', () => now).readLatestWorkout());
     await expect(create().save(health)).rejects.toThrow();
@@ -300,5 +315,37 @@ describe('가장 최근 기록', () => {
   test('둘 다 없으면 null이다', async () => {
     const reader = createLatestWorkoutReader({ readLatestWorkout: async () => null }, createMemoryManualRecordStore());
     expect(await reader.readLatestWorkout()).toBeNull();
+  });
+});
+
+describe('고칠 때 칸에 채울 글자', () => {
+  test.each<[string, Partial<ManualForm>]>([
+    ['꼭 받는 칸만', {}],
+    ['선택 칸까지', { startTime: '06:30', heartRate: '156', cadence: '176' }],
+    ['한 시간이 넘는 기록', { distance: '42.195', duration: '3:59:59' }],
+    ['자정에 시작한 기록', { startTime: '00:00' }],
+  ])('%s: 적은 그대로 돌아온다', (_what, over) => {
+    const typed = form(over);
+    expect(manualFormOf(manualRecord('m-1', now.toISOString(), fields(over)))).toEqual(typed);
+  });
+});
+
+describe('지난 기록 목록', () => {
+  const health = createFakeHealthReader('apple_health', () => now); // 11월 6일 오전(서울)
+
+  test('직접 입력한 기록 전부와 건강 앱의 마지막 운동을 늦게 끝난 순서로 돌려준다', async () => {
+    const manual = createMemoryManualRecordStore();
+    await manual.save(manualRecord('m-old', now.toISOString(), fields({ date: '2026-11-01' })));
+    await manual.save(manualRecord('m-new', now.toISOString(), fields({ date: '2026-11-12' })));
+    const list = await createRecordLister(health, manual).list();
+    expect(list.map((r) => r.origin.source === 'manual' ? r.origin.sourceRecordId : r.origin.source)).toEqual(['m-new', 'apple_health', 'm-old']);
+  });
+
+  test('건강 앱에 운동이 없으면 직접 입력한 기록만, 둘 다 없으면 빈 목록이다', async () => {
+    const none = { readLatestWorkout: async () => null };
+    const manual = createMemoryManualRecordStore();
+    expect(await createRecordLister(none, manual).list()).toEqual([]);
+    await manual.save(manualRecord('m-1', now.toISOString(), fields()));
+    expect((await createRecordLister(none, manual).list()).map((r) => r.origin.sourceRecordId)).toEqual(['m-1']);
   });
 });

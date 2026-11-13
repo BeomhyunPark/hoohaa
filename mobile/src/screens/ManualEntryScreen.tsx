@@ -1,5 +1,7 @@
 // 기록을 직접 입력하는 화면. 날짜, 거리, 시간은 꼭 받고, 시작 시각·평균 심박·평균 케이던스는 선택이다.
 //
+// 적어 둔 기록을 고칠 때도 이 화면을 쓴다(editing). 칸이 그 기록의 값으로 채워지고, 저장하면 같은 번호의 기록을 바꾼다.
+//
 // 저장을 누르면 칸을 검사하고, 틀린 칸 아래에 이유를 적는다. 다 맞으면 기록 번호를 만들어 붙이고
 // 기기에 저장한 뒤 onSaved로 넘긴다. 체감 피로와 메모는 여기서 묻지 않는다. 건강 앱 기록과 같은 화면
 // (AfterRunScreen)이 묻는다.
@@ -10,6 +12,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInpu
 import { manualEntryCopy as copy, manualErrorText } from '../copy/manual-entry';
 import {
   formatDateInput,
+  manualFormOf,
   manualRecord,
   newManualRecordId,
   readManualForm,
@@ -45,20 +48,19 @@ interface Props {
   /** 저장한 기록을 넘긴다. */
   onSaved: (record: WorkoutRecord) => void;
   onCancel: () => void;
+  /** 고칠 기록(직접 입력한 것). 있으면 칸을 그 값으로 채우고, 저장하면 같은 번호의 기록을 바꾼다. 없으면 새 기록이다. */
+  editing?: WorkoutRecord;
   /** 지금 시각(테스트용). 날짜 칸의 처음 값과 "오늘보다 뒤" 검사, 기록 번호에 쓴다. */
   now?: () => Date;
 }
 
-export function ManualEntryScreen({ store, onSaved, onCancel, now = () => new Date() }: Props) {
-  // 날짜는 오늘로 채워 둔다. 방금 달린 기록을 적는 일이 가장 많다.
-  const [form, setForm] = useState<ManualForm>(() => ({
-    date: formatDateInput(now()),
-    distance: '',
-    duration: '',
-    startTime: '',
-    heartRate: '',
-    cadence: '',
-  }));
+export function ManualEntryScreen({ store, onSaved, onCancel, editing, now = () => new Date() }: Props) {
+  // 새 기록이면 날짜는 오늘로 채워 둔다. 방금 달린 기록을 적는 일이 가장 많다.
+  const [form, setForm] = useState<ManualForm>(() =>
+    editing
+      ? manualFormOf(editing)
+      : { date: formatDateInput(now()), distance: '', duration: '', startTime: '', heartRate: '', cadence: '' },
+  );
   const [errors, setErrors] = useState<Partial<Record<ManualField, ManualError>>>({});
   const [saving, setSaving] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
@@ -81,7 +83,10 @@ export function ManualEntryScreen({ store, onSaved, onCancel, now = () => new Da
     setSaving(true);
     setSaveFailed(false);
     try {
-      const record = manualRecord(newManualRecordId(at), at.toISOString(), result.fields);
+      // 고치는 중이면 번호와 만든 시각을 그대로 둔다. 그래야 같은 자리를 바꾸고, 체감 피로와 메모가 그대로 붙어 있다.
+      const record = editing
+        ? manualRecord(editing.origin.sourceRecordId, editing.origin.importedAt, result.fields)
+        : manualRecord(newManualRecordId(at), at.toISOString(), result.fields);
       await store.save(record);
       onSaved(record);
     } catch {
@@ -118,7 +123,7 @@ export function ManualEntryScreen({ store, onSaved, onCancel, now = () => new Da
 
         <View style={styles.section}>
           <Text style={styles.heading} accessibilityRole="header">
-            {copy.title}
+            {editing ? copy.editTitle : copy.title}
           </Text>
           <Text style={styles.hint}>{copy.intro}</Text>
           {REQUIRED.map(field)}

@@ -69,5 +69,9 @@ export function createDeviceRecordStore(): RecordStore {
       };
       await AsyncStorage.setItem(storageKey(record.origin), JSON.stringify(saved));
     },
+
+    async remove(key) {
+      await AsyncStorage.removeItem(storageKey(key));
+    },
   };
 }

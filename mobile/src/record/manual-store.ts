@@ -16,8 +16,12 @@ import type { WorkoutRecord } from './types';
 export interface ManualRecordStore {
   /** 직접 입력한 기록을 저장한다. 번호가 같은 기록이 있으면 그 자리를 바꾼다. 저장하지 못하면 reject한다. */
   save(record: WorkoutRecord): Promise<void>;
-  /** 가장 늦게 끝난 기록 하나. 없으면 null. 쓸 수 없는 값(깨졌거나 형식이 다르다)은 건너뛴다. 저장소를 읽지 못하면 reject한다. */
+  /** 저장한 기록 전부(순서는 정해져 있지 않다). 쓸 수 없는 값(깨졌거나 형식이 다르다)은 건너뛴다. 저장소를 읽지 못하면 reject한다. */
+  all(): Promise<WorkoutRecord[]>;
+  /** 가장 늦게 끝난 기록 하나. 없으면 null. */
   latest(): Promise<WorkoutRecord | null>;
+  /** 이 번호의 기록을 지운다. 없는 번호여도 된다. 지우지 못하면 reject한다. 체감 피로와 메모는 RecordStore에서 따로 지운다. */
+  remove(id: string): Promise<void>;
 }
 
 /** 저장 형식의 번호. 값의 모양을 바꾸면 올린다. 번호가 다른 값은 읽지 않는다. */
@@ -87,26 +91,33 @@ function later(a: WorkoutRecord | null, b: WorkoutRecord): WorkoutRecord {
 
 /** 기기 안에 두는 저장소(AsyncStorage). 앱을 닫았다 열어도 남는다. */
 export function createDeviceManualRecordStore(): ManualRecordStore {
+  async function all(): Promise<WorkoutRecord[]> {
+    const keys = (await AsyncStorage.getAllKeys()).filter((k) => k.startsWith(KEY_PREFIX));
+    if (keys.length === 0) return [];
+    const records: WorkoutRecord[] = [];
+    for (const [key, text] of await AsyncStorage.multiGet(keys)) {
+      const record = text === null ? null : parseManualSaved(text, key.slice(KEY_PREFIX.length));
+      if (record) records.push(record);
+    }
+    return records;
+  }
   return {
     async save(record) {
       const saved = toSaved(record);
       await AsyncStorage.setItem(manualStorageKey(saved.id), JSON.stringify(saved));
     },
+    all,
     async latest() {
-      const keys = (await AsyncStorage.getAllKeys()).filter((k) => k.startsWith(KEY_PREFIX));
-      if (keys.length === 0) return null;
-      let found: WorkoutRecord | null = null;
-      for (const [key, text] of await AsyncStorage.multiGet(keys)) {
-        const record = text === null ? null : parseManualSaved(text, key.slice(KEY_PREFIX.length));
-        if (record) found = later(found, record);
-      }
-      return found;
+      return (await all()).reduce<WorkoutRecord | null>(later, null);
+    },
+    async remove(id) {
+      await AsyncStorage.removeItem(manualStorageKey(id));
     },
   };
 }
 
 /** 메모리에만 두는 저장소(테스트용). 닫으면 사라진다. */
-export function createMemoryManualRecordStore(): ManualRecordStore & { all(): WorkoutRecord[] } {
+export function createMemoryManualRecordStore(): ManualRecordStore {
   const records: WorkoutRecord[] = [];
   return {
     async save(record) {
@@ -115,11 +126,15 @@ export function createMemoryManualRecordStore(): ManualRecordStore & { all(): Wo
       if (at >= 0) records[at] = record;
       else records.push(record);
     },
+    async all() {
+      return [...records];
+    },
     async latest() {
       return records.reduce<WorkoutRecord | null>(later, null);
     },
-    all() {
-      return [...records];
+    async remove(id) {
+      const at = records.findIndex((r) => r.origin.sourceRecordId === id);
+      if (at >= 0) records.splice(at, 1);
     },
   };
 }

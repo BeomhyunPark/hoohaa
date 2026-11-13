@@ -31,6 +31,9 @@ export interface RecordStore {
    * (같은 기록을 두 번 저장하지 않는다). 저장하지 못하면 reject한다.
    */
   save(record: WorkoutRecord): Promise<void>;
+
+  /** 이 기록에 저장해 둔 체감 피로와 메모를 지운다. 저장한 적이 없어도 된다. 지우지 못하면 reject한다. */
+  remove(key: RecordKey): Promise<void>;
 }
 
 export function sameRecord(a: RecordKey, b: RecordKey): boolean {
@@ -55,6 +58,10 @@ export function createMemoryRecordStore(): MemoryRecordStore {
       const at = records.findIndex((r) => sameRecord(r.origin, record.origin));
       if (at >= 0) records[at] = record;
       else records.push(record);
+    },
+    async remove(key) {
+      const at = records.findIndex((r) => sameRecord(r.origin, key));
+      if (at >= 0) records.splice(at, 1);
     },
     all() {
       return [...records];

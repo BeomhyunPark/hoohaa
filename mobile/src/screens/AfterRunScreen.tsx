@@ -4,7 +4,9 @@
 // 묻지 않고 저장된 값을 보여 준다. 이때 "저장했어요"는 보여 주지 않는다(방금 저장했을 때만 하는 말이다). 저장해 둔 값은 저장소(RecordStore)가 가져온 곳과 그곳의 기록 번호로 찾는다.
 // 저장한 뒤에도 사용자가 "수정"을 눌러 체감 피로와 메모를 고칠 수 있다. 앱이 다시 묻지는 않는다.
 //
-// 맨 아래의 "기록 직접 입력"은 직접 입력 화면(ManualEntryScreen)을 연다. 고치는 중에는 숨긴다(적던 값이 사라지지 않게).
+// 맨 아래의 "지난 기록"은 목록 화면(RecordListScreen)을, "기록 직접 입력"은 직접 입력 화면(ManualEntryScreen)을 연다.
+// 고치는 중에는 숨긴다(적던 값이 사라지지 않게).
+// 직접 입력한 기록에는 "기록 고치기"(날짜, 거리, 시간 등)와 "기록 지우기"가 붙는다. 지우기 전에 한 번 묻는다.
 //
 // 컨디션, 목표, 내일 훈련, 통증 판단은 서버가 생긴 다음이라 여기서 보여 주지 않는다.
 import { useEffect, useState } from 'react';
@@ -53,9 +55,15 @@ interface Props {
   store: RecordStore;
   /** 기록을 직접 입력하는 화면을 연다. 없으면 버튼을 그리지 않는다. */
   onAddManual?: () => void;
+  /** 지난 기록 목록을 연다. 없으면 버튼을 그리지 않는다. */
+  onOpenList?: () => void;
+  /** 직접 입력한 기록의 적은 값(날짜, 거리, 시간 등)을 고치는 화면을 연다. 없으면 버튼을 그리지 않는다. */
+  onEditRecord?: (record: WorkoutRecord) => void;
+  /** 직접 입력한 기록을 지운다. 지우지 못하면 reject한다. 지운 뒤 어디로 갈지는 부르는 쪽이 정한다. 없으면 버튼을 그리지 않는다. */
+  onDeleteRecord?: (record: WorkoutRecord) => Promise<void>;
 }
 
-export function AfterRunScreen({ reader, store, onAddManual }: Props) {
+export function AfterRunScreen({ reader, store, onAddManual, onOpenList, onEditRecord, onDeleteRecord }: Props) {
   const [loaded, setLoaded] = useState<Loaded>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [exertion, setExertion] = useState<number | null>(null);
@@ -64,6 +72,9 @@ export function AfterRunScreen({ reader, store, onAddManual }: Props) {
   const [saveFailed, setSaveFailed] = useState(false);
   /** 이 화면에서 저장한 적이 있는지. "저장했어요"는 저장을 누른 데 대한 대답이라, 이미 저장돼 다시 들어온 기록에는 보여 주지 않는다. */
   const [savedNow, setSavedNow] = useState(false);
+  /** 기록 지우기. confirm은 지울지 묻는 중, busy는 지우는 중. */
+  const [deleting, setDeleting] = useState<'idle' | 'confirm' | 'busy'>('idle');
+  const [deleteFailed, setDeleteFailed] = useState(false);
 
   useEffect(() => {
     let current = true;
@@ -84,6 +95,8 @@ export function AfterRunScreen({ reader, store, onAddManual }: Props) {
   const step = loaded.status === 'ready' ? loaded.step : null;
   const asking = step === 'ask' || step === 'edit';
   const canSave = asking && exertion !== null && !saving;
+  /** 직접 입력한 기록이면 그 기록. 적은 값을 고치거나 지울 수 있는 것은 직접 입력한 기록뿐이다(건강 앱 기록의 측정값은 건강 앱의 것이다). */
+  const manual = loaded.status === 'ready' && loaded.record.origin.source === 'manual' ? loaded.record : null;
 
   async function save() {
     if (loaded.status !== 'ready' || !asking || exertion === null || saving) return;
@@ -100,6 +113,19 @@ export function AfterRunScreen({ reader, store, onAddManual }: Props) {
       setSaveFailed(true);
     } finally {
       setSaving(false);
+    }
+  }
+
+  /** 지울지 물은 뒤에만 지운다. 지운 뒤에는 부르는 쪽이 다른 화면으로 넘긴다. */
+  async function deleteRecord() {
+    if (loaded.status !== 'ready' || !onDeleteRecord || deleting !== 'confirm') return;
+    setDeleting('busy');
+    setDeleteFailed(false);
+    try {
+      await onDeleteRecord(loaded.record);
+    } catch {
+      setDeleteFailed(true);
+      setDeleting('confirm');
     }
   }
 
@@ -242,15 +268,89 @@ export function AfterRunScreen({ reader, store, onAddManual }: Props) {
           </View>
         )}
 
-        {onAddManual && loaded.status !== 'loading' && step !== 'edit' && (
-          <Pressable
-            accessibilityRole="button"
-            disabled={saving}
-            onPress={onAddManual}
-            style={({ pressed }) => [styles.button, styles.buttonPlain, pressed && styles.pressed]}
-          >
-            <Text style={styles.buttonPlainText}>{copy.addManual}</Text>
-          </Pressable>
+        {manual && step !== 'edit' && !saving && (onEditRecord || onDeleteRecord) && (
+          <View style={styles.section}>
+            {deleting === 'idle' ? (
+              <View style={styles.pair}>
+                {onEditRecord && (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => onEditRecord(manual)}
+                    style={({ pressed }) => [styles.button, styles.buttonOutline, styles.pairItem, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.buttonOutlineText}>{copy.editRecord}</Text>
+                  </Pressable>
+                )}
+                {onDeleteRecord && (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setDeleting('confirm')}
+                    style={({ pressed }) => [styles.button, styles.buttonOutline, styles.pairItem, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.buttonOutlineText}>{copy.deleteRecord}</Text>
+                  </Pressable>
+                )}
+              </View>
+            ) : (
+              <>
+                <Text style={styles.body} accessibilityRole="alert">
+                  {copy.deleteQuestion}
+                </Text>
+                <View style={styles.pair}>
+                  <Pressable
+                    accessibilityRole="button"
+                    aria-busy={deleting === 'busy'}
+                    disabled={deleting === 'busy'}
+                    onPress={deleteRecord}
+                    style={({ pressed }) => [styles.button, styles.buttonFilled, styles.pairItem, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.buttonFilledText}>{copy.deleteConfirm}</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={deleting === 'busy'}
+                    onPress={() => {
+                      setDeleting('idle');
+                      setDeleteFailed(false);
+                    }}
+                    style={({ pressed }) => [styles.button, styles.buttonOutline, styles.pairItem, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.buttonOutlineText}>{copy.deleteCancel}</Text>
+                  </Pressable>
+                </View>
+                {deleteFailed && (
+                  <Text style={styles.hint} accessibilityRole="alert">
+                    {copy.deleteFailed}
+                  </Text>
+                )}
+              </>
+            )}
+          </View>
+        )}
+
+        {(onOpenList || onAddManual) && loaded.status !== 'loading' && step !== 'edit' && deleting === 'idle' && (
+          <View style={styles.links}>
+            {onOpenList && (
+              <Pressable
+                accessibilityRole="button"
+                disabled={saving}
+                onPress={onOpenList}
+                style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+              >
+                <Text style={styles.buttonPlainText}>{copy.openList}</Text>
+              </Pressable>
+            )}
+            {onAddManual && (
+              <Pressable
+                accessibilityRole="button"
+                disabled={saving}
+                onPress={onAddManual}
+                style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+              >
+                <Text style={styles.buttonPlainText}>{copy.addManual}</Text>
+              </Pressable>
+            )}
+          </View>
         )}
       </ScrollView>
     </KeyboardAvoidingView>
@@ -364,7 +464,9 @@ const styles = StyleSheet.create({
   buttonDisabledText: { fontSize: 17, fontWeight: '700', color: colors.sub },
   buttonOutline: { borderWidth: 1, borderColor: colors.ink },
   buttonOutlineText: { fontSize: 17, fontWeight: '700', color: colors.ink },
-  buttonPlain: { alignSelf: 'center' },
+  pair: { flexDirection: 'row', gap: 10 },
+  pairItem: { flex: 1 },
+  links: { flexDirection: 'row', justifyContent: 'center', gap: 12 },
   buttonPlainText: { fontSize: 16, fontWeight: '600', color: colors.ink, textDecorationLine: 'underline' },
   pressed: { opacity: 0.6 },
 
