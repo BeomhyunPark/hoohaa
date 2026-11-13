@@ -46,6 +46,9 @@
     "globalSetup": "<rootDir>/test-utils/timezone.js",
     "setupFiles": [
       "<rootDir>/test-utils/setup.js"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test-utils/warm-up.ts"
     ]
   }
 }
