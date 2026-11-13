@@ -1,3 +1,5 @@
+import { appleHealthToRecord } from '../src/record/apple-health';
+import { appleHealthRun } from '../src/record/fixtures/apple-health-run';
 import { healthConnectRun } from '../src/record/fixtures/health-connect-run';
 import { healthConnectToRecord } from '../src/record/health-connect';
 import { expectEveryFieldKept, rec } from '../test-utils/record';
@@ -75,8 +77,9 @@ test('가져온 곳, 기록 번호, 가져온 시각', () => {
   });
 });
 
-test('단위: 시간은 끝 − 시작의 초, 거리는 기록들을 더한 미터, 경로 고도는 미터', () => {
-  expect(record.measured.durationSeconds).toBe(1772.4);
+test('단위: 시간은 끝 − 시작에서 멈춘 구간을 뺀 초, 거리는 기록들을 더한 미터, 경로 고도는 미터', () => {
+  // 끝 − 시작은 1772.4초이고, 멈춘 구간(PAUSE) 60초를 뺀다. 애플 건강 샘플의 duration과 같다.
+  expect(record.measured.durationSeconds).toBe(1712.4);
   expect(record.measured.distanceMeters).toBeCloseTo(5012.37, 6);
   expect(record.measured.energyKcal).toBeNull();
   expect(hr.samples.map((s) => s.bpm)).toEqual([98, 154, 162, 168]);
@@ -105,4 +108,37 @@ test('경로가 없으면 route는 null이고 type은 extra에 남는다', () =>
   );
   expect(r.route).toBeNull();
   expect(r.extra['session.exerciseRoute.type']).toBe('CONSENT_REQUIRED');
+});
+
+describe('시간에서 멈춘 구간 빼기', () => {
+  const session = healthConnectRun.session;
+  const durationWith = (segments: typeof session.segments) =>
+    healthConnectToRecord({ ...healthConnectRun, session: { ...session, segments } }, importedAt).measured.durationSeconds;
+  const seg = (startTime: string, endTime: string, segmentType: number) => ({ startTime, endTime, segmentType, repetitions: 0 });
+
+  test('애플 건강 샘플과 같은 시간이 나온다', () => {
+    expect(record.measured.durationSeconds).toBe(appleHealthToRecord(appleHealthRun, importedAt).measured.durationSeconds);
+  });
+
+  test('구간이 없거나 PAUSE가 없으면 끝 − 시작 그대로다', () => {
+    expect(durationWith(undefined)).toBe(1772.4);
+    expect(durationWith([])).toBe(1772.4);
+    expect(durationWith([seg('2026-11-05T21:30:00Z', '2026-11-05T21:59:32.400Z', 46)])).toBe(1772.4);
+  });
+
+  test('PAUSE가 여러 번이면 모두 빼고, 겹친 구간은 한 번만 뺀다', () => {
+    expect(
+      durationWith([seg('2026-11-05T21:40:00Z', '2026-11-05T21:41:00Z', 39), seg('2026-11-05T21:50:00Z', '2026-11-05T21:50:30Z', 39)]),
+    ).toBe(1682.4);
+    expect(
+      durationWith([seg('2026-11-05T21:40:00Z', '2026-11-05T21:41:00Z', 39), seg('2026-11-05T21:40:30Z', '2026-11-05T21:41:30Z', 39)]),
+    ).toBe(1682.4);
+  });
+
+  test('세션 밖으로 나간 PAUSE는 세션 안쪽만 빼고, 읽을 수 없는 구간은 빼지 않는다', () => {
+    expect(durationWith([seg('2026-11-05T21:29:00Z', '2026-11-05T21:30:30Z', 39)])).toBe(1742.4);
+    expect(durationWith([seg('2026-11-05T21:59:00Z', '2026-11-05T22:10:00Z', 39)])).toBe(1740);
+    expect(durationWith([seg('2026-11-05T22:10:00Z', '2026-11-05T22:11:00Z', 39)])).toBe(1772.4);
+    expect(durationWith([seg('모름', '2026-11-05T21:41:00Z', 39), seg('2026-11-05T21:41:00Z', '2026-11-05T21:40:00Z', 39)])).toBe(1772.4);
+  });
 });
