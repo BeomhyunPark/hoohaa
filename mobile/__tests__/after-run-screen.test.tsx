@@ -1,6 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { render, screen, userEvent } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
+import { createDeviceRecordStore, storageKey } from '../src/record/device-store';
 import { createFakeHealthReader, type HealthReader } from '../src/record/health-reader';
 import { createMemoryRecordStore, type RecordStore } from '../src/record/store';
 import type { WorkoutRecord } from '../src/record/types';
@@ -177,7 +179,7 @@ describe('저장', () => {
     const memory = createMemoryRecordStore();
     const save = jest.fn(memory.save);
     save.mockRejectedValueOnce(new Error('저장 오류'));
-    const { user } = await open(await sample(), { save });
+    const { user } = await open(await sample(), { ...memory, save });
 
     await user.press(screen.getByRole('radio', { name: '체감 피로 8' }));
     await user.press(screen.getByRole('button', { name: '저장' }));
@@ -274,6 +276,184 @@ describe('저장한 뒤 수정', () => {
     await user.press(screen.getByRole('button', { name: '수정' }));
     expect(StyleSheet.flatten(screen.getByRole('button', { name: '취소' }).props.style).minHeight).toBeGreaterThanOrEqual(44);
   });
+});
+
+describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    jest.clearAllMocks();
+  });
+
+  type Platform = 'apple_health' | 'health_connect';
+
+  /** 앱을 처음 열어 체감 피로(와 메모)를 저장하고 닫는다. */
+  async function saveAndClose(platform: Platform, exertion: number, memo: string) {
+    const { user } = await open(await sample(platform), createDeviceRecordStore());
+    await user.press(screen.getByRole('radio', { name: new RegExp(`^체감 피로 ${exertion}(,|$)`) }));
+    if (memo !== '') await user.type(screen.getByLabelText('메모 (선택)'), memo);
+    await user.press(screen.getByRole('button', { name: '저장' }));
+    await screen.findByText('저장했어요');
+    await screen.unmount();
+  }
+
+  /**
+   * 앱을 다시 연다. 화면, 건강 앱, 저장소를 모두 새로 만든다. 남는 것은 기기 저장소(AsyncStorage)의 값뿐이다.
+   * 건강 앱은 같은 운동을 다시 돌려준다(가져온 시각만 다르다).
+   */
+  async function reopen(platform: Platform) {
+    const later = () => new Date('2026-11-06T09:00:00.000Z');
+    const record = rec(await createFakeHealthReader(platform, later).readLatestWorkout());
+    return open(record, createDeviceRecordStore());
+  }
+
+  function expectAskedLikeFirstTime() {
+    expect(screen.getByText('이번 달리기는 얼마나 힘들었어요?')).toBeTruthy();
+    expect(screen.getAllByRole('radio')).toHaveLength(10);
+    expect(screen.queryAllByRole('radio', { checked: true })).toHaveLength(0);
+    expect(screen.getByLabelText('메모 (선택)')).toHaveDisplayValue('');
+    expect(screen.getByRole('button', { name: '저장' })).toBeDisabled();
+    expect(screen.queryByText('저장했어요')).toBeNull();
+    expect(screen.queryByRole('button', { name: '수정' })).toBeNull();
+  }
+
+  function expectNotAsked() {
+    expect(screen.queryByText('이번 달리기는 얼마나 힘들었어요?')).toBeNull();
+    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    expect(screen.queryByLabelText('메모 (선택)')).toBeNull();
+    expect(screen.queryByRole('button', { name: '저장' })).toBeNull();
+  }
+
+  test.each(['apple_health', 'health_connect'] as const)(
+    '앱을 다시 열어도 다시 묻지 않고, 저장한 피로와 메모가 그대로 돌아온다 (%s)',
+    async (platform) => {
+      await saveAndClose(platform, 7, '왼쪽 무릎이 조금 아파요');
+      await reopen(platform);
+
+      expectNotAsked();
+      expect(screen.getByLabelText('체감 피로, 7')).toBeTruthy();
+      expect(screen.getByLabelText('메모, 왼쪽 무릎이 조금 아파요')).toBeTruthy();
+      // 건강 앱에서 읽은 기록도 그대로 보인다.
+      expect(screen.getByLabelText('거리, 5.01 km')).toBeTruthy();
+      expect(screen.getByLabelText('평균 페이스, 5:42/km')).toBeTruthy();
+      expect(screen.getByRole('button', { name: '수정' })).toBeTruthy();
+    },
+  );
+
+  test('메모 없이 저장한 기록도 다시 묻지 않는다', async () => {
+    await saveAndClose('apple_health', 3, '');
+    await reopen('apple_health');
+
+    expectNotAsked();
+    expect(screen.getByLabelText('체감 피로, 3')).toBeTruthy();
+    expect(screen.queryByText('메모')).toBeNull();
+  });
+
+  test('여러 번 다시 열어도 묻지 않는다', async () => {
+    await saveAndClose('apple_health', 10, '');
+    for (let i = 0; i < 3; i++) {
+      await reopen('apple_health');
+      expectNotAsked();
+      expect(screen.getByLabelText('체감 피로, 10')).toBeTruthy();
+      await screen.unmount();
+    }
+  });
+
+  test('저장한 적이 없는 다른 기록이 들어오면 묻는다', async () => {
+    await saveAndClose('apple_health', 7, '왼쪽 무릎이 조금 아파요');
+    // 기록 번호가 다른 운동(헬스 커넥트 샘플).
+    await reopen('health_connect');
+    expectAskedLikeFirstTime();
+  });
+
+  test('다시 들어온 기록도 수정할 수 있고, 고친 값이 다음에 열 때 돌아온다', async () => {
+    await saveAndClose('apple_health', 7, '왼쪽 무릎이 조금 아파요');
+    const { user } = await reopen('apple_health');
+
+    await user.press(screen.getByRole('button', { name: '수정' }));
+    expect(screen.getByRole('radio', { name: '체감 피로 7' })).toBeChecked();
+    expect(screen.getByLabelText('메모 (선택)')).toHaveDisplayValue('왼쪽 무릎이 조금 아파요');
+    await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+    await user.clear(screen.getByLabelText('메모 (선택)'));
+    await user.press(screen.getByRole('button', { name: '저장' }));
+    await screen.findByText('저장했어요');
+    await screen.unmount();
+
+    await reopen('apple_health');
+    expectNotAsked();
+    expect(screen.getByLabelText('체감 피로, 4')).toBeTruthy();
+    expect(screen.queryByText('메모')).toBeNull();
+    expect(await AsyncStorage.getAllKeys()).toHaveLength(1);
+  });
+
+  test('"저장했어요"는 방금 저장했을 때만 화면 낭독기가 새 소식으로 읽는다', async () => {
+    const { user } = await open(await sample(), createDeviceRecordStore());
+    await user.press(screen.getByRole('radio', { name: '체감 피로 7' }));
+    await user.press(screen.getByRole('button', { name: '저장' }));
+    expect((await screen.findByText('저장했어요')).props['aria-live']).toBe('polite');
+    await screen.unmount();
+
+    await reopen('apple_health');
+    expect(screen.getByText('저장했어요').props['aria-live']).toBe('off');
+  });
+
+  test.each<[string, string]>([
+    ['잘린 JSON', '{"version":1,"source":"apple_health","perceivedEx'],
+    ['JSON이 아닌 글자', '체감 피로 7'],
+    ['빈 글자', ''],
+    ['형식 번호가 다르다', '{"version":2,"source":"apple_health","sourceRecordId":"6F1C2A8E-3B4D-4E5F-9A0B-1C2D3E4F5A6B","perceivedExertion":7,"memo":null}'],
+    ['체감 피로가 범위 밖이다', '{"version":1,"source":"apple_health","sourceRecordId":"6F1C2A8E-3B4D-4E5F-9A0B-1C2D3E4F5A6B","perceivedExertion":70,"memo":null}'],
+    ['메모가 글자가 아니다', '{"version":1,"source":"apple_health","sourceRecordId":"6F1C2A8E-3B4D-4E5F-9A0B-1C2D3E4F5A6B","perceivedExertion":7,"memo":{"text":"무릎"}}'],
+  ])('저장된 값이 깨졌으면 죽지 않고 처음처럼 다시 묻는다: %s', async (_name, stored) => {
+    await saveAndClose('apple_health', 7, '왼쪽 무릎이 조금 아파요');
+    const key = rec(storageKey((await sample()).origin));
+    expect(await AsyncStorage.getItem(key)).not.toBeNull();
+    await AsyncStorage.setItem(key, stored);
+
+    const { user } = await reopen('apple_health');
+    // 기록은 그대로 보이고, 깨진 값의 흔적은 화면에 없다.
+    expect(screen.getByLabelText('거리, 5.01 km')).toBeTruthy();
+    expect(screen.queryByText('기록을 읽지 못했어요.')).toBeNull();
+    expect(screen.queryByText(/무릎/)).toBeNull();
+    expectAskedLikeFirstTime();
+
+    // 다시 답하면 저장되고, 그다음부터는 묻지 않는다.
+    await user.press(screen.getByRole('radio', { name: '체감 피로 5' }));
+    await user.press(screen.getByRole('button', { name: '저장' }));
+    await screen.findByText('저장했어요');
+    await screen.unmount();
+
+    await reopen('apple_health');
+    expectNotAsked();
+    expect(screen.getByLabelText('체감 피로, 5')).toBeTruthy();
+  });
+
+  test('기기 저장소를 읽지 못하면 묻지 않고 알린다. 다시 읽으면 저장된 값이 보인다', async () => {
+    await saveAndClose('apple_health', 7, '');
+    jest.mocked(AsyncStorage.getItem).mockRejectedValueOnce(new Error('디스크 오류'));
+    await render(<AfterRunScreen reader={readerOf(await sample())} store={createDeviceRecordStore()} />);
+
+    expect(await screen.findByText('기록을 읽지 못했어요.')).toBeTruthy();
+    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+
+    await userEvent.setup().press(screen.getByRole('button', { name: '다시 읽기' }));
+    expect(await screen.findByLabelText('체감 피로, 7')).toBeTruthy();
+    expectNotAsked();
+  });
+});
+
+test('메모리 저장소도 같은 화면에서 다시 묻지 않는다 (저장소를 바꿔도 화면은 그대로다)', async () => {
+  const store = createMemoryRecordStore();
+  const { user } = await open(await sample(), store);
+  await user.press(screen.getByRole('radio', { name: '체감 피로 6' }));
+  await user.type(screen.getByLabelText('메모 (선택)'), '가벼웠어요');
+  await user.press(screen.getByRole('button', { name: '저장' }));
+  await screen.findByText('저장했어요');
+  await screen.unmount();
+
+  await open(await sample(), store);
+  expect(screen.queryAllByRole('radio')).toHaveLength(0);
+  expect(screen.getByLabelText('체감 피로, 6')).toBeTruthy();
+  expect(screen.getByLabelText('메모, 가벼웠어요')).toBeTruthy();
 });
 
 test('컨디션, 목표, 내일 훈련, 통증 판단은 보여 주지 않는다', async () => {
