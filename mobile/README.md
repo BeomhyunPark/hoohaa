@@ -178,6 +178,8 @@ CI(`.github/workflows/test.yml`의 `mobile` job)도 `npm ci`, `tsc`, `jest`를 �
 
 Jest는 서울 시간대로 돈다(`test-utils/timezone.js`). 화면이 날짜를 기기 시간대로 적기 때문에, 어디서 돌려도 같은 값이 나오게 고정했다.
 
+화면 테스트(`.tsx`)는 시작하기 전에 React Native 화면 부품을 미리 불러 둔다(`test-utils/warm-up.ts`). `react-native`는 부품을 처음 쓰일 때에야 불러와서, 미리 불러 두지 않으면 그 시간(Jest 캐시가 없는 CI에서 4~5초)이 파일의 첫 테스트에 얹혀 5초 제한을 넘긴다. 화면이 `react-native`에서 새 부품을 가져다 쓰면 그 파일의 `WARMED` 목록에 더한다. 빠뜨리면 `__tests__/warm-up.test.ts`가 실패한다.
+
 ## 화면 확인 (폰이 없을 때)
 
 폰이나 시뮬레이터가 없는 곳(클라우드 세션 등)에서는 앱을 웹 번들로 만들어 폰 크기 스크린샷을 찍는다.
