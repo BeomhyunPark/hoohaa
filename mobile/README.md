@@ -92,7 +92,7 @@ import { D } from '@hoohaa/engine/data.js';
 - `source`, `sourceRecordId`라는 이름은 아직 제안이다([../docs/v4/features/health-import.md](../docs/v4/features/health-import.md)). 이름이 바뀌면 `version`을 올린다. 예전 값을 옮기는 코드를 같이 넣지 않으면 그 기록들은 처음처럼 다시 묻게 된다.
 - 저장된 값을 쓸 수 없으면 저장한 적이 없는 것으로 본다(`parseSaved`가 null). 앱은 죽지 않고 그 기록을 처음처럼 다시 묻는다. 쓸 수 없는 값은 JSON이 아닌 글자, 다른 `version`, 다른 기록의 `source`·`sourceRecordId`, 1~10의 정수가 아닌 체감 피로, 글자도 null도 아닌 메모다. 다시 답해 저장하면 그 자리를 덮어쓴다.
 - 기기 저장소 자체를 읽지 못하면(AsyncStorage 오류) 다시 묻지 않는다. 값이 있는지 모르는 채로 물으면 한 번만 묻는다는 결정에 어긋나기 때문이다. 화면은 "기록을 읽지 못했어요."와 "다시 읽기"를 보여 준다.
-- 기록 번호가 없는 기록(직접 입력)은 다시 찾을 기준이 없어서 기기 구현이 저장을 거절한다. 직접 입력을 만들 때 기준을 정한다.
+- 기록 번호가 없는 기록은 다시 찾을 수 없어서 기기 구현이 저장하지 않고 실패로 알린다. 직접 입력한 기록은 앱이 번호를 만들어 붙이기로 했다([../docs/v4/features/health-import.md](../docs/v4/features/health-import.md)의 결정). 직접 입력은 아직 없어서 번호를 만드는 코드도 아직 없다.
 - 나중에 서버(`<개발용 API 주소>`)에 둘 때는 `RecordStore`를 따르는 구현을 하나 더 만들고 `App.tsx`에서 바꿔 넣는다. 화면 코드는 고치지 않는다.
 
 ## 운동이 끝난 뒤 첫 화면

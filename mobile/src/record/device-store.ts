@@ -59,7 +59,8 @@ export function createDeviceRecordStore(): RecordStore {
     async save(record) {
       const at = storageKey(record.origin);
       if (at === null) {
-        // 직접 입력 기록은 다시 찾을 기준이 아직 없다. 저장한 척하지 않는다.
+        // 번호가 없으면 다시 찾을 수 없다. 저장한 척하지 않는다.
+        // 직접 입력 기록은 앱이 번호를 만들어 붙이기로 했으므로(health-import.md), 그 뒤로는 여기에 오지 않는다.
         throw new Error('기록 번호가 없는 기록은 기기에 저장할 수 없다');
       }
       const { perceivedExertion, memo } = record.userInput;
