@@ -321,6 +321,8 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
     expect(screen.queryAllByRole('radio')).toHaveLength(0);
     expect(screen.queryByLabelText('메모 (선택)')).toBeNull();
     expect(screen.queryByRole('button', { name: '저장' })).toBeNull();
+    // "저장했어요"는 방금 저장했을 때만 하는 말이다. 다시 들어온 기록에는 없다.
+    expect(screen.queryByText('저장했어요')).toBeNull();
   }
 
   test.each(['apple_health', 'health_connect'] as const)(
@@ -385,15 +387,30 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
     expect(await AsyncStorage.getAllKeys()).toHaveLength(1);
   });
 
-  test('"저장했어요"는 방금 저장했을 때만 화면 낭독기가 새 소식으로 읽는다', async () => {
+  test('"저장했어요"는 방금 저장했을 때만 보인다. 다시 들어온 기록에는 값과 수정만 있다', async () => {
     const { user } = await open(await sample(), createDeviceRecordStore());
     await user.press(screen.getByRole('radio', { name: '체감 피로 7' }));
     await user.press(screen.getByRole('button', { name: '저장' }));
+    // 저장하면 화면 낭독기도 읽는다.
     expect((await screen.findByText('저장했어요')).props['aria-live']).toBe('polite');
     await screen.unmount();
 
-    await reopen('apple_health');
-    expect(screen.getByText('저장했어요').props['aria-live']).toBe('off');
+    const again = await reopen('apple_health');
+    expect(screen.queryByText('저장했어요')).toBeNull();
+    expect(screen.getByLabelText('체감 피로, 7')).toBeTruthy();
+
+    // 수정을 열었다가 취소해도 저장한 것이 없으니 "저장했어요"는 없다.
+    await again.user.press(screen.getByRole('button', { name: '수정' }));
+    await again.user.press(screen.getByRole('button', { name: '취소' }));
+    expect(screen.queryByText('저장했어요')).toBeNull();
+    expect(screen.getByLabelText('체감 피로, 7')).toBeTruthy();
+
+    // 고쳐서 저장하면 다시 보인다.
+    await again.user.press(screen.getByRole('button', { name: '수정' }));
+    await again.user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+    await again.user.press(screen.getByRole('button', { name: '저장' }));
+    expect(await screen.findByText('저장했어요')).toBeTruthy();
+    expect(screen.getByLabelText('체감 피로, 4')).toBeTruthy();
   });
 
   test.each<[string, string]>([
@@ -452,6 +469,7 @@ test('메모리 저장소도 같은 화면에서 다시 묻지 않는다 (저장
 
   await open(await sample(), store);
   expect(screen.queryAllByRole('radio')).toHaveLength(0);
+  expect(screen.queryByText('저장했어요')).toBeNull();
   expect(screen.getByLabelText('체감 피로, 6')).toBeTruthy();
   expect(screen.getByLabelText('메모, 가벼웠어요')).toBeTruthy();
 });

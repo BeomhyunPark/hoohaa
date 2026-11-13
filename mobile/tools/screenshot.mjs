@@ -96,14 +96,16 @@ const FLOWS = {
         await page.reload({ waitUntil: 'networkidle' });
         await page.getByText('운동 기록', { exact: true }).waitFor();
         // 다시 묻지 않고(피로 버튼, 메모 칸, 저장 버튼이 없다) 저장한 값을 보여 준다.
+        // "저장했어요"는 방금 저장했을 때만 하는 말이라 여기에는 없다.
         await page.getByLabel('체감 피로, 7', { exact: true }).waitFor();
         await page.getByLabel('메모, 왼쪽 무릎이 조금 아파요', { exact: true }).waitFor();
         for (const [what, locator] of [
           ['피로 버튼', page.getByRole('radio')],
           ['메모 칸', page.getByPlaceholder('예: 왼쪽 무릎이 조금 아파요')],
           ['저장 버튼', page.getByRole('button', { name: '저장', exact: true })],
+          ['"저장했어요"', page.getByText('저장했어요', { exact: true })],
         ]) {
-          if ((await locator.count()) !== 0) throw new Error(`다시 연 화면에 ${what}이 있다. 이미 저장한 기록은 다시 묻지 않아야 한다`);
+          if ((await locator.count()) !== 0) throw new Error(`다시 연 화면에 ${what}: 있으면 안 된다. 이미 저장한 기록은 다시 묻지 않고 값과 수정만 보여 준다`);
         }
         await expectTouchSize(page.getByRole('button', { name: '수정', exact: true }), '수정 버튼');
       },

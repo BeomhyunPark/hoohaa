@@ -1,7 +1,7 @@
 // 운동이 끝난 뒤 첫 화면. 건강 앱에서 읽은 기록을 짧게 보여 주고, 체감 피로(필수)와 메모(선택)를 받아 기록에 붙인다.
 //
 // 체감 피로는 기록마다 한 번만 묻는다. 읽은 기록에 이미 저장해 둔 체감 피로가 있으면(앱을 닫았다 열었을 때 등)
-// 묻지 않고 저장된 값을 보여 준다. 저장해 둔 값은 저장소(RecordStore)가 가져온 곳과 그곳의 기록 번호로 찾는다.
+// 묻지 않고 저장된 값을 보여 준다. 이때 "저장했어요"는 보여 주지 않는다(방금 저장했을 때만 하는 말이다). 저장해 둔 값은 저장소(RecordStore)가 가져온 곳과 그곳의 기록 번호로 찾는다.
 // 저장한 뒤에도 사용자가 "수정"을 눌러 체감 피로와 메모를 고칠 수 있다. 앱이 다시 묻지는 않는다.
 //
 // 컨디션, 목표, 내일 훈련, 통증 판단은 서버가 생긴 다음이라 여기서 보여 주지 않는다.
@@ -58,7 +58,7 @@ export function AfterRunScreen({ reader, store }: Props) {
   const [memo, setMemo] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
-  /** 이 화면에서 방금 저장했는지. 다시 들어온 기록의 "저장했어요"는 화면 낭독기가 새 소식처럼 읽지 않게 한다. */
+  /** 이 화면에서 저장한 적이 있는지. "저장했어요"는 저장을 누른 데 대한 대답이라, 이미 저장돼 다시 들어온 기록에는 보여 주지 않는다. */
   const [savedNow, setSavedNow] = useState(false);
 
   useEffect(() => {
@@ -223,9 +223,11 @@ export function AfterRunScreen({ reader, store }: Props) {
 
         {step === 'saved' && (
           <View style={styles.section}>
-            <Text style={styles.saved} aria-live={savedNow ? 'polite' : 'off'}>
-              {copy.saved}
-            </Text>
+            {savedNow && (
+              <Text style={styles.saved} aria-live="polite">
+                {copy.saved}
+              </Text>
+            )}
             <Pressable
               accessibilityRole="button"
               onPress={startEdit}

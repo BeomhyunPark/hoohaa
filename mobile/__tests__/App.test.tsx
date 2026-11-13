@@ -34,4 +34,6 @@ test('체감 피로와 메모를 저장하고 앱을 닫았다 열면, 다시 �
   expect(screen.queryByText('이번 달리기는 얼마나 힘들었어요?')).toBeNull();
   expect(screen.queryAllByRole('radio')).toHaveLength(0);
   expect(screen.queryByRole('button', { name: '저장' })).toBeNull();
+  expect(screen.queryByText('저장했어요')).toBeNull();
+  expect(screen.getByRole('button', { name: '수정' })).toBeTruthy();
 });
