@@ -1,30 +1,34 @@
 ---
-title: "폰 앱 첫 화면 시안 확정: 어두운 화면만, 기본 테마 볼트, 저장 뒤 수정은 그대로 두고 문장은 이미 결정된 것을 쓴다"
+title: "지난 기록 목록은 직접 입력 전부 + 건강 앱 마지막 운동 하나이고, 고치기·지우기는 직접 입력한 기록에만 둔다"
 author: Claude
 date: 2026-11-13
-branch: claude/friendly-cannon-mpcg94
-cost: { minutes: 1, tokens: 3681 }
+branch: claude/dreamy-keller-my2vby
+cost: { minutes: 1, tokens: 2347 }
 id: l-82967842
 scope: repo
 status: active
 src: agent
 touches:
-  - docs/v4/features/copy.md
-  - docs/tasks/v4-health.md
-  - src/styles/app.css
+  - mobile/App.tsx
+  - mobile/src/screens/RecordListScreen.tsx
+  - mobile/src/screens/AfterRunScreen.tsx
+  - mobile/src/screens/ManualEntryScreen.tsx
+  - mobile/src/record/health-reader.ts
+  - mobile/src/record/manual.ts
 ---
 
 ## Decided
-- 사용자 확정(2026-11-13): 밝은 화면은 이번에 하지 않는다. 기본 테마는 볼트(검정 바탕 + 라임 #C8F03C)다. 테마 고르는 화면은 다음으로 미룬다. 코드에는 테마 3개의 값만 두고 기본 하나로 그린다.
-- 저장한 뒤 "수정"으로 고치는 기능은 그대로 둔다. 시안을 그릴 때 "한 번만 묻는다"를 "고칠 수 없다"로 읽고 수정 없는 화면을 권했는데, main에 머지된 코드와 문장 문서에는 이미 "저장된 값과 수정만 둔다"가 결정으로 있었다. 결정된 쪽에 맞춰 시안을 다시 그렸다.
-- 화면 문장은 문장 문서의 "기록과 체감 피로" 표에 결정된 것을 쓴다. 시안에서 새로 지은 제목("러닝 기록이 들어왔어요" 등)은 버렸다. 표에 없는 새 문장은 "밀거나 눌러서 골라요", 가져온 곳 칩("애플 건강", "헬스 커넥트"), "7 / 10" 표기뿐이고, 표에 넣을지는 사용자가 정한다.
-- 화면 낭독기용이던 "아주 편했어요", "온 힘을 다했어요"를 슬라이더 양 끝에 보이는 글자로도 쓴다. "1은 아주 편했을 때, 10은 온 힘을 다했을 때예요."는 화면에서 빼고 슬라이더의 낭독기 힌트로 남기자고 제안했다.
+- 고치기와 지우기는 직접 입력한 기록에만 있다, because 건강 앱 기록의 측정값은 건강 앱의 것이라 이 앱에서 바꾸면 다음에 읽을 때 원래 값으로 돌아온다(내 판단).
+- 고쳐도 기록 번호와 만든 시각은 그대로 둔다, because 번호가 바뀌면 체감 피로와 메모를 찾지 못해 다시 묻게 된다.
+- 지울 때는 측정값을 먼저, 체감 피로와 메모를 그다음에 지운다, otherwise 뒤쪽이 실패했을 때 체감 피로만 사라진 기록이 남아 다시 묻게 된다. 이 순서면 다시 찾을 길 없는 값만 남아 해가 없다.
+- 목록의 건강 앱 기록은 마지막 운동 하나뿐이다, because 읽는 자리(HealthReader)가 하나만 읽는다. 실제 건강 앱 읽기를 붙일 때 넓힌다.
+- 화면 전환은 App.tsx의 상태 하나로 한다, because 화면이 셋뿐이라 내비게이션 라이브러리가 아직 필요 없다(내 판단).
+
+## Tried and ruled out
+- 지울지 묻는 데 Alert.alert 쓰기: react-native-web에서는 아무 일도 하지 않아 확인용 웹 번들과 스크린샷 도구에서 지우기를 볼 수 없다. 화면 안에 묻는 말과 버튼을 그렸다.
 
 ## Watch out
-- 시안을 그리기 전에 다른 세션이 같은 화면을 이미 머지했는지 origin/main을 먼저 본다. 이 세션은 V3 시점의 브랜치에서 시작해 V4·V5가 머지된 것을 모르고 문장과 동작을 새로 지었다가 다시 그렸다.
-- 문장 문서의 표와 코드의 문장이 같은지 보는 테스트가 있다. 새 문장을 화면에 쓰려면 표에도 넣어야 통과한다.
-- 슬라이더로 바꾸면 "버튼마다 읽어 줄 이름" 테스트와 라디오 묶음 접근성이 맞지 않게 된다. 조절 요소 하나로 다시 만들고 테스트도 바꿔야 한다.
+- 안드로이드의 뒤로 가기 버튼은 화면을 되돌리지 않고 앱을 나간다.
+- 목록은 기록마다 체감 피로를 하나씩 찾는다. 기록이 수백 개가 되면 한 번에 읽는 방법이 필요하다.
 
-In the code:
-- 피그마 "03 폰 앱 시안": "3. 상태 전부 · 테마 볼트 (기본)" 보드(입력 전, 피로 선택 후, 저장 후, 다시 들어온 기록, 수정 중, 심박이 없는 기록 × iPhone 390×844, Android 412×915)와 밤하늘·노을 복제 보드, "4. 디자인 노트" 보드(색 변수와 역할, 대비 값, 글자 크기, 간격, 누르는 영역, 슬라이더 동작, 로고 규칙, 문장).
-- 지금 코드: mobile/src/screens/AfterRunScreen.tsx(버튼 10개, 흰 바탕), mobile/src/copy/after-run.ts, docs/v4/features/copy.md "기록과 체감 피로", mobile/__tests__/copy-doc.test.ts, mobile/__tests__/after-run-screen.test.tsx.
+In the code: mobile/App.tsx (View, onDeleteRecord), mobile/src/screens/RecordListScreen.tsx, mobile/src/screens/AfterRunScreen.tsx (deleting), mobile/src/screens/ManualEntryScreen.tsx (editing), mobile/src/record/health-reader.ts (createRecordLister), mobile/src/record/manual.ts (manualFormOf)

@@ -1,4 +1,5 @@
-// 건강 앱을 읽는 자리. 화면은 이 인터페이스만 본다.
+// 운동 기록을 읽는 자리. 화면은 이 인터페이스만 본다.
+// 건강 앱을 읽는 구현과, 거기에 직접 입력한 기록을 합치는 구현(아래: 가장 최근 하나, 지난 기록 목록)이 있다.
 //
 // 지금은 샘플을 돌려주는 가짜 구현만 있다. 실제 구현은 개발 빌드가 있는 폰이 생기면 붙인다:
 //   - 아이폰: @kingstinct/react-native-healthkit로 마지막 운동과 경로·통계·심박을 읽어 appleHealthToRecord에 넘긴다.
@@ -9,6 +10,7 @@ import { appleHealthToRecord } from './apple-health';
 import { appleHealthRun } from './fixtures/apple-health-run';
 import { healthConnectRun } from './fixtures/health-connect-run';
 import { healthConnectToRecord } from './health-connect';
+import type { ManualRecordStore } from './manual-store';
 import type { WorkoutRecord } from './types';
 
 export interface HealthReader {
@@ -26,6 +28,41 @@ export function createFakeHealthReader(platform: HealthPlatform, now: () => Date
       return platform === 'apple_health'
         ? appleHealthToRecord(appleHealthRun, importedAt)
         : healthConnectToRecord(healthConnectRun, importedAt);
+    },
+  };
+}
+
+/**
+ * 건강 앱의 마지막 운동과 직접 입력한 기록 중 더 늦게 끝난 것을 돌려준다. 끝난 시각이 같으면 건강 앱 기록이다.
+ * 두 기록이 같은 운동인지는 보지 않는다(기준을 아직 정하지 않았다).
+ */
+export function createLatestWorkoutReader(health: HealthReader, manual: Pick<ManualRecordStore, 'latest'>): HealthReader {
+  return {
+    async readLatestWorkout() {
+      const [fromHealth, typed] = await Promise.all([health.readLatestWorkout(), manual.latest()]);
+      if (!fromHealth || !typed) return fromHealth ?? typed;
+      return Date.parse(typed.measured.endTime) > Date.parse(fromHealth.measured.endTime) ? typed : fromHealth;
+    },
+  };
+}
+
+/** 지난 기록을 읽는 자리. 목록 화면은 이 인터페이스만 본다. */
+export interface RecordLister {
+  /** 앱이 아는 기록 전부. 늦게 끝난 것이 앞이다. */
+  list(): Promise<WorkoutRecord[]>;
+}
+
+/**
+ * 직접 입력한 기록 전부와 건강 앱의 마지막 운동 하나를 늦게 끝난 순서로 돌려준다.
+ * 건강 앱의 지난 운동들은 아직 읽지 않는다(HealthReader가 마지막 운동 하나만 읽는다). 실제 건강 앱 읽기를 붙일 때 넓힌다.
+ */
+export function createRecordLister(health: HealthReader, manual: Pick<ManualRecordStore, 'all'>): RecordLister {
+  return {
+    async list() {
+      const [fromHealth, typed] = await Promise.all([health.readLatestWorkout(), manual.all()]);
+      const records = fromHealth ? [fromHealth, ...typed] : typed;
+      // 끝난 시각이 같으면 건강 앱 기록이 앞이다(sort는 순서를 지킨다).
+      return records.sort((a, b) => Date.parse(b.measured.endTime) - Date.parse(a.measured.endTime));
     },
   };
 }

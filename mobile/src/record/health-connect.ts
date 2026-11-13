@@ -114,6 +114,8 @@ export function healthConnectToRecord(raw: HealthConnectWorkoutRaw, importedAt: 
   const s = raw.session;
 
   const sourceRecordId = t.string('session.metadata.id');
+  // 헬스 커넥트의 기록에는 늘 metadata.id가 있다. 없으면 다시 찾을 수 없는 기록이라 받지 않는다.
+  if (sourceRecordId === null) throw new Error('헬스 커넥트 원본에 운동 기록의 metadata.id가 없다');
   const startTime = t.string('session.startTime') ?? s.startTime;
   const endTime = t.string('session.endTime') ?? s.endTime;
   // 헬스 커넥트에는 시간 항목이 없다. 끝 − 시작에서 멈춘 구간을 빼서, 애플 건강의 duration(멈춘 시간 제외)과
@@ -180,6 +182,7 @@ export function healthConnectToRecord(raw: HealthConnectWorkoutRaw, importedAt: 
       distanceMeters,
       energyKcal: null,
       heartRate,
+      averageCadenceSpm: null,
     },
     userInput: { perceivedExertion: null, memo: null },
     route,
