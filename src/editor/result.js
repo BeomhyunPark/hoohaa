@@ -5,10 +5,14 @@
 // calls it once, at the same point as before, and passes the two editor hooks renderResult needs.
 import { TK, tierComment, runChipSVG, accentOf } from './tokens.js';
 import { paceGuide } from './workout.js';
+import { LOGO_FACE, LOGO_HAND, LOGO_INK, LOGO_VB } from './logo-geom.js';
 
-// hoohaa v4 wordmark (stopwatch 'o') as a debossed mark: dark upper edge, light lower edge, faint recessed fill
-export const WM_G = `<g transform="translate(40,4) skewX(-14) translate(0,0)" fill="none" stroke="currentColor" stroke-width="16"><path d="M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100"/><circle cx="102" cy="70" r="22"/><path d="M102 70L113.8 63.2" stroke-width="7" stroke-linecap="round"/><circle cx="102" cy="70" r="5" fill="currentColor" stroke="none"/><rect x="95.2" y="28.6" width="13.6" height="9.2" rx="1.8" fill="currentColor" stroke="none"/><rect x="99" y="37.4" width="6" height="4.4" fill="currentColor" stroke="none"/><circle cx="174" cy="70" r="22"/><path d="M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100"/><circle cx="318" cy="70" r="22"/><path d="M340 40V100"/><circle cx="390" cy="70" r="22"/><path d="M412 40V100"/></g>`;
-export const WM_SVG = `<svg viewBox="0 0 470 122" focusable="false"><defs><filter id="wmDeboss" x="-5%" y="-10%" width="110%" height="125%" color-interpolation-filters="sRGB">
+// hoohaa wordmark (stopwatch 'o', tools/build_logo.mjs → logo-geom.js) as a debossed mark: dark upper edge, light lower edge, faint recessed fill.
+// Single colour: letters, ring and face filled, the stopwatch hand cut out with a mask.
+const [WX, WY, WW, WH] = LOGO_VB;
+const wmPaths = (list) => list.map(d => `<path fill-rule="evenodd" d="${d}"/>`).join('');
+export const WM_G = `<mask id="wmHand" maskUnits="userSpaceOnUse" x="${WX}" y="${WY}" width="${WW}" height="${WH}"><rect x="${WX}" y="${WY}" width="${WW}" height="${WH}" fill="#fff"/><g fill="#000">${wmPaths(LOGO_HAND)}</g></mask><g fill="currentColor" mask="url(#wmHand)">${wmPaths(LOGO_INK)}${wmPaths(LOGO_FACE)}</g>`;
+export const WM_SVG = `<svg viewBox="${WX - 6} ${WY - 6} ${WW + 12} ${WH + 12}" focusable="false"><defs><filter id="wmDeboss" x="-5%" y="-10%" width="110%" height="125%" color-interpolation-filters="sRGB">
 <feGaussianBlur in="SourceAlpha" stdDeviation=".6" result="a"/>
 <feOffset in="a" dy="3" result="dn"/><feOffset in="a" dy="-1.4" result="up"/>
 <feComposite in="a" in2="dn" operator="out" result="topIn"/><feFlood class="wf-lo" result="cLo"/><feComposite in="cLo" in2="topIn" operator="in" result="shade"/>
@@ -70,7 +74,7 @@ async function buildResultImage() {
   const h = await loadH2I(); const node = resCaptureNode();
   try {
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
-    const o = { pixelRatio: 2, backgroundColor: '#0F1620', cacheBust: false, style: { position: 'static', left: '0', top: '0', margin: '0' } };
+    const o = { pixelRatio: 2, backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0D0D0B', cacheBust: false, style: { position: 'static', left: '0', top: '0', margin: '0' } };
     await h.toBlob(node, o).catch(() => {}); // Safari: 첫 렌더는 폰트/이미지가 빠질 때가 있어 한 번 예열
     const blob = await h.toBlob(node, o); if (!blob) throw new Error('blob');
     return { blob, file: new File([blob], 'hoohaa-result.png', { type: 'image/png' }) };

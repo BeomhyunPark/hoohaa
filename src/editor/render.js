@@ -9,6 +9,7 @@ import { W, H, PRE, needFull, alpha, rr, font, FONTS, W_, ARC_, PRE_, STATS, sta
 import { TK, STORY_MAT, TOPO_D, runChipSVG, CARD_INK, EMB, tierTint, accentOf, metalTok } from './tokens.js';
 import { filtered, hasPE, photoSrc, imContent, bgRect, subjectLayer } from './photo.js';
 import { stkLoad, imgOf, dataArt, dataFields, sticker } from './stickers.js';
+import { LOGO_FACE, LOGO_HAND, LOGO_INK, LOGO_VB } from './logo-geom.js';
 
 // ---- render context ----
 // createRenderCtx() is made once per editor: the lazy-font base path (was the closure let FONT_BASE + setFontBase) and its font caches.
@@ -65,8 +66,9 @@ export function drawCard(c, d, x, y, w, h) {
   c.save(); c.textBaseline = 'alphabetic'; c.fillStyle = ink2;
   font(c, 11 * u, 700, IN); c.letterSpacing = 3 * u + 'px'; emb('HOOHAA', x + pad, y + pad + 9 * u);
   font(c, 8.5 * u, 600, IN); c.letterSpacing = 2 * u + 'px'; c.textAlign = 'right'; emb('RUNNING TIER', x + w - pad + 2 * u, y + pad + 9 * u);
-  c.save(); font(c, 40 * u, 300, '"Inter",' + PRE); c.letterSpacing = 3 * u + 'px'; c.fillStyle = 'rgba(255,255,255,.14)'; c.fillText('hoohaa', x + w - pad, y + h * .40 + u);
-  c.fillStyle = 'rgba(0,0,0,.07)'; c.fillText('hoohaa', x + w - pad, y + h * .40); c.restore(); c.textAlign = 'left';
+  // watermark: the hoohaa wordmark as a faint relief (light copy 1u lower, dark copy on top), right-aligned like the old text mark
+  { const wH = 36 * u, wW = wH * LOGO_ASPECT, wX = x + w - pad - wW, wY = y + h * .40 - wH * .86;
+    c.save(); c.globalAlpha = .14; c.drawImage(logoTint('#ffffff'), wX, wY + u, wW, wH); c.globalAlpha = .07; c.drawImage(logoTint('#000000'), wX, wY, wW, wH); c.restore(); } c.textAlign = 'left';
   // running-data chip (same SVG as the DOM card): left 10.5%, centre 43%, recessed
   { const chW = w * .1, chH = chW / 1.25, chX = x + w * .105, chY = y + h * .43 - chH / 2, im = chipImg.get(d.key);
     c.save(); rr(c, chX - u * .6, chY - u * .6, chW + u * 1.2, chH + u * 1.2, chW * .18); c.fillStyle = 'rgba(0,0,0,.22)'; c.fill(); c.restore();
@@ -219,15 +221,17 @@ export function layerGeom(rc, c, L, d, doc, photos) {
   return { w: 10, h: 10, draw: () => { } };
 }
 // ---- v4 template text: CSS-like box (font px, weight, letter-spacing, line-height, align, underline), anchored by the template ----
-// official hoohaa wordmark (same geometry as the app header logo). Master is white; each layer tints it to its text colour.
+// official hoohaa wordmark (same geometry as the site header logo, tools/build_logo.mjs → logo-geom.js). Master is white; each layer tints it to its text colour.
+// Single colour: letters, ring and face filled, the stopwatch hand cut out. The canvas keeps the old 470×122 frame's share of empty
+// space above and below (letters fill ~77% of the height) so templates that size the logo by font size look the same size as before.
 export let LOGO_C = null;
 export const LOGO_TINT = new Map();
-export function logoCanvas() { if (LOGO_C) return LOGO_C; const K = 4, cv = document.createElement('canvas'); cv.width = 470 * K; cv.height = 122 * K; const g = cv.getContext('2d'); g.scale(K, K); g.translate(40, 4); g.transform(1, 0, Math.tan(-14 * Math.PI / 180), 1, 0, 0);
-  g.strokeStyle = g.fillStyle = '#ffffff'; g.lineWidth = 16; const st = d => g.stroke(new Path2D(d)), ring = (x) => { g.beginPath(); g.arc(x, 70, 22, 0, Math.PI * 2); g.stroke(); };
-  st('M8 6V100M8 70Q8 40 30 40Q52 40 52 70V100'); st('M224 6V100M224 70Q224 40 246 40Q268 40 268 70V100'); st('M340 40V100'); st('M412 40V100'); [102, 174, 318, 390].forEach(ring);
-  g.beginPath(); g.roundRect ? g.roundRect(95.18, 28.56, 13.64, 9.24, 1.848) : g.rect(95.18, 28.56, 13.64, 9.24); g.fill(); g.fillRect(98.9992, 37.36, 6.0016, 4.4);
-  g.beginPath(); g.arc(102, 70, 22, 0, Math.PI * 2); g.fill(); // stopwatch face filled, hand cut out
-  g.globalCompositeOperation = 'destination-out'; g.lineWidth = 7; g.lineCap = 'round'; g.beginPath(); g.moveTo(102, 70); g.lineTo(113.81, 63.18); g.stroke(); g.beginPath(); g.arc(102, 70, 5.95, 0, Math.PI * 2); g.fill();
+const LOGO_FILL = 0.77;
+export const LOGO_ASPECT = (LOGO_VB[2] + 8) / (LOGO_VB[3] / LOGO_FILL);
+export function logoCanvas() { if (LOGO_C) return LOGO_C; const K = 6, [vx, vy, vw, vh] = LOGO_VB, H = vh / LOGO_FILL, W = vw + 8, cv = document.createElement('canvas'); cv.width = Math.round(W * K); cv.height = Math.round(H * K);
+  const g = cv.getContext('2d'); g.scale(K, K); g.translate(4 - vx, (H - vh) / 2 - vy); g.fillStyle = '#ffffff';
+  for (const d of [...LOGO_INK, ...LOGO_FACE]) g.fill(new Path2D(d), 'evenodd');
+  g.globalCompositeOperation = 'destination-out'; for (const d of LOGO_HAND) g.fill(new Path2D(d));
   return (LOGO_C = cv); }
 export function logoTint(col) { const key = col || '#ffffff'; const hit = LOGO_TINT.get(key); if (hit) return hit; const src = logoCanvas(), cv = document.createElement('canvas'); cv.width = src.width; cv.height = src.height; const g = cv.getContext('2d'); g.drawImage(src, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = key; g.fillRect(0, 0, cv.width, cv.height); LOGO_TINT.set(key, cv); return cv; }
 export const LOGO_TXT = 'hoohaa.run';
@@ -235,7 +239,7 @@ export function specText(rc, c, L, d, doc) {
   const sp = L.sp, str = L.type === 'stat' ? statValue(d, doc, L.stat, L) : String(L.t || ' '), lines = str.split('\n'), sz = L.size || sp.sz, fk = L.font && FONTS[L.font] ? L.font : 'pretendard';
   const fam = FONTS[fk].fam, w = wOf(fk, sp.wt), ls = L.ls ?? sp.ls ?? 0; font(c, sz, w, fam); c.letterSpacing = ls + 'px';
   const m = c.measureText('Hg가'), asc = m.fontBoundingBoxAscent || sz * .95, desc = m.fontBoundingBoxDescent || sz * .25, lh = (L.lh ?? sp.lh) ? (L.lh ?? sp.lh) * sz : asc + desc;
-  const LG = lines.length === 1 && lines[0].endsWith(LOGO_TXT); if (LG) lines[0] = lines[0].slice(0, -LOGO_TXT.length); const lgH = LG ? sz * 1.5 : 0, lgW = lgH * 470 / 122;
+  const LG = lines.length === 1 && lines[0].endsWith(LOGO_TXT); if (LG) lines[0] = lines[0].slice(0, -LOGO_TXT.length); const lgH = LG ? sz * 1.5 : 0, lgW = lgH * LOGO_ASPECT;
   const ink = lines.map(t => { const m3 = c.measureText(t); return LG || !t.trim() ? [0, m3.width] : [m3.actualBoundingBoxLeft, m3.actualBoundingBoxLeft + m3.actualBoundingBoxRight]; }); // ink box: margins measured to the glyphs, not the advance
   const lw = lines.map((t, i) => ink[i][1] + (LG ? lgW : 0)); c.letterSpacing = '0px'; const W = Math.max(1, ...lw), H = Math.max(lh * lines.length, lgH), bx = L.box && L.box !== 'none', pad = bx ? sz * .3 : 0, col0 = L.col || '#ffffff', col = L.box === 'full' && !L.bcol ? contrast(col0) : col0, al = sp.al || 'left';
   return { w: W + pad * 2, h: H + pad * 1.4, draw: () => { if (bx) boxBehind(c, W, H, L.box, col0, pad, sz * .28, L); font(c, sz, w, fam); c.letterSpacing = ls + 'px'; c.textBaseline = 'alphabetic'; c.textAlign = 'left'; c.fillStyle = col;

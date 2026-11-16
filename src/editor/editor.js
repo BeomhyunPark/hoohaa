@@ -7,6 +7,8 @@ import { orient, photoSrc, imContent, blobToImg, addPhotoFile, segP, ensureMask,
 import { WEATHER, DATA_STK, dataFields } from './stickers.js';
 import { mountResult } from './result.js';
 import { createRenderCtx, lid, mk, renderDoc, TEMPLATES, tplKey, templateDoc } from './render.js';
+// 선택 테두리와 손잡이는 화면 테마의 강조색을 따른다(src/styles/theme.css). 그릴 때마다 읽어 테마를 바꿔도 바로 맞는다.
+const accentNow = () => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#C8F03C';
 
 export async function mountEditor(env) {
   const { $, esc, state, EVN } = env;
@@ -175,11 +177,11 @@ function paintOvl() {
   const o = $('ovl'), g = o.getContext('2d'), H = FH(); g.clearRect(0, 0, 1080, H);
   if (safeOn && H === 1920) { g.save(); g.fillStyle = 'rgba(255,255,255,.10)'; g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 4; g.setLineDash([14, 12]); for (const [y0, y1, t] of [[0, 250, 'IG 상단 UI (프로필·닫기)'], [1920 - 340, 1920, 'IG 하단 UI (답장·공유)']]) { g.fillRect(0, y0, 1080, y1 - y0); g.beginPath(); g.moveTo(0, y0 ? y0 : y1); g.lineTo(1080, y0 ? y0 : y1); g.stroke(); g.fillStyle = 'rgba(255,255,255,.9)'; g.font = '600 34px sans-serif'; g.textAlign = 'center'; g.fillText(t, 540, y0 ? y0 + 64 : y1 - 36); g.fillStyle = 'rgba(255,255,255,.10)'; } g.restore(); }
   if (guides) { g.strokeStyle = '#FF3DA5'; g.lineWidth = 4; g.setLineDash([18, 12]); for (const x of guides.x) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } for (const y of guides.y) { g.beginPath(); g.moveTo(0, y); g.lineTo(1080, y); g.stroke(); } g.setLineDash([]); }
-  for (const id of multi) { const mb = boxes.find(x => x.id === id); if (!mb) continue; const p = corners(mb); g.strokeStyle = '#3DC8F5'; g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]); }
+  for (const id of multi) { const mb = boxes.find(x => x.id === id); if (!mb) continue; const p = corners(mb); g.strokeStyle = accentNow(); g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]); }
   const b = sel && boxes.find(x => x.id === sel);
-  if (b) { const p = corners(b); g.strokeStyle = '#3DC8F5'; g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]);
+  if (b) { const p = corners(b); g.strokeStyle = accentNow(); g.lineWidth = 5; g.setLineDash([16, 10]); g.beginPath(); p.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke(); g.setLineDash([]);
     if (getL(sel) && getL(sel).lk) { const [hx, hy] = p[2]; g.fillStyle = 'rgba(15,22,32,.82)'; g.beginPath(); g.arc(hx, hy, 30, 0, 7); g.fill(); g.strokeStyle = '#F4F6F8'; g.lineWidth = 4; g.beginPath(); g.arc(hx, hy - 6, 9, Math.PI, 0); g.stroke(); g.fillStyle = '#F4F6F8'; g.fillRect(hx - 13, hy - 6, 26, 20); }
-    else if (!fineP) { const [hx, hy] = p[2]; g.fillStyle = '#3DC8F5'; g.beginPath(); g.arc(hx, hy, HANDLE, 0, 7); g.fill(); g.fillStyle = '#0F1620'; g.font = '700 52px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('⤡', hx, hy + 2); } }
+    else if (!fineP) { const [hx, hy] = p[2]; g.fillStyle = accentNow(); g.beginPath(); g.arc(hx, hy, HANDLE, 0, 7); g.fill(); g.fillStyle = '#0F1620'; g.font = '700 52px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('⤡', hx, hy + 2); } }
   placeMini(b);
   if (dragging) { g.fillStyle = trashHot ? 'rgba(255,90,95,.95)' : 'rgba(15,22,32,.75)'; g.beginPath(); const ty = H - 130; g.arc(540, ty, trashHot ? 96 : 80, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 6; g.beginPath(); g.rect(510, ty - 25, 60, 70); g.moveTo(495, ty - 25); g.lineTo(585, ty - 25); g.moveTo(525, ty - 40); g.lineTo(555, ty - 40); g.stroke(); }
 }

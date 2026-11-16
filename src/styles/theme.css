@@ -1,0 +1,35 @@
+/* 테마 3개(볼트 기본, 밤하늘, 노을). 모든 페이지가 이 파일을 불러 색 변수를 덮어쓴다.
+   폰 앱(mobile/src/theme/colors.ts)과 같은 값이고, 기준은 피그마 "03 폰 앱 시안"의 변수 모음 "hoohaa app/color"다.
+   html:root는 페이지마다 있는 :root보다 우선해서, 이 파일을 어디에 불러도 이 값이 이긴다.
+   고른 테마는 <html data-theme>에 붙는다(src/app/theme.js). 아무것도 없으면 볼트다.
+   두 이름 체계를 같이 둔다: 앱 화면(app.css)의 --surface, --accent …와 안내 페이지 인라인 스타일의 --s, --b, --a …
+   티어 색(.t-*)과 티어 카드는 테마와 상관없이 그대로다. */
+html:root,html:root[data-theme="volt"]{
+  --bg:#0D0D0B;--surface:#23231F;--raised:#383831;--sunken:#080807;
+  --t1:#F6F6F1;--t2:#C5C5BB;--t3:#A3A397;--border:#48483F;--border2:#77776C;
+  --accent:#C8F03C;--accent-h:#D6F56C;--accent2:#E2F7A6;--on-accent:#0D0D0B;--focus:#FFFFFF;--danger:#FF7B72;--success:#3CCB7F;
+  --s:#23231F;--b:#48483F;--a:#C8F03C;--a2:#E2F7A6;--on-a:#0D0D0B;
+  color-scheme:dark}
+html:root[data-theme="night"]{
+  --bg:#0A0F16;--surface:#1A2635;--raised:#2B3B50;--sunken:#070B11;
+  --t1:#F4F6F8;--t2:#B8C2CF;--t3:#99A6B7;--border:#3A4B62;--border2:#64768E;
+  --accent:#3DC8F5;--accent-h:#6ED6F8;--accent2:#B9ECFF;--on-accent:#0A0F16;--focus:#FFFFFF;--danger:#FF7B72;--success:#3CCB7F;
+  --s:#1A2635;--b:#3A4B62;--a:#3DC8F5;--a2:#B9ECFF;--on-a:#0A0F16}
+html:root[data-theme="sunset"]{
+  --bg:#120E13;--surface:#291F2B;--raised:#3E3141;--sunken:#0C090D;
+  --t1:#F8F3F5;--t2:#CFC3CC;--t3:#AFA0AB;--border:#4F4153;--border2:#847589;
+  --accent:#FF5C8A;--accent-h:#FF7FA3;--accent2:#FFC2D3;--on-accent:#120E13;--focus:#FFFFFF;--danger:#FF8A4C;--success:#3CCB7F;
+  --s:#291F2B;--b:#4F4153;--a:#FF5C8A;--a2:#FFC2D3;--on-a:#120E13}
+html:root body{background:var(--bg)}
+
+/* 로고: 글자는 본문색, 스톱워치 얼굴은 강조색, 바늘은 강조색 위 글자색. 테마를 바꾸면 같이 바뀐다. */
+.wm-i{fill:var(--t1)}.wm-f{fill:var(--accent);stroke:var(--accent)}.wm-h{fill:var(--on-accent);stroke:var(--on-accent)}
+
+/* 테마 고르기: 동그라미 셋. 누르는 영역은 44 이상. */
+.theme-pick{display:flex;align-items:center;gap:6px;margin:0;padding:0;border:0}
+.theme-pick legend{float:left;margin-right:6px;font-size:13px;color:var(--t3)}
+.theme-pick button{position:relative;width:44px;height:44px;border:0;border-radius:50%;background:transparent;cursor:pointer;padding:0;display:grid;place-items:center}
+.theme-pick button i{display:block;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--sw-bg) 0 50%,var(--sw-a) 50% 100%);box-shadow:0 0 0 1px var(--border2)}
+.theme-pick button[aria-checked="true"] i{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--t1)}
+.theme-pick button:focus-visible{outline:3px solid var(--focus);outline-offset:0}
+.foot-theme{flex-basis:100%;margin-top:10px}
