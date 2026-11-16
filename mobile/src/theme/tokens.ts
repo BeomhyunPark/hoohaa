@@ -12,3 +12,18 @@ export const RADIUS = { card: 20, button: 16, input: 14, track: 7 } as const;
 
 /** 숫자는 폭이 같은 숫자로 쓴다. 기록이 바뀌어도 자리가 흔들리지 않는다. */
 export const tabular: TextStyle = { fontVariant: ['tabular-nums'] };
+
+/**
+ * 글꼴. 앱 글자는 Pretendard다(OFL, assets/fonts/). 세 굵기만 넣었다: 400 Regular, 500 Medium, 700 Bold.
+ * 안드로이드는 따로 불러온 글꼴 사이를 fontWeight로 고르지 못해서, 굵기마다 글꼴 이름을 다르게 준다.
+ * 600은 Bold, 800은 Bold로 간다. App.tsx가 글꼴을 다 불러온 뒤에 화면을 그린다.
+ */
+export const FONT_FILES = {
+  'Pretendard-Regular': require('../../assets/fonts/Pretendard-Regular.otf'),
+  'Pretendard-Medium': require('../../assets/fonts/Pretendard-Medium.otf'),
+  'Pretendard-Bold': require('../../assets/fonts/Pretendard-Bold.otf'),
+} as const;
+
+export function font(weight: 400 | 500 | 600 | 700 | 800 = 400): TextStyle {
+  return { fontFamily: weight >= 600 ? 'Pretendard-Bold' : weight === 500 ? 'Pretendard-Medium' : 'Pretendard-Regular' };
+}

@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { AccessibilityInfo, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ExertionSlider } from '../components/ExertionSlider';
+import { Wordmark } from '../components/Wordmark';
 import { Button, StatusLine } from '../components/ui';
 import { afterRunCopy as copy, exertionOutOfParts } from '../copy/after-run';
 import type { HealthReader } from '../record/health-reader';
@@ -25,7 +26,7 @@ import type { WorkoutRecord } from '../record/types';
 import { withUserInput } from '../record/user-input';
 import { rpeColor, type ThemeColors } from '../theme/colors';
 import { useColors, useThemedStyles } from '../theme/theme';
-import { RADIUS, SCREEN_PADDING, SECTION_GAP, tabular } from '../theme/tokens';
+import { RADIUS, SCREEN_PADDING, SECTION_GAP, tabular, font } from '../theme/tokens';
 
 export { MIN_TOUCH } from '../theme/tokens';
 
@@ -145,7 +146,7 @@ export function AfterRunScreen({ reader, store, onAddManual, onOpenList, onEditR
   return (
     <KeyboardAvoidingView style={s.fill} behavior="padding">
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        <Text style={s.brand}>hoohaa</Text>
+        <Wordmark />
 
         {loaded.status === 'loading' && <Text style={s.note}>{copy.loading}</Text>}
         {loaded.status === 'none' && <Text style={s.note}>{copy.noRecord}</Text>}
@@ -442,35 +443,30 @@ const makeStyles = (c: ThemeColors) =>
       paddingBottom: 24,
       gap: SECTION_GAP,
     },
-    brand: {
-      fontSize: 17,
-      fontWeight: '700',
-      color: c.textPrimary,
-      letterSpacing: -0.2,
-    },
     section: { gap: 10 },
     sectionTight: { gap: 8 },
-    note: { fontSize: 16, lineHeight: 24, color: c.textSecondary },
-    body: { fontSize: 16, lineHeight: 24, color: c.textPrimary },
+    note: { fontSize: 16, lineHeight: 24, color: c.textSecondary, ...font(400) },
+    body: { fontSize: 16, lineHeight: 24, color: c.textPrimary, ...font(400) },
     hint: {
       fontSize: 13,
       lineHeight: 18,
       color: c.textTertiary,
       textAlign: 'center',
+      ...font(400),
     },
-    error: { flexShrink: 1, fontSize: 13, lineHeight: 18, color: c.danger },
+    error: { flexShrink: 1, fontSize: 13, lineHeight: 18, color: c.danger, ...font(400) },
 
     head: { gap: 4, marginBottom: -8 },
     date: {
       fontSize: 14,
-      fontWeight: '500',
+      ...font(500),
       color: c.textSecondary,
       ...tabular,
     },
     title: {
       fontSize: 24,
       lineHeight: 32,
-      fontWeight: '700',
+      ...font(700),
       color: c.textPrimary,
     },
 
@@ -489,36 +485,36 @@ const makeStyles = (c: ThemeColors) =>
       justifyContent: 'space-between',
       alignItems: 'center',
     },
-    cardLabel: { fontSize: 14, fontWeight: '500', color: c.textSecondary },
+    cardLabel: { fontSize: 14, ...font(500), color: c.textSecondary },
     chip: {
       backgroundColor: c.raised,
       borderRadius: 999,
       paddingVertical: 5,
       paddingHorizontal: 10,
     },
-    chipText: { fontSize: 12, fontWeight: '500', color: c.textSecondary },
+    chipText: { fontSize: 12, ...font(500), color: c.textSecondary },
     hero: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
     heroNumber: {
       fontSize: 56,
       lineHeight: 60,
-      fontWeight: '700',
+      ...font(700),
       letterSpacing: -1.1,
       color: c.textPrimary,
       ...tabular,
     },
-    heroUnit: { fontSize: 20, fontWeight: '600', color: c.textSecondary },
+    heroUnit: { fontSize: 20, ...font(600), color: c.textSecondary },
     rule: { height: 1, backgroundColor: c.border },
     cellRow: { flexDirection: 'row' },
     cell: { flex: 1, gap: 2 },
-    cellLabel: { fontSize: 13, fontWeight: '500', color: c.textTertiary },
+    cellLabel: { fontSize: 13, ...font(500), color: c.textTertiary },
     cellValueRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
     cellValue: {
       fontSize: 20,
-      fontWeight: '700',
+      ...font(700),
       color: c.textPrimary,
       ...tabular,
     },
-    cellUnit: { fontSize: 13, fontWeight: '500', color: c.textSecondary },
+    cellUnit: { fontSize: 13, ...font(500), color: c.textSecondary },
 
     titleRow: {
       flexDirection: 'row',
@@ -529,15 +525,15 @@ const makeStyles = (c: ThemeColors) =>
     heading: {
       fontSize: 20,
       lineHeight: 28,
-      fontWeight: '700',
+      ...font(700),
       color: c.textPrimary,
     },
-    pickHint: { fontSize: 13, color: c.textTertiary },
+    pickHint: { fontSize: 13, color: c.textTertiary, ...font(400) },
     pill: { borderRadius: 999, paddingVertical: 3, paddingHorizontal: 14 },
     pillText: {
       fontSize: 18,
       lineHeight: 26,
-      fontWeight: '700',
+      ...font(700),
       color: c.onRpe,
       ...tabular,
     },
@@ -546,11 +542,12 @@ const makeStyles = (c: ThemeColors) =>
       lineHeight: 22,
       color: c.textSecondary,
       marginTop: -2,
+      ...font(400),
     },
 
     memoTitle: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-    memoHeading: { fontSize: 15, fontWeight: '700', color: c.textPrimary },
-    memoOptional: { fontSize: 13, color: c.textTertiary },
+    memoHeading: { fontSize: 15, ...font(700), color: c.textPrimary },
+    memoOptional: { fontSize: 13, color: c.textTertiary, ...font(400) },
     memo: {
       minHeight: 64,
       backgroundColor: c.surface,
@@ -562,6 +559,7 @@ const makeStyles = (c: ThemeColors) =>
       fontSize: 16,
       lineHeight: 22,
       color: c.textPrimary,
+      ...font(400),
     },
 
     savedTop: {
@@ -573,12 +571,12 @@ const makeStyles = (c: ThemeColors) =>
     savedNumber: {
       fontSize: 28,
       lineHeight: 32,
-      fontWeight: '700',
+      ...font(700),
       ...tabular,
     },
     savedOf: {
       fontSize: 14,
-      fontWeight: '500',
+      ...font(500),
       color: c.textTertiary,
       ...tabular,
     },
@@ -591,7 +589,7 @@ const makeStyles = (c: ThemeColors) =>
     },
     barStep: { flex: 1, height: 10 },
     savedMemo: { gap: 4 },
-    memoText: { fontSize: 16, lineHeight: 24, color: c.textPrimary },
+    memoText: { fontSize: 16, lineHeight: 24, color: c.textPrimary, ...font(400) },
 
     pair: { flexDirection: 'row', gap: 8 },
     pairFill: { flexDirection: 'row', gap: 8 },
@@ -606,5 +604,5 @@ const makeStyles = (c: ThemeColors) =>
       gap: 8,
       backgroundColor: c.bg,
     },
-    saved: { fontSize: 17, fontWeight: '700', color: c.success },
+    saved: { fontSize: 17, ...font(700), color: c.success },
   });

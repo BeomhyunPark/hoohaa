@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Wordmark } from '../components/Wordmark';
 import { Button } from '../components/ui';
 
 import { recordListCopy as copy } from '../copy/record-list';
@@ -14,7 +15,7 @@ import { summarize, type SummaryKey } from '../record/summary';
 import type { WorkoutRecord } from '../record/types';
 import type { ThemeColors } from '../theme/colors';
 import { useThemedStyles } from '../theme/theme';
-import { MIN_TOUCH, RADIUS, SCREEN_PADDING, SECTION_GAP, tabular } from '../theme/tokens';
+import { MIN_TOUCH, RADIUS, SCREEN_PADDING, SECTION_GAP, tabular, font } from '../theme/tokens';
 
 interface Row {
   record: WorkoutRecord;
@@ -55,7 +56,7 @@ export function RecordListScreen({ lister, store, onOpen, onAddManual, onBack }:
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.brand}>hoohaa</Text>
+      <Wordmark />
 
       <View style={styles.section}>
         <Text style={styles.heading} accessibilityRole="header">
@@ -140,20 +141,14 @@ const makeStyles = (c: ThemeColors) =>
       gap: SECTION_GAP,
       backgroundColor: c.bg,
     },
-    brand: {
-      fontSize: 17,
-      fontWeight: '700',
-      color: c.textPrimary,
-      letterSpacing: -0.2,
-    },
     section: { gap: 10 },
     heading: {
       fontSize: 24,
       lineHeight: 32,
-      fontWeight: '700',
+      ...font(700),
       color: c.textPrimary,
     },
-    note: { fontSize: 16, lineHeight: 24, color: c.textSecondary },
+    note: { fontSize: 16, lineHeight: 24, color: c.textSecondary, ...font(400) },
 
     row: {
       minHeight: MIN_TOUCH,
@@ -167,17 +162,17 @@ const makeStyles = (c: ThemeColors) =>
     },
     rowDate: {
       fontSize: 14,
-      fontWeight: '500',
+      ...font(500),
       color: c.textSecondary,
       ...tabular,
     },
     rowNumbers: {
       fontSize: 18,
-      fontWeight: '700',
+      ...font(700),
       color: c.textPrimary,
       ...tabular,
     },
-    rowTags: { fontSize: 13, color: c.textSecondary },
+    rowTags: { fontSize: 13, color: c.textSecondary, ...font(400) },
 
     links: { flexDirection: 'row', gap: 8 },
     linkItem: { flex: 1 },

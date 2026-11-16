@@ -9,6 +9,7 @@ import { showTime } from '@hoohaa/engine/parse.js';
 import { useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { Wordmark } from '../components/Wordmark';
 import { Button, StatusLine } from '../components/ui';
 
 import { manualEntryCopy as copy, manualErrorText } from '../copy/manual-entry';
@@ -28,7 +29,7 @@ import type { ManualRecordStore } from '../record/manual-store';
 import type { WorkoutRecord } from '../record/types';
 import type { ThemeColors } from '../theme/colors';
 import { useColors, useThemedStyles } from '../theme/theme';
-import { MIN_TOUCH, RADIUS, SCREEN_PADDING, SECTION_GAP, tabular } from '../theme/tokens';
+import { MIN_TOUCH, RADIUS, SCREEN_PADDING, SECTION_GAP, tabular, font } from '../theme/tokens';
 
 const digits = (text: string, max: number) => text.replace(/\D/g, '').slice(0, max);
 
@@ -132,7 +133,7 @@ export function ManualEntryScreen({ store, onSaved, onCancel, editing, now = () 
   return (
     <KeyboardAvoidingView style={styles.fill} behavior="padding">
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.brand}>hoohaa</Text>
+        <Wordmark />
 
         <View style={styles.section}>
           <Text style={styles.title} accessibilityRole="header">
@@ -175,29 +176,23 @@ const makeStyles = (c: ThemeColors) =>
       paddingBottom: 40,
       gap: SECTION_GAP,
     },
-    brand: {
-      fontSize: 17,
-      fontWeight: '700',
-      color: c.textPrimary,
-      letterSpacing: -0.2,
-    },
     section: { gap: 12 },
     title: {
       fontSize: 24,
       lineHeight: 32,
-      fontWeight: '700',
+      ...font(700),
       color: c.textPrimary,
     },
     heading: {
       fontSize: 20,
       lineHeight: 28,
-      fontWeight: '700',
+      ...font(700),
       color: c.textPrimary,
     },
-    hint: { fontSize: 13, lineHeight: 18, color: c.textTertiary },
+    hint: { fontSize: 13, lineHeight: 18, color: c.textTertiary, ...font(400) },
 
     field: { gap: 6 },
-    label: { fontSize: 14, fontWeight: '500', color: c.textSecondary },
+    label: { fontSize: 14, ...font(500), color: c.textSecondary },
     input: {
       minHeight: Math.max(52, MIN_TOUCH),
       backgroundColor: c.surface,
@@ -208,7 +203,8 @@ const makeStyles = (c: ThemeColors) =>
       fontSize: 16,
       color: c.textPrimary,
       ...tabular,
+      ...font(400),
     },
     inputError: { borderColor: c.danger },
-    error: { flexShrink: 1, fontSize: 13, lineHeight: 18, color: c.danger },
+    error: { flexShrink: 1, fontSize: 13, lineHeight: 18, color: c.danger, ...font(400) },
   });

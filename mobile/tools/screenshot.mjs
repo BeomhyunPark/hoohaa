@@ -328,7 +328,7 @@ try {
     page.on('pageerror', (e) => errors.push(e.message));
     await page.clock.setFixedTime(FIXED_NOW);
     await page.goto(`${base}?health=${d.health}`, { waitUntil: 'networkidle' });
-    await page.getByText('hoohaa', { exact: true }).waitFor();
+    await page.getByRole('img', { name: 'hoohaa', exact: true }).first().waitFor();
     for (const { step, run } of FLOWS[opt.flow]) {
       await run(page);
       if (errors.length) throw new Error(`${d.key} ${step}: 페이지 오류\n${errors.join('\n')}`);
