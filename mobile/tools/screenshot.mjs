@@ -12,7 +12,7 @@
 //
 // 쓰는 법 (mobile/ 에서):
 //   npm run screenshot                       # ../docs/screenshots/v4/after-run-1-before-iphone.png 등 10장
-//   npm run screenshot -- --flow manual      # 흐름 고르기(기본값 after-run). manual은 기록 직접 입력, list는 지난 기록, no-hr는 심박이 없는 기록
+//   npm run screenshot -- --flow manual      # 흐름 고르기(기본값 after-run). manual은 기록 직접 입력, list는 지난 기록, no-hr는 심박이 없는 기록, theme는 화면 색
 //   npm run screenshot -- --out /tmp/shots   # 저장 폴더 바꾸기
 //   npm run screenshot -- --dist ./dist-web  # 이미 export한 폴더를 그대로 쓰기
 //
@@ -185,6 +185,44 @@ const FLOWS = {
         await page.getByLabel('거리, 5.01 km', { exact: true }).waitFor();
         if ((await page.getByText('평균 심박', { exact: true }).count()) !== 0) throw new Error('심박이 없는 기록에 평균 심박 칸이 있다');
         await expectTouchSize(page.getByRole('slider'), '체감 피로 슬라이더');
+      },
+    },
+  ],
+
+  // 화면 색: 맨 위 버튼으로 고르는 화면을 열고 → 밤하늘 → 노을을 고른 뒤 → 돌아가서 첫 화면이 노을 색인 것.
+  theme: [
+    {
+      step: '1-open',
+      async run(page) {
+        await page.getByText('운동 기록', { exact: true }).waitFor();
+        await expectTouchSize(page.getByRole('button', { name: '화면 색', exact: true }), '화면 색 버튼');
+        await page.getByRole('button', { name: '화면 색', exact: true }).click();
+        await page.getByRole('radio', { name: '볼트', exact: true, checked: true }).waitFor();
+        await expectTouchSize(page.getByRole('radio'), '테마');
+      },
+    },
+    {
+      step: '2-night',
+      async run(page) {
+        await page.getByRole('radio', { name: '밤하늘', exact: true }).click();
+        await page.getByRole('radio', { name: '밤하늘', exact: true, checked: true }).waitFor();
+      },
+    },
+    {
+      step: '3-sunset',
+      async run(page) {
+        await page.getByRole('radio', { name: '노을', exact: true }).click();
+        await page.getByRole('radio', { name: '노을', exact: true, checked: true }).waitFor();
+      },
+    },
+    {
+      // 앱을 다시 열어도 고른 색이다(기기 저장소). 웹 번들에서는 localStorage다.
+      step: '4-back',
+      async run(page) {
+        await page.getByRole('button', { name: '돌아가기', exact: true }).click();
+        await page.reload({ waitUntil: 'networkidle' });
+        await page.getByText('운동 기록', { exact: true }).waitFor();
+        await pickExertion(page, 7);
       },
     },
   ],

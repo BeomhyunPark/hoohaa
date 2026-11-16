@@ -118,7 +118,7 @@ import { D } from '@hoohaa/engine/data.js';
 
 모양은 피그마 "03 폰 앱 시안"의 확정안이다. 그림은 [`docs/screenshots/v4/design/`](../docs/screenshots/v4/design/)에 있다. 기록 카드(거리를 크게) → 체감 피로 슬라이더 → 메모 순서이고, 저장·수정·취소는 화면 아래에 붙는다.
 
-- 색은 `src/theme/colors.ts`의 역할 이름(`bg`, `surface`, `textPrimary`, `accent`, `rpe` 등)만 쓴다. 테마는 볼트, 밤하늘, 노을 세 개이고 모두 어두운 화면이다. 기본은 볼트다. 테마를 고르는 화면은 아직 없다. 화면은 `ThemeProvider`(`src/theme/theme.tsx`) 한 곳에서 테마를 받는다.
+- 색은 `src/theme/colors.ts`의 역할 이름(`bg`, `surface`, `textPrimary`, `accent`, `rpe` 등)만 쓴다. 테마는 볼트(기본), 밤하늘, 노을이고 모두 어두운 화면이다. 화면 맨 위 "화면 색" 버튼(`src/components/Header.tsx`)으로 고르는 화면(`src/screens/ThemeScreen.tsx`)을 연다. 고른 값은 기기에 저장하고(`src/theme/theme-store.ts`, 키 `hoohaa/theme`) 앱을 열 때 읽는다. 고르는 화면은 보던 화면을 숨겨 둔 채 위에 띄워서, 고르던 체감 피로나 적던 메모가 돌아와도 그대로다. 화면은 `ThemeProvider`(`src/theme/theme.tsx`)에서 테마를 받는다.
 - `accent`는 저장 버튼에만, 체감 피로 색(`rpe`, 1~10 단계)은 슬라이더·고른 값 알약·저장한 피로 값에만 쓴다. `__tests__/theme.test.ts`가 테마마다 글자와 면의 대비가 4.5:1 이상인지 본다.
 - 체감 피로는 슬라이더(`src/components/ExertionSlider.tsx`)로 고른다. 1~10 정수에만 붙고 처음에는 값이 없다. 트랙을 누르거나 끌면 값이 골라진다. 화면 낭독기에는 조절할 수 있는 요소 하나(role slider)이고, 올리기·내리기로 1씩 바뀐다(값이 없을 때 올리면 1). 새 네이티브 의존성 없이 React Native의 터치 응답으로 만들었다.
 - 글자는 Pretendard(SIL OFL 1.1, `assets/fonts/`)다. Regular·Medium·Bold 세 굵기만 넣었다. 안드로이드는 따로 불러온 글꼴 사이를 `fontWeight`로 고르지 못해서, 스타일은 굵기 대신 `font(500)`처럼 `src/theme/tokens.ts`의 `font()`로 글꼴 이름을 준다(600·800은 Bold). `App.tsx`가 `expo-font`로 글꼴을 다 불러온 뒤에 화면을 그린다. 숫자는 폭이 같은 숫자(tabular)로 한다.

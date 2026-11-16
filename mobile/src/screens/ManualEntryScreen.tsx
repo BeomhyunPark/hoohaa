@@ -9,7 +9,7 @@ import { showTime } from '@hoohaa/engine/parse.js';
 import { useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Wordmark } from '../components/Wordmark';
+import { Header } from '../components/Header';
 import { Button, StatusLine } from '../components/ui';
 
 import { manualEntryCopy as copy, manualErrorText } from '../copy/manual-entry';
@@ -133,7 +133,7 @@ export function ManualEntryScreen({ store, onSaved, onCancel, editing, now = () 
   return (
     <KeyboardAvoidingView style={styles.fill} behavior="padding">
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Wordmark />
+        <Header />
 
         <View style={styles.section}>
           <Text style={styles.title} accessibilityRole="header">
