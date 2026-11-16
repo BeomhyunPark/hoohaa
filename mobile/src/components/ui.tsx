@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View, type PressableProps } from 'react-na
 
 import type { ThemeColors } from '../theme/colors';
 import { useThemedStyles } from '../theme/theme';
-import { MIN_TOUCH, RADIUS } from '../theme/tokens';
+import { MIN_TOUCH, RADIUS, font } from '../theme/tokens';
 
 type ButtonKind = 'primary' | 'outline' | 'text' | 'textDanger';
 
@@ -48,7 +48,7 @@ const makeButtonStyles = (c: ThemeColors) =>
     textDanger: { minHeight: MIN_TOUCH, paddingHorizontal: 8 },
     off: { backgroundColor: c.raised },
     pressed: { opacity: 0.6 },
-    label: { fontSize: 16, fontWeight: '700' },
+    label: { fontSize: 16, ...font(700) },
     primaryText: { fontSize: 17, color: c.onAccent },
     outlineText: { color: c.textPrimary },
     textText: { fontSize: 15, color: c.textPrimary },
@@ -76,7 +76,7 @@ const makeIconStyles = (c: ThemeColors) =>
     circle: { alignItems: 'center', justifyContent: 'center' },
     success: { backgroundColor: c.success },
     danger: { backgroundColor: c.danger },
-    mark: { fontWeight: '800', color: c.bg, textAlign: 'center' },
+    mark: { ...font(800), color: c.bg, textAlign: 'center' },
   });
 
 /** 아이콘과 문장 한 줄. 오류 안내와 "저장했어요"에 쓴다. */

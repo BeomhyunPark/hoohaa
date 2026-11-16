@@ -12,7 +12,7 @@ import { StyleSheet, Text, View, type AccessibilityActionEvent, type GestureResp
 import { afterRunCopy as copy, EXERTION_MAX, EXERTION_MIN, exertionButtonLabel } from '../copy/after-run';
 import { rpeColor, type ThemeColors } from '../theme/colors';
 import { useColors, useThemedStyles } from '../theme/theme';
-import { MIN_TOUCH, RADIUS, tabular } from '../theme/tokens';
+import { MIN_TOUCH, RADIUS, tabular, font } from '../theme/tokens';
 
 const STEPS = Array.from({ length: EXERTION_MAX - EXERTION_MIN + 1 }, (_, i) => EXERTION_MIN + i);
 const GAP = 2;
@@ -138,15 +138,15 @@ const makeStyles = (c: ThemeColors) =>
       flex: 1,
       textAlign: 'center',
       fontSize: 13,
-      fontWeight: '500',
+      ...font(500),
       color: c.textTertiary,
       ...tabular,
     },
-    tickOn: { fontWeight: '700', color: c.textPrimary },
+    tickOn: { ...font(700), color: c.textPrimary },
     ends: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingTop: 8,
     },
-    end: { fontSize: 13, color: c.textSecondary },
+    end: { fontSize: 13, color: c.textSecondary, ...font(400) },
   });

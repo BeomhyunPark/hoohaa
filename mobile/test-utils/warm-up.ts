@@ -13,6 +13,7 @@
  */
 export const WARMED = [
   'AccessibilityInfo',
+  'Image',
   'KeyboardAvoidingView',
   'Platform',
   'Pressable',

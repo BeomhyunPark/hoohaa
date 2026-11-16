@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { Platform, StyleSheet } from 'react-native';
@@ -18,6 +19,7 @@ import { ManualEntryScreen } from './src/screens/ManualEntryScreen';
 import { RecordListScreen } from './src/screens/RecordListScreen';
 import { DEFAULT_THEME, THEMES } from './src/theme/colors';
 import { ThemeProvider } from './src/theme/theme';
+import { FONT_FILES } from './src/theme/tokens';
 
 /**
  * 어느 건강 앱 샘플을 쓸지. 아이폰은 애플 건강, 그 밖은 헬스 커넥트다.
@@ -56,6 +58,9 @@ export default function App() {
   // 부를 때마다 새 reader를 만든다. 화면이 기록을 다시 읽게 하려고.
   const latest = (): View => ({ name: 'after-run', reader: createLatestWorkoutReader(health, manualStore) });
   const [view, setView] = useState<View>(latest);
+  // 글자는 Pretendard다. 다 불러오기 전에는 바탕색만 그린다(글꼴이 바뀌며 글자가 튀지 않게). 못 불러오면 시스템 글꼴로 그린다.
+  const [fontsLoaded, fontError] = useFonts(FONT_FILES);
+  if (!fontsLoaded && !fontError) return <SafeAreaProvider><SafeAreaView style={styles.container} /></SafeAreaProvider>;
 
   return (
     // 테마는 기본(볼트) 하나로만 그린다. 고르는 화면이 생기면 여기서 ThemeProvider에 name을 넘긴다.
