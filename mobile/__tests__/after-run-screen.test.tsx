@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { render, screen, userEvent } from '@testing-library/react-native';
+import { fireEvent, render, screen, userEvent } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { createDeviceRecordStore, storageKey } from '../src/record/device-store';
@@ -8,6 +8,7 @@ import { manualRecord } from '../src/record/manual';
 import { createMemoryRecordStore, type RecordStore } from '../src/record/store';
 import type { WorkoutRecord } from '../src/record/types';
 import { AfterRunScreen } from '../src/screens/AfterRunScreen';
+import { adjustExertion, exertionSlider, exertionValue, pickExertion, queryExertionSlider } from '../test-utils/exertion';
 import { rec } from '../test-utils/record';
 
 const now = () => new Date('2026-11-05T22:05:00.000Z');
@@ -79,35 +80,70 @@ describe('들어온 기록', () => {
 });
 
 describe('체감 피로', () => {
-  test('1~10 버튼마다 읽어 줄 이름이 있고, 양 끝에는 뜻이 붙는다', async () => {
+  test('슬라이더 하나로 묻고, 화면 낭독기에는 이름·힌트·값이 있다', async () => {
     await open(await sample());
-    expect(screen.getByText('1은 아주 편했을 때, 10은 온 힘을 다했을 때예요.')).toBeTruthy();
-    expect(screen.getAllByRole('radio')).toHaveLength(10);
-    expect(screen.getByRole('radio', { name: '체감 피로 1, 아주 편했어요' })).toBeTruthy();
-    for (let v = 2; v <= 9; v++) expect(screen.getByRole('radio', { name: `체감 피로 ${v}` })).toBeTruthy();
-    expect(screen.getByRole('radio', { name: '체감 피로 10, 온 힘을 다했어요' })).toBeTruthy();
+    const slider = screen.getByRole('slider', { name: '체감 피로, 1부터 10까지' });
+    expect(slider).toBe(exertionSlider());
+    expect(slider.props.accessibilityHint).toBe('1은 아주 편했을 때, 10은 온 힘을 다했을 때예요.');
+    expect(slider).toHaveAccessibilityValue({ min: 1, max: 10 });
+    // 고르기 전에는 값이 없다. 힌트 문장은 화면에 보이지 않고, 양 끝 뜻은 보인다.
+    expect(exertionValue()).toBeUndefined();
+    expect(screen.queryByText('1은 아주 편했을 때, 10은 온 힘을 다했을 때예요.')).toBeNull();
+    expect(screen.getByText('밀거나 눌러서 골라요')).toBeTruthy();
+    expect(screen.getByText('아주 편했어요', { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getByText('온 힘을 다했어요', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  test('누르면 그 값 하나가 되고, 다시 누르면 바뀐다. 낭독기는 양 끝에 뜻을 붙여 읽는다', async () => {
+    await open(await sample());
+    await pickExertion(7);
+    expect(exertionSlider()).toHaveAccessibilityValue({ now: 7, text: '체감 피로 7' });
+    expect(screen.queryByText('밀거나 눌러서 골라요')).toBeNull();
+
+    await pickExertion(1);
+    expect(exertionSlider()).toHaveAccessibilityValue({ now: 1, text: '체감 피로 1, 아주 편했어요' });
+    await pickExertion(10);
+    expect(exertionSlider()).toHaveAccessibilityValue({ now: 10, text: '체감 피로 10, 온 힘을 다했어요' });
+  });
+
+  test('끌면 손가락 아래 칸의 값이 된다', async () => {
+    await open(await sample());
+    await pickExertion(2);
+    await fireEvent(exertionSlider(), 'responderMove', { nativeEvent: { locationX: 330, locationY: 24 } });
+    expect(exertionValue()).toBe(10);
+    // 트랙 밖으로 나가도 1과 10을 넘지 않는다.
+    await fireEvent(exertionSlider(), 'responderMove', { nativeEvent: { locationX: -40, locationY: 24 } });
+    expect(exertionValue()).toBe(1);
+  });
+
+  test('올리기·내리기로 1씩 바뀌고, 1과 10을 넘지 않는다. 값이 없을 때 올리면 1이다', async () => {
+    await open(await sample());
+    await adjustExertion('decrement');
+    expect(exertionValue()).toBeUndefined();
+    await adjustExertion('increment');
+    expect(exertionValue()).toBe(1);
+    await adjustExertion('decrement');
+    expect(exertionValue()).toBe(1);
+    await pickExertion(9);
+    await adjustExertion('increment');
+    await adjustExertion('increment');
+    expect(exertionValue()).toBe(10);
+    await adjustExertion('decrement');
+    expect(exertionValue()).toBe(9);
   });
 
   test('누르는 영역은 44pt 이상이다', async () => {
     await open(await sample());
-    for (const el of [...screen.getAllByRole('radio'), screen.getByRole('button', { name: '저장' })]) {
-      const style = StyleSheet.flatten(el.props.style);
-      expect(style.minHeight).toBeGreaterThanOrEqual(44);
-    }
-    for (const el of screen.getAllByRole('radio')) {
-      expect(StyleSheet.flatten(el.props.style).minWidth).toBeGreaterThanOrEqual(44);
+    for (const el of [exertionSlider(), screen.getByRole('button', { name: '저장' })]) {
+      expect(StyleSheet.flatten(el.props.style).minHeight).toBeGreaterThanOrEqual(44);
     }
   });
 
-  test('고른 값 하나만 선택된 상태가 되고, 다시 고르면 바뀐다', async () => {
-    const { user } = await open(await sample());
-    await user.press(screen.getByRole('radio', { name: '체감 피로 7' }));
-    expect(screen.getByRole('radio', { name: '체감 피로 7' })).toBeChecked();
-    expect(screen.getAllByRole('radio', { checked: true })).toHaveLength(1);
-
-    await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
-    expect(screen.getByRole('radio', { name: '체감 피로 4' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: '체감 피로 7' })).not.toBeChecked();
+  test('고른 값은 제목 옆 알약에 보인다', async () => {
+    await open(await sample());
+    await pickExertion(4);
+    // 알약과 눈금은 그림일 뿐이라 낭독기는 읽지 않는다(값은 슬라이더가 읽는다).
+    expect(screen.getAllByText('4', { includeHiddenElements: true }).length).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -131,7 +167,7 @@ describe('저장', () => {
     const store = createMemoryRecordStore();
     const { user } = await open(await sample(), store);
 
-    await user.press(screen.getByRole('radio', { name: '체감 피로 3' }));
+    await pickExertion(3);
     expect(screen.getByRole('button', { name: '저장' })).toBeEnabled();
     expect(screen.queryByText('체감 피로를 골라야 저장할 수 있어요.')).toBeNull();
     await user.press(screen.getByRole('button', { name: '저장' }));
@@ -146,7 +182,7 @@ describe('저장', () => {
     const store = createMemoryRecordStore();
     const { user } = await open(await sample(), store);
 
-    await user.press(screen.getByRole('radio', { name: '체감 피로 5' }));
+    await pickExertion(5);
     await user.type(screen.getByLabelText('메모 (선택)'), '   ');
     await user.press(screen.getByRole('button', { name: '저장' }));
 
@@ -159,7 +195,7 @@ describe('저장', () => {
     const store = createMemoryRecordStore();
     const { user } = await open(record, store);
 
-    await user.press(screen.getByRole('radio', { name: '체감 피로 7' }));
+    await pickExertion(7);
     await user.type(screen.getByLabelText('메모 (선택)'), '  왼쪽 무릎이 조금 아파요 ');
     await user.press(screen.getByRole('button', { name: '저장' }));
     await screen.findByText('저장했어요');
@@ -172,7 +208,7 @@ describe('저장', () => {
     // 저장한 뒤에는 묻는 칸이 사라지고, 기록에 붙은 값이 보인다.
     expect(screen.getByLabelText('체감 피로, 7')).toBeTruthy();
     expect(screen.getByLabelText('메모, 왼쪽 무릎이 조금 아파요')).toBeTruthy();
-    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    expect(queryExertionSlider()).toBeNull();
     expect(screen.queryByRole('button', { name: '저장' })).toBeNull();
   });
 
@@ -182,7 +218,7 @@ describe('저장', () => {
     save.mockRejectedValueOnce(new Error('저장 오류'));
     const { user } = await open(await sample(), { ...memory, save });
 
-    await user.press(screen.getByRole('radio', { name: '체감 피로 8' }));
+    await pickExertion(8);
     await user.press(screen.getByRole('button', { name: '저장' }));
     expect(await screen.findByText('저장하지 못했어요. 다시 눌러 주세요.')).toBeTruthy();
     expect(screen.queryByText('저장했어요')).toBeNull();
@@ -200,7 +236,7 @@ describe('저장한 뒤 수정', () => {
     const record = await sample(platform);
     const store = createMemoryRecordStore();
     const { user } = await open(record, store);
-    await user.press(screen.getByRole('radio', { name: '체감 피로 7' }));
+    await pickExertion(7);
     await user.type(screen.getByLabelText('메모 (선택)'), '왼쪽 무릎이 조금 아파요');
     await user.press(screen.getByRole('button', { name: '저장' }));
     await screen.findByText('저장했어요');
@@ -211,8 +247,7 @@ describe('저장한 뒤 수정', () => {
     const { user } = await openSaved();
     await user.press(screen.getByRole('button', { name: '수정' }));
 
-    expect(screen.getByRole('radio', { name: '체감 피로 7' })).toBeChecked();
-    expect(screen.getAllByRole('radio', { checked: true })).toHaveLength(1);
+    expect(exertionValue()).toBe(7);
     expect(screen.getByLabelText('메모 (선택)')).toHaveDisplayValue('왼쪽 무릎이 조금 아파요');
     expect(screen.getByRole('button', { name: '저장' })).toBeEnabled();
     // 고치는 중에는 "저장했어요"와 카드에 붙은 예전 값을 치운다.
@@ -223,7 +258,7 @@ describe('저장한 뒤 수정', () => {
   test.each(['apple_health', 'health_connect'] as const)('고쳐서 저장하면 같은 기록의 값이 바뀐다 (%s)', async (platform) => {
     const { record, store, user } = await openSaved(platform);
     await user.press(screen.getByRole('button', { name: '수정' }));
-    await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+    await pickExertion(4);
     await user.clear(screen.getByLabelText('메모 (선택)'));
     await user.type(screen.getByLabelText('메모 (선택)'), '괜찮아졌어요');
     await user.press(screen.getByRole('button', { name: '저장' }));
@@ -250,7 +285,7 @@ describe('저장한 뒤 수정', () => {
   test('취소하면 저장된 값 그대로이고, 다시 수정을 열어도 버린 값이 남아 있지 않다', async () => {
     const { store, user } = await openSaved();
     await user.press(screen.getByRole('button', { name: '수정' }));
-    await user.press(screen.getByRole('radio', { name: '체감 피로 2' }));
+    await pickExertion(2);
     await user.type(screen.getByLabelText('메모 (선택)'), ' 그리고 발목도');
     await user.press(screen.getByRole('button', { name: '취소' }));
 
@@ -261,7 +296,7 @@ describe('저장한 뒤 수정', () => {
     expect(store.all()[0].userInput).toEqual({ perceivedExertion: 7, memo: '왼쪽 무릎이 조금 아파요' });
 
     await user.press(screen.getByRole('button', { name: '수정' }));
-    expect(screen.getByRole('radio', { name: '체감 피로 7' })).toBeChecked();
+    expect(exertionValue()).toBe(7);
     expect(screen.getByLabelText('메모 (선택)')).toHaveDisplayValue('왼쪽 무릎이 조금 아파요');
   });
 
@@ -290,7 +325,7 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
   /** 앱을 처음 열어 체감 피로(와 메모)를 저장하고 닫는다. */
   async function saveAndClose(platform: Platform, exertion: number, memo: string) {
     const { user } = await open(await sample(platform), createDeviceRecordStore());
-    await user.press(screen.getByRole('radio', { name: new RegExp(`^체감 피로 ${exertion}(,|$)`) }));
+    await pickExertion(exertion);
     if (memo !== '') await user.type(screen.getByLabelText('메모 (선택)'), memo);
     await user.press(screen.getByRole('button', { name: '저장' }));
     await screen.findByText('저장했어요');
@@ -309,8 +344,7 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
 
   function expectAskedLikeFirstTime() {
     expect(screen.getByText('이번 달리기는 얼마나 힘들었어요?')).toBeTruthy();
-    expect(screen.getAllByRole('radio')).toHaveLength(10);
-    expect(screen.queryAllByRole('radio', { checked: true })).toHaveLength(0);
+    expect(exertionValue()).toBeUndefined();
     expect(screen.getByLabelText('메모 (선택)')).toHaveDisplayValue('');
     expect(screen.getByRole('button', { name: '저장' })).toBeDisabled();
     expect(screen.queryByText('저장했어요')).toBeNull();
@@ -319,7 +353,7 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
 
   function expectNotAsked() {
     expect(screen.queryByText('이번 달리기는 얼마나 힘들었어요?')).toBeNull();
-    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    expect(queryExertionSlider()).toBeNull();
     expect(screen.queryByLabelText('메모 (선택)')).toBeNull();
     expect(screen.queryByRole('button', { name: '저장' })).toBeNull();
     // "저장했어요"는 방금 저장했을 때만 하는 말이다. 다시 들어온 기록에는 없다.
@@ -373,9 +407,9 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
     const { user } = await reopen('apple_health');
 
     await user.press(screen.getByRole('button', { name: '수정' }));
-    expect(screen.getByRole('radio', { name: '체감 피로 7' })).toBeChecked();
+    expect(exertionValue()).toBe(7);
     expect(screen.getByLabelText('메모 (선택)')).toHaveDisplayValue('왼쪽 무릎이 조금 아파요');
-    await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+    await pickExertion(4);
     await user.clear(screen.getByLabelText('메모 (선택)'));
     await user.press(screen.getByRole('button', { name: '저장' }));
     await screen.findByText('저장했어요');
@@ -390,7 +424,7 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
 
   test('"저장했어요"는 방금 저장했을 때만 보인다. 다시 들어온 기록에는 값과 수정만 있다', async () => {
     const { user } = await open(await sample(), createDeviceRecordStore());
-    await user.press(screen.getByRole('radio', { name: '체감 피로 7' }));
+    await pickExertion(7);
     await user.press(screen.getByRole('button', { name: '저장' }));
     // 저장하면 화면 낭독기도 읽는다.
     expect((await screen.findByText('저장했어요')).props['aria-live']).toBe('polite');
@@ -408,7 +442,7 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
 
     // 고쳐서 저장하면 다시 보인다.
     await again.user.press(screen.getByRole('button', { name: '수정' }));
-    await again.user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+    await pickExertion(4);
     await again.user.press(screen.getByRole('button', { name: '저장' }));
     expect(await screen.findByText('저장했어요')).toBeTruthy();
     expect(screen.getByLabelText('체감 피로, 4')).toBeTruthy();
@@ -435,7 +469,7 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
     expectAskedLikeFirstTime();
 
     // 다시 답하면 저장되고, 그다음부터는 묻지 않는다.
-    await user.press(screen.getByRole('radio', { name: '체감 피로 5' }));
+    await pickExertion(5);
     await user.press(screen.getByRole('button', { name: '저장' }));
     await screen.findByText('저장했어요');
     await screen.unmount();
@@ -451,7 +485,7 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
     await render(<AfterRunScreen reader={readerOf(await sample())} store={createDeviceRecordStore()} />);
 
     expect(await screen.findByText('기록을 읽지 못했어요.')).toBeTruthy();
-    expect(screen.queryAllByRole('radio')).toHaveLength(0);
+    expect(queryExertionSlider()).toBeNull();
 
     await userEvent.setup().press(screen.getByRole('button', { name: '다시 읽기' }));
     expect(await screen.findByLabelText('체감 피로, 7')).toBeTruthy();
@@ -462,14 +496,14 @@ describe('이미 저장한 기록이 다시 들어올 때 (기기 저장소)', (
 test('메모리 저장소도 같은 화면에서 다시 묻지 않는다 (저장소를 바꿔도 화면은 그대로다)', async () => {
   const store = createMemoryRecordStore();
   const { user } = await open(await sample(), store);
-  await user.press(screen.getByRole('radio', { name: '체감 피로 6' }));
+  await pickExertion(6);
   await user.type(screen.getByLabelText('메모 (선택)'), '가벼웠어요');
   await user.press(screen.getByRole('button', { name: '저장' }));
   await screen.findByText('저장했어요');
   await screen.unmount();
 
   await open(await sample(), store);
-  expect(screen.queryAllByRole('radio')).toHaveLength(0);
+  expect(queryExertionSlider()).toBeNull();
   expect(screen.queryByText('저장했어요')).toBeNull();
   expect(screen.getByLabelText('체감 피로, 6')).toBeTruthy();
   expect(screen.getByLabelText('메모, 가벼웠어요')).toBeTruthy();
@@ -480,7 +514,7 @@ test('컨디션, 목표, 내일 훈련, 통증 판단은 보여 주지 않는다
   const judged = /컨디션|목표|내일|훈련|진단|진료|통증|쉬어요|강도/;
   expect(screen.queryByText(judged)).toBeNull();
 
-  await user.press(screen.getByRole('radio', { name: '체감 피로 9' }));
+  await pickExertion(9);
   await user.type(screen.getByLabelText('메모 (선택)'), '종아리 통증');
   await user.press(screen.getByRole('button', { name: '저장' }));
   await screen.findByText('저장했어요');

@@ -5,13 +5,16 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Button } from '../components/ui';
+
 import { recordListCopy as copy } from '../copy/record-list';
 import type { RecordLister } from '../record/health-reader';
 import type { RecordStore } from '../record/store';
 import { summarize, type SummaryKey } from '../record/summary';
 import type { WorkoutRecord } from '../record/types';
-
-const MIN_TOUCH = 48;
+import type { ThemeColors } from '../theme/colors';
+import { useThemedStyles } from '../theme/theme';
+import { MIN_TOUCH, RADIUS, SCREEN_PADDING, SECTION_GAP, tabular } from '../theme/tokens';
 
 interface Row {
   record: WorkoutRecord;
@@ -32,6 +35,7 @@ interface Props {
 export function RecordListScreen({ lister, store, onOpen, onAddManual, onBack }: Props) {
   const [loaded, setLoaded] = useState<Loaded>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  const styles = useThemedStyles(makeStyles);
 
   useEffect(() => {
     let current = true;
@@ -64,13 +68,7 @@ export function RecordListScreen({ lister, store, onOpen, onAddManual, onBack }:
             <Text style={styles.note} accessibilityRole="alert">
               {copy.readFailed}
             </Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setAttempt((n) => n + 1)}
-              style={({ pressed }) => [styles.button, styles.buttonOutline, pressed && styles.pressed]}
-            >
-              <Text style={styles.buttonOutlineText}>{copy.retryRead}</Text>
-            </Pressable>
+            <Button kind="outline" label={copy.retryRead} onPress={() => setAttempt((n) => n + 1)} />
           </>
         )}
         {loaded.status === 'ready' && loaded.rows.length === 0 && <Text style={styles.note}>{copy.empty}</Text>}
@@ -85,12 +83,12 @@ export function RecordListScreen({ lister, store, onOpen, onAddManual, onBack }:
       </View>
 
       <View style={styles.links}>
-        <Pressable accessibilityRole="button" onPress={onBack} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
-          <Text style={styles.buttonPlainText}>{copy.back}</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={onAddManual} style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
-          <Text style={styles.buttonPlainText}>{copy.addManual}</Text>
-        </Pressable>
+        <View style={styles.linkItem}>
+          <Button kind="outline" label={copy.back} onPress={onBack} />
+        </View>
+        <View style={styles.linkItem}>
+          <Button kind="outline" label={copy.addManual} onPress={onAddManual} />
+        </View>
       </View>
     </ScrollView>
   );
@@ -100,12 +98,16 @@ export function RecordListScreen({ lister, store, onOpen, onAddManual, onBack }:
 async function readRows(lister: RecordLister, store: RecordStore): Promise<Row[]> {
   const records = await lister.list();
   return Promise.all(
-    records.map(async (record) => ({ record, exertion: (await store.findUserInput(record.origin))?.perceivedExertion ?? null })),
+    records.map(async (record) => ({
+      record,
+      exertion: (await store.findUserInput(record.origin))?.perceivedExertion ?? null,
+    })),
   );
 }
 
 /** 한 줄: 날짜, 그 아래 거리 · 시간 · 평균 페이스, 그 아래 직접 입력 표시와 체감 피로. 값이 없는 항목은 빠진다. */
 function RecordRow({ row, onPress }: { row: Row; onPress: () => void }) {
+  const styles = useThemedStyles(makeStyles);
   const values = new Map(summarize(row.record).map((item) => [item.key, item.value]));
   const pick = (keys: SummaryKey[]) => keys.map((k) => values.get(k)).filter((v): v is string => v !== undefined);
   const date = values.get('date');
@@ -128,29 +130,56 @@ function RecordRow({ row, onPress }: { row: Row; onPress: () => void }) {
   );
 }
 
-const colors = {
-  bg: '#ffffff',
-  ink: '#111111',
-  sub: '#666666',
-  card: '#f5f5f5',
-};
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    content: {
+      flexGrow: 1,
+      paddingHorizontal: SCREEN_PADDING,
+      paddingTop: 10,
+      paddingBottom: 40,
+      gap: SECTION_GAP,
+      backgroundColor: c.bg,
+    },
+    brand: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: c.textPrimary,
+      letterSpacing: -0.2,
+    },
+    section: { gap: 10 },
+    heading: {
+      fontSize: 24,
+      lineHeight: 32,
+      fontWeight: '700',
+      color: c.textPrimary,
+    },
+    note: { fontSize: 16, lineHeight: 24, color: c.textSecondary },
 
-const styles = StyleSheet.create({
-  content: { padding: 20, paddingBottom: 40, gap: 28, backgroundColor: colors.bg },
-  brand: { fontSize: 22, fontWeight: '700', color: colors.ink },
-  section: { gap: 10 },
-  heading: { fontSize: 18, fontWeight: '700', color: colors.ink },
-  note: { fontSize: 16, color: colors.sub },
+    row: {
+      minHeight: MIN_TOUCH,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: RADIUS.card,
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      gap: 4,
+    },
+    rowDate: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: c.textSecondary,
+      ...tabular,
+    },
+    rowNumbers: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: c.textPrimary,
+      ...tabular,
+    },
+    rowTags: { fontSize: 13, color: c.textSecondary },
 
-  row: { minHeight: MIN_TOUCH, backgroundColor: colors.card, borderRadius: 14, padding: 16, gap: 4 },
-  rowDate: { fontSize: 13, color: colors.sub },
-  rowNumbers: { fontSize: 18, fontWeight: '600', color: colors.ink },
-  rowTags: { fontSize: 14, color: colors.sub },
-
-  links: { flexDirection: 'row', justifyContent: 'center', gap: 12 },
-  button: { minHeight: MIN_TOUCH + 4, alignItems: 'center', justifyContent: 'center', borderRadius: 12, paddingHorizontal: 16 },
-  buttonOutline: { borderWidth: 1, borderColor: colors.ink },
-  buttonOutlineText: { fontSize: 17, fontWeight: '700', color: colors.ink },
-  buttonPlainText: { fontSize: 16, fontWeight: '600', color: colors.ink, textDecorationLine: 'underline' },
-  pressed: { opacity: 0.6 },
-});
+    links: { flexDirection: 'row', gap: 8 },
+    linkItem: { flex: 1 },
+    pressed: { opacity: 0.6 },
+  });

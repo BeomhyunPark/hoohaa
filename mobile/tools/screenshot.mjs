@@ -12,7 +12,7 @@
 //
 // 쓰는 법 (mobile/ 에서):
 //   npm run screenshot                       # ../docs/screenshots/v4/after-run-1-before-iphone.png 등 10장
-//   npm run screenshot -- --flow manual      # 흐름 고르기(기본값 after-run). manual은 기록 직접 입력, list는 지난 기록
+//   npm run screenshot -- --flow manual      # 흐름 고르기(기본값 after-run). manual은 기록 직접 입력, list는 지난 기록, no-hr는 심박이 없는 기록
 //   npm run screenshot -- --out /tmp/shots   # 저장 폴더 바꾸기
 //   npm run screenshot -- --dist ./dist-web  # 이미 export한 폴더를 그대로 쓰기
 //
@@ -49,6 +49,15 @@ async function expectTouchSize(locator, what) {
   }
 }
 
+/** 체감 피로 슬라이더에서 값 n(1~10)의 칸 가운데를 누른다. */
+async function pickExertion(page, n) {
+  const slider = page.getByRole('slider', { name: '체감 피로, 1부터 10까지', exact: true });
+  const box = await slider.boundingBox();
+  if (!box) throw new Error('체감 피로 슬라이더가 화면에 없다');
+  await slider.click({ position: { x: ((n - 0.5) / 10) * box.width, y: box.height / 2 } });
+  await page.locator(`[role="slider"][aria-valuenow="${n}"]`).waitFor();
+}
+
 // 흐름 하나 = 화면을 순서대로 눌러 가며 찍는 단계들. run은 그 단계의 화면을 만들고, 끝나면 한 장을 찍는다.
 const FLOWS = {
   // 운동이 끝난 뒤 첫 화면: 입력 전 → 체감 피로 선택 → 저장 → 수정 → 앱을 다시 열었을 때.
@@ -57,15 +66,14 @@ const FLOWS = {
       step: '1-before',
       async run(page) {
         await page.getByText('운동 기록', { exact: true }).waitFor();
-        await expectTouchSize(page.getByRole('radio'), '피로 버튼');
+        await expectTouchSize(page.getByRole('slider'), '체감 피로 슬라이더');
         await expectTouchSize(page.getByRole('button', { name: '저장', exact: true }), '저장 버튼');
       },
     },
     {
       step: '2-picked',
       async run(page) {
-        await page.getByRole('radio', { name: '체감 피로 7', exact: true }).click();
-        await page.getByRole('radio', { name: '체감 피로 7', exact: true, checked: true }).waitFor();
+        await pickExertion(page, 7);
         await page.getByPlaceholder('예: 왼쪽 무릎이 조금 아파요').fill('왼쪽 무릎이 조금 아파요');
         await page.getByRole('button', { name: '저장', exact: true }).focus(); // 입력칸의 커서를 치운다
       },
@@ -83,7 +91,7 @@ const FLOWS = {
       async run(page) {
         await page.getByRole('button', { name: '수정', exact: true }).click();
         // 저장한 값이 채워진 채로 다시 열린다.
-        await page.getByRole('radio', { name: '체감 피로 7', exact: true, checked: true }).waitFor();
+        await page.locator('[role="slider"][aria-valuenow="7"]').waitFor();
         await expectTouchSize(page.getByRole('button', { name: '취소', exact: true }), '취소 버튼');
       },
     },
@@ -100,7 +108,7 @@ const FLOWS = {
         await page.getByLabel('체감 피로, 7', { exact: true }).waitFor();
         await page.getByLabel('메모, 왼쪽 무릎이 조금 아파요', { exact: true }).waitFor();
         for (const [what, locator] of [
-          ['피로 버튼', page.getByRole('radio')],
+          ['체감 피로 슬라이더', page.getByRole('slider')],
           ['메모 칸', page.getByPlaceholder('예: 왼쪽 무릎이 조금 아파요')],
           ['저장 버튼', page.getByRole('button', { name: '저장', exact: true })],
           ['"저장했어요"', page.getByText('저장했어요', { exact: true })],
@@ -158,7 +166,25 @@ const FLOWS = {
         await page.getByLabel('날짜, 11월 13일 (금) 오전 6:10', { exact: true }).waitFor();
         await page.getByLabel('거리, 10.00 km', { exact: true }).waitFor();
         await page.getByLabel('평균 케이던스, 176 spm', { exact: true }).waitFor();
-        await expectTouchSize(page.getByRole('radio'), '피로 버튼');
+        await expectTouchSize(page.getByRole('slider'), '체감 피로 슬라이더');
+      },
+    },
+  ],
+
+  // 심박이 없는 기록: 평균 심박 없이 직접 입력한 기록의 체감 피로를 묻는 화면. 평균 심박 칸이 통째로 빠진다.
+  'no-hr': [
+    {
+      step: '1-ask',
+      async run(page) {
+        await page.getByText('운동 기록', { exact: true }).waitFor();
+        await page.getByRole('button', { name: '기록 직접 입력', exact: true }).click();
+        await page.getByLabel('거리 (km)', { exact: true }).fill('5.01');
+        await page.getByLabel('시간', { exact: true }).pressSequentially('2832');
+        await page.getByLabel('시작 시각', { exact: true }).pressSequentially('0630');
+        await page.getByRole('button', { name: '저장', exact: true }).click();
+        await page.getByLabel('거리, 5.01 km', { exact: true }).waitFor();
+        if ((await page.getByText('평균 심박', { exact: true }).count()) !== 0) throw new Error('심박이 없는 기록에 평균 심박 칸이 있다');
+        await expectTouchSize(page.getByRole('slider'), '체감 피로 슬라이더');
       },
     },
   ],
@@ -176,7 +202,7 @@ const FLOWS = {
         await page.getByLabel('거리 (km)', { exact: true }).fill('10');
         await page.getByLabel('시간', { exact: true }).pressSequentially('5500');
         await page.getByRole('button', { name: '저장', exact: true }).click();
-        await page.getByRole('radio', { name: '체감 피로 4', exact: true }).click();
+        await pickExertion(page, 4);
         await page.getByRole('button', { name: '저장', exact: true }).click();
         await page.getByText('저장했어요', { exact: true }).waitFor();
         await expectTouchSize(page.getByRole('button', { name: '지난 기록', exact: true }), '지난 기록 버튼');
