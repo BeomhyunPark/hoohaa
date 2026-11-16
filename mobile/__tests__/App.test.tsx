@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { render, screen, userEvent } from '@testing-library/react-native';
 
 import App from '../App';
+import { pickExertion, queryExertionSlider } from '../test-utils/exertion';
 
 beforeEach(async () => {
   await AsyncStorage.clear();
@@ -12,7 +13,7 @@ test('앱을 열면 가짜 건강 앱의 샘플 기록과 체감 피로 질문�
   expect(screen.getByText('hoohaa')).toBeTruthy();
   expect(await screen.findByText('운동 기록')).toBeTruthy();
   // 테스트 환경의 Platform.OS는 ios라 애플 건강 샘플이 들어온다.
-  expect(screen.getByText('5:42/km')).toBeTruthy();
+  expect(screen.getByLabelText('평균 페이스, 5:42/km')).toBeTruthy();
   expect(screen.getByText('이번 달리기는 얼마나 힘들었어요?')).toBeTruthy();
   expect(screen.getByRole('button', { name: '저장' })).toBeDisabled();
 });
@@ -21,7 +22,7 @@ test('체감 피로와 메모를 저장하고 앱을 닫았다 열면, 다시 �
   const user = userEvent.setup();
   await render(<App />);
   await screen.findByText('운동 기록');
-  await user.press(screen.getByRole('radio', { name: '체감 피로 7' }));
+  await pickExertion(7);
   await user.type(screen.getByLabelText('메모 (선택)'), '왼쪽 무릎이 조금 아파요');
   await user.press(screen.getByRole('button', { name: '저장' }));
   await screen.findByText('저장했어요');
@@ -32,7 +33,7 @@ test('체감 피로와 메모를 저장하고 앱을 닫았다 열면, 다시 �
   expect(await screen.findByLabelText('체감 피로, 7')).toBeTruthy();
   expect(screen.getByLabelText('메모, 왼쪽 무릎이 조금 아파요')).toBeTruthy();
   expect(screen.queryByText('이번 달리기는 얼마나 힘들었어요?')).toBeNull();
-  expect(screen.queryAllByRole('radio')).toHaveLength(0);
+  expect(queryExertionSlider()).toBeNull();
   expect(screen.queryByRole('button', { name: '저장' })).toBeNull();
   expect(screen.queryByText('저장했어요')).toBeNull();
   expect(screen.getByRole('button', { name: '수정' })).toBeTruthy();
@@ -54,7 +55,7 @@ test('기록을 직접 입력하면 바로 그 기록의 체감 피로를 묻고
   expect(screen.getByLabelText('시간, 55:00')).toBeTruthy();
   expect(screen.getByLabelText('평균 케이던스, 176 spm')).toBeTruthy();
   expect(screen.getByText('이번 달리기는 얼마나 힘들었어요?')).toBeTruthy();
-  await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+  await pickExertion(4);
   await user.press(screen.getByRole('button', { name: '저장' }));
   await screen.findByText('저장했어요');
   await screen.unmount();
@@ -71,7 +72,7 @@ test('직접 입력을 취소하면 보던 기록으로 돌아간다', async () 
   await screen.findByText('운동 기록');
   await user.press(screen.getByRole('button', { name: '기록 직접 입력' }));
   await user.press(screen.getByRole('button', { name: '취소' }));
-  expect(await screen.findByText('5:42/km')).toBeTruthy();
+  expect(await screen.findByLabelText('평균 페이스, 5:42/km')).toBeTruthy();
 });
 
 test('지난 날짜로 적은 기록도 목록에서 찾아 고치고 지울 수 있다', async () => {
@@ -87,7 +88,7 @@ test('지난 날짜로 적은 기록도 목록에서 찾아 고치고 지울 수
   await user.type(screen.getByLabelText('시간'), '5500');
   await user.press(screen.getByRole('button', { name: '저장' }));
   await screen.findByLabelText('거리, 10.00 km');
-  await user.press(screen.getByRole('radio', { name: '체감 피로 4' }));
+  await pickExertion(4);
   await user.press(screen.getByRole('button', { name: '저장' }));
   await screen.findByText('저장했어요');
 
@@ -116,5 +117,5 @@ test('지난 날짜로 적은 기록도 목록에서 찾아 고치고 지울 수
 
   // 돌아가면 가장 최근 기록(샘플)이다.
   await user.press(screen.getByRole('button', { name: '돌아가기' }));
-  expect(await screen.findByText('5:42/km')).toBeTruthy();
+  expect(await screen.findByLabelText('평균 페이스, 5:42/km')).toBeTruthy();
 });

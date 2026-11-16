@@ -8,37 +8,26 @@
 // 고치는 중에는 숨긴다(적던 값이 사라지지 않게).
 // 직접 입력한 기록에는 "기록 고치기"(날짜, 거리, 시간 등)와 "기록 지우기"가 붙는다. 지우기 전에 한 번 묻는다.
 //
+// 모양은 피그마 "03 폰 앱 시안"의 확정안이다(docs/screenshots/v4/design/). 기록 카드 → 체감 피로 슬라이더 → 메모,
+// 저장·수정·취소는 화면 아래에 붙는다. 색은 테마의 역할 이름만 쓴다(src/theme/).
+//
 // 컨디션, 목표, 내일 훈련, 통증 판단은 서버가 생긴 다음이라 여기서 보여 주지 않는다.
 import { useEffect, useState } from 'react';
-import {
-  AccessibilityInfo,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { AccessibilityInfo, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { afterRunCopy as copy, EXERTION_MAX, EXERTION_MIN, exertionButtonLabel } from '../copy/after-run';
+import { ExertionSlider } from '../components/ExertionSlider';
+import { Button, StatusLine } from '../components/ui';
+import { afterRunCopy as copy, exertionOutOfParts } from '../copy/after-run';
 import type { HealthReader } from '../record/health-reader';
 import type { RecordStore } from '../record/store';
 import { summarize } from '../record/summary';
 import type { WorkoutRecord } from '../record/types';
 import { withUserInput } from '../record/user-input';
+import { rpeColor, type ThemeColors } from '../theme/colors';
+import { useColors, useThemedStyles } from '../theme/theme';
+import { RADIUS, SCREEN_PADDING, SECTION_GAP, tabular } from '../theme/tokens';
 
-/** 누르는 영역의 가장 작은 크기(pt). 접근성 기준 44pt보다 조금 크게 둔다. */
-export const MIN_TOUCH = 48;
-
-/** 피로 버튼을 한 줄에 몇 개 둘지. 10개를 한 줄에 두면 좁은 폰에서 44pt가 안 된다. */
-const PER_ROW = 5;
-
-const EXERTION_ROWS: number[][] = [];
-for (let v = EXERTION_MIN; v <= EXERTION_MAX; v += PER_ROW) {
-  EXERTION_ROWS.push(Array.from({ length: Math.min(PER_ROW, EXERTION_MAX - v + 1) }, (_, i) => v + i));
-}
+export { MIN_TOUCH } from '../theme/tokens';
 
 /**
  * record는 지금까지의 기록이다(읽은 그대로이거나, 저장했으면 체감 피로와 메모가 붙은 것).
@@ -75,6 +64,8 @@ export function AfterRunScreen({ reader, store, onAddManual, onOpenList, onEditR
   /** 기록 지우기. confirm은 지울지 묻는 중, busy는 지우는 중. */
   const [deleting, setDeleting] = useState<'idle' | 'confirm' | 'busy'>('idle');
   const [deleteFailed, setDeleteFailed] = useState(false);
+  const colors = useColors();
+  const s = useThemedStyles(makeStyles);
 
   useEffect(() => {
     let current = true;
@@ -103,7 +94,10 @@ export function AfterRunScreen({ reader, store, onAddManual, onOpenList, onEditR
     setSaving(true);
     setSaveFailed(false);
     try {
-      const record = withUserInput(loaded.record, { perceivedExertion: exertion, memo });
+      const record = withUserInput(loaded.record, {
+        perceivedExertion: exertion,
+        memo,
+      });
       await store.save(record);
       setLoaded({ status: 'ready', record, step: 'saved' });
       setSavedNow(true);
@@ -145,214 +139,164 @@ export function AfterRunScreen({ reader, store, onAddManual, onOpenList, onEditR
     setLoaded({ ...loaded, step: 'saved' });
   }
 
-  return (
-    <KeyboardAvoidingView style={styles.fill} behavior="padding">
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.brand}>hoohaa</Text>
+  const showLinks = (onOpenList || onAddManual) && loaded.status !== 'loading' && step !== 'edit' && deleting === 'idle';
+  const showBottom = loaded.status === 'ready';
 
-        {loaded.status === 'loading' && <Text style={styles.note}>{copy.loading}</Text>}
-        {loaded.status === 'none' && <Text style={styles.note}>{copy.noRecord}</Text>}
+  return (
+    <KeyboardAvoidingView style={s.fill} behavior="padding">
+      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+        <Text style={s.brand}>hoohaa</Text>
+
+        {loaded.status === 'loading' && <Text style={s.note}>{copy.loading}</Text>}
+        {loaded.status === 'none' && <Text style={s.note}>{copy.noRecord}</Text>}
         {loaded.status === 'failed' && (
-          <View style={styles.section}>
-            <Text style={styles.note} accessibilityRole="alert">
+          <View style={s.section}>
+            <Text style={s.note} accessibilityRole="alert">
               {copy.readFailed}
             </Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setAttempt((n) => n + 1)}
-              style={({ pressed }) => [styles.button, styles.buttonOutline, pressed && styles.pressed]}
-            >
-              <Text style={styles.buttonOutlineText}>{copy.retryRead}</Text>
-            </Pressable>
+            <Button kind="outline" label={copy.retryRead} onPress={() => setAttempt((n) => n + 1)} />
           </View>
         )}
 
-        {loaded.status === 'ready' && <RecordCard record={loaded.record} showUserInput={step === 'saved'} />}
+        {loaded.status === 'ready' && <RecordCard record={loaded.record} />}
 
         {asking && (
           <>
-            <View style={styles.section}>
-              <Text style={styles.heading} accessibilityRole="header">
-                {copy.exertionTitle}
-              </Text>
-              <Text style={styles.body}>{copy.exertionQuestion}</Text>
-              <Text style={styles.hint}>{copy.exertionScale}</Text>
-              <View accessibilityRole="radiogroup" accessibilityLabel={copy.exertionGroupLabel} style={styles.scale}>
-                {EXERTION_ROWS.map((row) => (
-                  <View key={row[0]} style={styles.scaleRow}>
-                    {row.map((value) => {
-                      const selected = exertion === value;
-                      return (
-                        <Pressable
-                          key={value}
-                          accessibilityRole="radio"
-                          accessibilityLabel={exertionButtonLabel(value)}
-                          // aria-checked는 폰에서는 accessibilityState.checked가 되고, 확인용 웹 번들에서도 그대로 나온다.
-                          aria-checked={selected}
-                          onPress={() => setExertion(value)}
-                          style={({ pressed }) => [
-                            styles.scaleButton,
-                            selected && styles.scaleButtonSelected,
-                            pressed && styles.pressed,
-                          ]}
-                        >
-                          <Text style={[styles.scaleText, selected && styles.scaleTextSelected]}>{value}</Text>
-                        </Pressable>
-                      );
-                    })}
+            <View style={s.sectionTight}>
+              <View style={s.titleRow}>
+                <Text style={s.heading} accessibilityRole="header">
+                  {copy.exertionTitle}
+                </Text>
+                {exertion === null ? (
+                  <Text style={s.pickHint}>{copy.exertionPickHint}</Text>
+                ) : (
+                  <View
+                    style={[s.pill, { backgroundColor: rpeColor(colors, exertion) }]}
+                    aria-hidden
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                  >
+                    <Text style={s.pillText}>{exertion}</Text>
                   </View>
-                ))}
+                )}
               </View>
+              <Text style={s.question}>{copy.exertionQuestion}</Text>
+              <ExertionSlider value={exertion} onChange={setExertion} />
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.heading} accessibilityRole="header">
-                {copy.memoLabel}
-              </Text>
+            <View style={s.sectionTight}>
+              <View style={s.memoTitle}>
+                <Text style={s.memoHeading}>{copy.savedMemoLabel}</Text>
+                <Text style={s.memoOptional}>{copy.memoOptional}</Text>
+              </View>
               <TextInput
                 accessibilityLabel={copy.memoLabel}
                 multiline
                 onChangeText={setMemo}
                 placeholder={copy.memoPlaceholder}
-                placeholderTextColor={colors.sub}
-                style={styles.memo}
+                placeholderTextColor={colors.textTertiary}
+                style={s.memo}
                 textAlignVertical="top"
                 value={memo}
               />
             </View>
-
-            <View style={styles.section}>
-              <Pressable
-                accessibilityRole="button"
-                aria-busy={saving}
-                disabled={!canSave}
-                onPress={save}
-                style={({ pressed }) => [styles.button, canSave ? styles.buttonFilled : styles.buttonDisabled, pressed && styles.pressed]}
-              >
-                <Text style={canSave ? styles.buttonFilledText : styles.buttonDisabledText}>{copy.save}</Text>
-              </Pressable>
-              {exertion === null && <Text style={styles.hint}>{copy.needExertion}</Text>}
-              {saveFailed && (
-                <Text style={styles.hint} accessibilityRole="alert">
-                  {copy.saveFailed}
-                </Text>
-              )}
-              {step === 'edit' && (
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={saving}
-                  onPress={cancelEdit}
-                  style={({ pressed }) => [styles.button, styles.buttonOutline, pressed && styles.pressed]}
-                >
-                  <Text style={styles.buttonOutlineText}>{copy.cancelEdit}</Text>
-                </Pressable>
-              )}
-            </View>
           </>
         )}
 
-        {step === 'saved' && (
-          <View style={styles.section}>
-            {savedNow && (
-              <Text style={styles.saved} aria-live="polite">
-                {copy.saved}
-              </Text>
-            )}
-            <Pressable
-              accessibilityRole="button"
-              onPress={startEdit}
-              style={({ pressed }) => [styles.button, styles.buttonOutline, pressed && styles.pressed]}
-            >
-              <Text style={styles.buttonOutlineText}>{copy.edit}</Text>
-            </Pressable>
-          </View>
-        )}
+        {step === 'saved' && loaded.status === 'ready' && <SavedCard record={loaded.record} />}
 
         {manual && step !== 'edit' && !saving && (onEditRecord || onDeleteRecord) && (
-          <View style={styles.section}>
+          <View style={s.sectionTight}>
             {deleting === 'idle' ? (
-              <View style={styles.pair}>
-                {onEditRecord && (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => onEditRecord(manual)}
-                    style={({ pressed }) => [styles.button, styles.buttonOutline, styles.pairItem, pressed && styles.pressed]}
-                  >
-                    <Text style={styles.buttonOutlineText}>{copy.editRecord}</Text>
-                  </Pressable>
-                )}
-                {onDeleteRecord && (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => setDeleting('confirm')}
-                    style={({ pressed }) => [styles.button, styles.buttonOutline, styles.pairItem, pressed && styles.pressed]}
-                  >
-                    <Text style={styles.buttonOutlineText}>{copy.deleteRecord}</Text>
-                  </Pressable>
-                )}
+              <View style={s.pair}>
+                {onEditRecord && <Button kind="text" label={copy.editRecord} onPress={() => onEditRecord(manual)} />}
+                {onDeleteRecord && <Button kind="textDanger" label={copy.deleteRecord} onPress={() => setDeleting('confirm')} />}
               </View>
             ) : (
-              <>
-                <Text style={styles.body} accessibilityRole="alert">
+              <View style={s.confirm}>
+                <Text style={s.body} accessibilityRole="alert">
                   {copy.deleteQuestion}
                 </Text>
-                <View style={styles.pair}>
-                  <Pressable
-                    accessibilityRole="button"
-                    aria-busy={deleting === 'busy'}
-                    disabled={deleting === 'busy'}
-                    onPress={deleteRecord}
-                    style={({ pressed }) => [styles.button, styles.buttonFilled, styles.pairItem, pressed && styles.pressed]}
-                  >
-                    <Text style={styles.buttonFilledText}>{copy.deleteConfirm}</Text>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    disabled={deleting === 'busy'}
-                    onPress={() => {
-                      setDeleting('idle');
-                      setDeleteFailed(false);
-                    }}
-                    style={({ pressed }) => [styles.button, styles.buttonOutline, styles.pairItem, pressed && styles.pressed]}
-                  >
-                    <Text style={styles.buttonOutlineText}>{copy.deleteCancel}</Text>
-                  </Pressable>
+                <View style={s.pairFill}>
+                  <View style={s.pairItem}>
+                    <Button
+                      kind="outline"
+                      label={copy.deleteConfirm}
+                      aria-busy={deleting === 'busy'}
+                      disabled={deleting === 'busy'}
+                      onPress={deleteRecord}
+                    />
+                  </View>
+                  <View style={s.pairItem}>
+                    <Button
+                      kind="outline"
+                      label={copy.deleteCancel}
+                      disabled={deleting === 'busy'}
+                      onPress={() => {
+                        setDeleting('idle');
+                        setDeleteFailed(false);
+                      }}
+                    />
+                  </View>
                 </View>
                 {deleteFailed && (
-                  <Text style={styles.hint} accessibilityRole="alert">
-                    {copy.deleteFailed}
-                  </Text>
+                  <StatusLine kind="danger">
+                    <Text style={s.error} accessibilityRole="alert">
+                      {copy.deleteFailed}
+                    </Text>
+                  </StatusLine>
                 )}
-              </>
+              </View>
             )}
           </View>
         )}
 
-        {(onOpenList || onAddManual) && loaded.status !== 'loading' && step !== 'edit' && deleting === 'idle' && (
-          <View style={styles.links}>
+        {showLinks && (
+          <View style={s.links}>
             {onOpenList && (
-              <Pressable
-                accessibilityRole="button"
-                disabled={saving}
-                onPress={onOpenList}
-                style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-              >
-                <Text style={styles.buttonPlainText}>{copy.openList}</Text>
-              </Pressable>
+              <View style={s.pairItem}>
+                <Button kind="outline" label={copy.openList} disabled={saving} onPress={onOpenList} />
+              </View>
             )}
             {onAddManual && (
-              <Pressable
-                accessibilityRole="button"
-                disabled={saving}
-                onPress={onAddManual}
-                style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-              >
-                <Text style={styles.buttonPlainText}>{copy.addManual}</Text>
-              </Pressable>
+              <View style={s.pairItem}>
+                <Button kind="outline" label={copy.addManual} disabled={saving} onPress={onAddManual} />
+              </View>
             )}
           </View>
         )}
       </ScrollView>
+
+      {showBottom && (asking || step === 'saved') && (
+        <View style={s.bottom}>
+          {asking && (
+            <>
+              {exertion === null && <Text style={s.hint}>{copy.needExertion}</Text>}
+              {saveFailed && (
+                <StatusLine kind="danger">
+                  <Text style={s.error} accessibilityRole="alert">
+                    {copy.saveFailed}
+                  </Text>
+                </StatusLine>
+              )}
+              <Button kind="primary" label={copy.save} aria-busy={saving} disabled={!canSave} onPress={save} />
+              {step === 'edit' && <Button kind="outline" label={copy.cancelEdit} disabled={saving} onPress={cancelEdit} />}
+            </>
+          )}
+          {step === 'saved' && (
+            <>
+              {savedNow && (
+                <StatusLine kind="success">
+                  <Text style={s.saved} aria-live="polite">
+                    {copy.saved}
+                  </Text>
+                </StatusLine>
+              )}
+              <Button kind="outline" label={copy.edit} onPress={startEdit} />
+            </>
+          )}
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -368,107 +312,299 @@ async function readWithSavedInput(reader: HealthReader, store: RecordStore): Pro
   if (!record) return { status: 'none' };
   const saved = await store.findUserInput(record.origin);
   if (!saved) return { status: 'ready', record, step: 'ask' };
-  return { status: 'ready', record: { ...record, userInput: saved }, step: 'saved' };
+  return {
+    status: 'ready',
+    record: { ...record, userInput: saved },
+    step: 'saved',
+  };
+}
+
+/** "5.01 km" → 숫자 "5.01", 단위 "km". "5:42/km" → "5:42", "/km". 숫자는 크게, 단위는 작게 보여 준다. */
+export function splitUnit(value: string): { number: string; unit: string } {
+  const m = /^(.*?)(?:\s(km|bpm|spm)|(\/km))$/.exec(value);
+  if (!m) return { number: value, unit: '' };
+  return { number: m[1], unit: m[2] ?? m[3] };
 }
 
 /**
- * 기록을 짧게 보여 주는 카드. 값이 없는 항목은 칸째로 빠진다.
- * 저장한 뒤(showUserInput)에는 체감 피로와 메모가 붙는다. 묻거나 고치는 중에는 아래 입력칸이 그 값을 보여 준다.
+ * 기록 카드. 맨 위에 날짜와 제목, 카드 안에 거리를 크게, 그 아래 시간·평균 페이스·평균 심박·평균 케이던스를 같은 폭 칸으로.
+ * 값이 없는 항목은 칸째로 빠진다. 칸이 넷이면 둘씩 두 줄이다.
+ * 화면 낭독기는 칸마다 "이름, 값"으로 읽는다(날짜는 화면에 이름이 없지만 읽을 때는 붙인다).
  */
-function RecordCard({ record, showUserInput }: { record: WorkoutRecord; showUserInput: boolean }) {
+function RecordCard({ record }: { record: WorkoutRecord }) {
+  const s = useThemedStyles(makeStyles);
   const items = summarize(record);
-  const { perceivedExertion, memo } = showUserInput ? record.userInput : { perceivedExertion: null, memo: null };
+  const date = items.find((i) => i.key === 'date');
+  const distance = items.find((i) => i.key === 'distance');
+  const cells = items.filter((i) => i.key !== 'date' && i.key !== 'distance');
+  const perRow = cells.length === 4 ? 2 : 3;
+  const rows: (typeof cells)[] = [];
+  for (let i = 0; i < cells.length; i += perRow) rows.push(cells.slice(i, i + perRow));
+  const source = record.origin.source === 'manual' ? null : copy.sources[record.origin.source];
+
   return (
-    <View style={styles.section}>
-      <Text style={styles.heading} accessibilityRole="header">
-        {copy.recordTitle}
-      </Text>
-      <View style={styles.card}>
-        {items.map((item) => (
-          <Cell key={item.key} label={copy.labels[item.key]} value={item.value} wide={item.key === 'date'} />
-        ))}
-        {perceivedExertion !== null && <Cell label={copy.exertionTitle} value={String(perceivedExertion)} />}
-        {memo !== null && <Cell label={copy.savedMemoLabel} value={memo} wide plain />}
+    <>
+      <View style={s.head}>
+        {date && (
+          <Text accessibilityLabel={`${copy.labels.date}, ${date.value}`} style={s.date}>
+            {date.value}
+          </Text>
+        )}
+        <Text style={s.title} accessibilityRole="header">
+          {copy.recordTitle}
+        </Text>
       </View>
-    </View>
+      <View style={s.card}>
+        {(distance || source) && (
+          <View style={s.cardTop}>
+            {distance ? <Text style={s.cardLabel}>{copy.labels.distance}</Text> : <View />}
+            {source && (
+              <View style={s.chip}>
+                <Text style={s.chipText}>{source}</Text>
+              </View>
+            )}
+          </View>
+        )}
+        {distance && (
+          <>
+            <View accessible accessibilityLabel={`${copy.labels.distance}, ${distance.value}`} style={s.hero}>
+              <Text style={s.heroNumber}>{splitUnit(distance.value).number}</Text>
+              <Text style={s.heroUnit}>{splitUnit(distance.value).unit}</Text>
+            </View>
+            {cells.length > 0 && <View style={s.rule} />}
+          </>
+        )}
+        {rows.map((row) => (
+          <View key={row[0].key} style={s.cellRow}>
+            {row.map((item) => {
+              const { number, unit } = splitUnit(item.value);
+              return (
+                <View key={item.key} accessible accessibilityLabel={`${copy.labels[item.key]}, ${item.value}`} style={s.cell}>
+                  <Text style={s.cellLabel}>{copy.labels[item.key]}</Text>
+                  <View style={s.cellValueRow}>
+                    <Text style={s.cellValue}>{number}</Text>
+                    {unit !== '' && <Text style={s.cellUnit}>{unit}</Text>}
+                  </View>
+                </View>
+              );
+            })}
+            {Array.from({ length: perRow - row.length }, (_, i) => (
+              <View key={`empty-${i}`} style={s.cell} />
+            ))}
+          </View>
+        ))}
+      </View>
+    </>
   );
 }
 
-function Cell({ label, value, wide, plain }: { label: string; value: string; wide?: boolean; plain?: boolean }) {
+/** 저장한 뒤와 다시 들어온 기록: 체감 피로 값, 손잡이 없는 색 막대, 메모(있을 때만). 고칠 수는 없고 "수정"으로 다시 연다. */
+function SavedCard({ record }: { record: WorkoutRecord }) {
+  const s = useThemedStyles(makeStyles);
+  const colors = useColors();
+  const { perceivedExertion, memo } = record.userInput;
+  if (perceivedExertion === null) return null;
+  const parts = exertionOutOfParts(perceivedExertion);
   return (
-    <View accessible accessibilityLabel={`${label}, ${value}`} style={[styles.cell, wide && styles.cellWide]}>
-      <Text style={styles.cellLabel}>{label}</Text>
-      <Text style={plain ? styles.cellText : styles.cellValue}>{value}</Text>
+    <View style={s.card}>
+      <View accessible accessibilityLabel={`${copy.exertionTitle}, ${perceivedExertion}`} style={s.savedTop}>
+        <Text style={s.cardLabel}>{copy.exertionTitle}</Text>
+        <View style={s.savedValue}>
+          {parts.before !== '' && <Text style={s.savedOf}>{parts.before}</Text>}
+          <Text style={[s.savedNumber, { color: rpeColor(colors, perceivedExertion) }]}>{parts.number}</Text>
+          <Text style={s.savedOf}>{parts.after}</Text>
+        </View>
+      </View>
+      <View style={s.bar} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {colors.rpe.map((c, i) => (
+          <View key={c} style={[s.barStep, { backgroundColor: c, opacity: i < perceivedExertion ? 1 : 0.25 }]} />
+        ))}
+      </View>
+      {memo !== null && (
+        <>
+          <View style={s.rule} />
+          <View accessible accessibilityLabel={`${copy.savedMemoLabel}, ${memo}`} style={s.savedMemo}>
+            <Text style={s.cardLabel}>{copy.savedMemoLabel}</Text>
+            <Text style={s.memoText}>{memo}</Text>
+          </View>
+        </>
+      )}
     </View>
   );
 }
 
-const colors = {
-  bg: '#ffffff',
-  ink: '#111111',
-  sub: '#666666',
-  line: '#d4d4d4',
-  card: '#f5f5f5',
-  off: '#e5e5e5',
-};
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    fill: { flex: 1, backgroundColor: c.bg },
+    content: {
+      paddingHorizontal: SCREEN_PADDING,
+      paddingTop: 10,
+      paddingBottom: 24,
+      gap: SECTION_GAP,
+    },
+    brand: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: c.textPrimary,
+      letterSpacing: -0.2,
+    },
+    section: { gap: 10 },
+    sectionTight: { gap: 8 },
+    note: { fontSize: 16, lineHeight: 24, color: c.textSecondary },
+    body: { fontSize: 16, lineHeight: 24, color: c.textPrimary },
+    hint: {
+      fontSize: 13,
+      lineHeight: 18,
+      color: c.textTertiary,
+      textAlign: 'center',
+    },
+    error: { flexShrink: 1, fontSize: 13, lineHeight: 18, color: c.danger },
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 20, paddingBottom: 40, gap: 28 },
-  brand: { fontSize: 22, fontWeight: '700', color: colors.ink },
-  section: { gap: 10 },
-  heading: { fontSize: 18, fontWeight: '700', color: colors.ink },
-  body: { fontSize: 16, color: colors.ink },
-  hint: { fontSize: 14, lineHeight: 20, color: colors.sub },
-  note: { fontSize: 16, color: colors.sub },
+    head: { gap: 4, marginBottom: -8 },
+    date: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: c.textSecondary,
+      ...tabular,
+    },
+    title: {
+      fontSize: 24,
+      lineHeight: 32,
+      fontWeight: '700',
+      color: c.textPrimary,
+    },
 
-  card: { flexDirection: 'row', flexWrap: 'wrap', backgroundColor: colors.card, borderRadius: 14, padding: 16, rowGap: 16 },
-  cell: { width: '50%', gap: 4 },
-  cellWide: { width: '100%' },
-  cellLabel: { fontSize: 13, color: colors.sub },
-  cellValue: { fontSize: 20, fontWeight: '600', color: colors.ink },
-  cellText: { fontSize: 16, lineHeight: 22, color: colors.ink },
+    card: {
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: RADIUS.card,
+      paddingTop: 18,
+      paddingHorizontal: 20,
+      paddingBottom: 20,
+      gap: 14,
+    },
+    cardTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    cardLabel: { fontSize: 14, fontWeight: '500', color: c.textSecondary },
+    chip: {
+      backgroundColor: c.raised,
+      borderRadius: 999,
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+    },
+    chipText: { fontSize: 12, fontWeight: '500', color: c.textSecondary },
+    hero: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
+    heroNumber: {
+      fontSize: 56,
+      lineHeight: 60,
+      fontWeight: '700',
+      letterSpacing: -1.1,
+      color: c.textPrimary,
+      ...tabular,
+    },
+    heroUnit: { fontSize: 20, fontWeight: '600', color: c.textSecondary },
+    rule: { height: 1, backgroundColor: c.border },
+    cellRow: { flexDirection: 'row' },
+    cell: { flex: 1, gap: 2 },
+    cellLabel: { fontSize: 13, fontWeight: '500', color: c.textTertiary },
+    cellValueRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
+    cellValue: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: c.textPrimary,
+      ...tabular,
+    },
+    cellUnit: { fontSize: 13, fontWeight: '500', color: c.textSecondary },
 
-  scale: { gap: 8 },
-  scaleRow: { flexDirection: 'row', gap: 8 },
-  scaleButton: {
-    flex: 1,
-    minWidth: 44,
-    minHeight: MIN_TOUCH,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.bg,
-  },
-  scaleButtonSelected: { backgroundColor: colors.ink, borderColor: colors.ink },
-  scaleText: { fontSize: 18, fontWeight: '600', color: colors.ink },
-  scaleTextSelected: { color: colors.bg },
+    titleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      minHeight: 32,
+    },
+    heading: {
+      fontSize: 20,
+      lineHeight: 28,
+      fontWeight: '700',
+      color: c.textPrimary,
+    },
+    pickHint: { fontSize: 13, color: c.textTertiary },
+    pill: { borderRadius: 999, paddingVertical: 3, paddingHorizontal: 14 },
+    pillText: {
+      fontSize: 18,
+      lineHeight: 26,
+      fontWeight: '700',
+      color: c.onRpe,
+      ...tabular,
+    },
+    question: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: c.textSecondary,
+      marginTop: -2,
+    },
 
-  memo: {
-    minHeight: 96,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 16,
-    lineHeight: 22,
-    color: colors.ink,
-  },
+    memoTitle: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+    memoHeading: { fontSize: 15, fontWeight: '700', color: c.textPrimary },
+    memoOptional: { fontSize: 13, color: c.textTertiary },
+    memo: {
+      minHeight: 64,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.borderStrong,
+      borderRadius: RADIUS.input,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 16,
+      lineHeight: 22,
+      color: c.textPrimary,
+    },
 
-  button: { minHeight: MIN_TOUCH + 4, alignItems: 'center', justifyContent: 'center', borderRadius: 12, paddingHorizontal: 16 },
-  buttonFilled: { backgroundColor: colors.ink },
-  buttonFilledText: { fontSize: 17, fontWeight: '700', color: colors.bg },
-  buttonDisabled: { backgroundColor: colors.off },
-  buttonDisabledText: { fontSize: 17, fontWeight: '700', color: colors.sub },
-  buttonOutline: { borderWidth: 1, borderColor: colors.ink },
-  buttonOutlineText: { fontSize: 17, fontWeight: '700', color: colors.ink },
-  pair: { flexDirection: 'row', gap: 10 },
-  pairItem: { flex: 1 },
-  links: { flexDirection: 'row', justifyContent: 'center', gap: 12 },
-  buttonPlainText: { fontSize: 16, fontWeight: '600', color: colors.ink, textDecorationLine: 'underline' },
-  pressed: { opacity: 0.6 },
+    savedTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    savedValue: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+    savedNumber: {
+      fontSize: 28,
+      lineHeight: 32,
+      fontWeight: '700',
+      ...tabular,
+    },
+    savedOf: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: c.textTertiary,
+      ...tabular,
+    },
+    bar: {
+      flexDirection: 'row',
+      gap: 2,
+      height: 10,
+      borderRadius: 5,
+      overflow: 'hidden',
+    },
+    barStep: { flex: 1, height: 10 },
+    savedMemo: { gap: 4 },
+    memoText: { fontSize: 16, lineHeight: 24, color: c.textPrimary },
 
-  saved: { fontSize: 20, fontWeight: '700', color: colors.ink },
-});
+    pair: { flexDirection: 'row', gap: 8 },
+    pairFill: { flexDirection: 'row', gap: 8 },
+    pairItem: { flex: 1 },
+    confirm: { gap: 10 },
+    links: { flexDirection: 'row', gap: 8 },
+
+    bottom: {
+      paddingHorizontal: SCREEN_PADDING,
+      paddingTop: 12,
+      paddingBottom: 12,
+      gap: 8,
+      backgroundColor: c.bg,
+    },
+    saved: { fontSize: 17, fontWeight: '700', color: c.success },
+  });

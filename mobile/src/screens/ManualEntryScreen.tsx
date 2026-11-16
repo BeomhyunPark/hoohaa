@@ -7,7 +7,9 @@
 // (AfterRunScreen)이 묻는다.
 import { showTime } from '@hoohaa/engine/parse.js';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+
+import { Button, StatusLine } from '../components/ui';
 
 import { manualEntryCopy as copy, manualErrorText } from '../copy/manual-entry';
 import {
@@ -24,9 +26,9 @@ import {
 } from '../record/manual';
 import type { ManualRecordStore } from '../record/manual-store';
 import type { WorkoutRecord } from '../record/types';
-
-/** 누르는 영역의 가장 작은 크기(pt). AfterRunScreen과 같다. */
-const MIN_TOUCH = 48;
+import type { ThemeColors } from '../theme/colors';
+import { useColors, useThemedStyles } from '../theme/theme';
+import { MIN_TOUCH, RADIUS, SCREEN_PADDING, SECTION_GAP, tabular } from '../theme/tokens';
 
 const digits = (text: string, max: number) => text.replace(/\D/g, '').slice(0, max);
 
@@ -59,11 +61,20 @@ export function ManualEntryScreen({ store, onSaved, onCancel, editing, now = () 
   const [form, setForm] = useState<ManualForm>(() =>
     editing
       ? manualFormOf(editing)
-      : { date: formatDateInput(now()), distance: '', duration: '', startTime: '', heartRate: '', cadence: '' },
+      : {
+          date: formatDateInput(now()),
+          distance: '',
+          duration: '',
+          startTime: '',
+          heartRate: '',
+          cadence: '',
+        },
   );
   const [errors, setErrors] = useState<Partial<Record<ManualField, ManualError>>>({});
   const [saving, setSaving] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
+  const colors = useColors();
+  const styles = useThemedStyles(makeStyles);
 
   function change(field: ManualField, text: string) {
     setForm((f) => ({ ...f, [field]: SHAPE[field](text) }));
@@ -104,14 +115,16 @@ export function ManualEntryScreen({ store, onSaved, onCancel, editing, now = () 
         inputMode={name === 'distance' ? 'decimal' : 'numeric'}
         onChangeText={(text) => change(name, text)}
         placeholder={copy.placeholders[name]}
-        placeholderTextColor={colors.sub}
+        placeholderTextColor={colors.textTertiary}
         style={[styles.input, errors[name] !== undefined && styles.inputError]}
         value={form[name]}
       />
       {errors[name] !== undefined && (
-        <Text style={styles.error} accessibilityRole="alert">
-          {manualErrorText(name, errors[name])}
-        </Text>
+        <StatusLine kind="danger">
+          <Text style={styles.error} accessibilityRole="alert">
+            {manualErrorText(name, errors[name])}
+          </Text>
+        </StatusLine>
       )}
     </View>
   );
@@ -122,7 +135,7 @@ export function ManualEntryScreen({ store, onSaved, onCancel, editing, now = () 
         <Text style={styles.brand}>hoohaa</Text>
 
         <View style={styles.section}>
-          <Text style={styles.heading} accessibilityRole="header">
+          <Text style={styles.title} accessibilityRole="header">
             {editing ? copy.editTitle : copy.title}
           </Text>
           <Text style={styles.hint}>{copy.intro}</Text>
@@ -138,68 +151,64 @@ export function ManualEntryScreen({ store, onSaved, onCancel, editing, now = () 
         </View>
 
         <View style={styles.section}>
-          <Pressable
-            accessibilityRole="button"
-            aria-busy={saving}
-            disabled={saving}
-            onPress={save}
-            style={({ pressed }) => [styles.button, styles.buttonFilled, pressed && styles.pressed]}
-          >
-            <Text style={styles.buttonFilledText}>{copy.save}</Text>
-          </Pressable>
           {saveFailed && (
-            <Text style={styles.error} accessibilityRole="alert">
-              {copy.saveFailed}
-            </Text>
+            <StatusLine kind="danger">
+              <Text style={styles.error} accessibilityRole="alert">
+                {copy.saveFailed}
+              </Text>
+            </StatusLine>
           )}
-          <Pressable
-            accessibilityRole="button"
-            disabled={saving}
-            onPress={onCancel}
-            style={({ pressed }) => [styles.button, styles.buttonOutline, pressed && styles.pressed]}
-          >
-            <Text style={styles.buttonOutlineText}>{copy.cancel}</Text>
-          </Pressable>
+          <Button kind="primary" label={copy.save} aria-busy={saving} disabled={saving} onPress={save} />
+          <Button kind="outline" label={copy.cancel} disabled={saving} onPress={onCancel} />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const colors = {
-  bg: '#ffffff',
-  ink: '#111111',
-  sub: '#666666',
-  line: '#d4d4d4',
-  error: '#b42318',
-};
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    fill: { flex: 1, backgroundColor: c.bg },
+    content: {
+      paddingHorizontal: SCREEN_PADDING,
+      paddingTop: 10,
+      paddingBottom: 40,
+      gap: SECTION_GAP,
+    },
+    brand: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: c.textPrimary,
+      letterSpacing: -0.2,
+    },
+    section: { gap: 12 },
+    title: {
+      fontSize: 24,
+      lineHeight: 32,
+      fontWeight: '700',
+      color: c.textPrimary,
+    },
+    heading: {
+      fontSize: 20,
+      lineHeight: 28,
+      fontWeight: '700',
+      color: c.textPrimary,
+    },
+    hint: { fontSize: 13, lineHeight: 18, color: c.textTertiary },
 
-const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 20, paddingBottom: 40, gap: 28 },
-  brand: { fontSize: 22, fontWeight: '700', color: colors.ink },
-  section: { gap: 10 },
-  heading: { fontSize: 18, fontWeight: '700', color: colors.ink },
-  hint: { fontSize: 14, lineHeight: 20, color: colors.sub },
-
-  field: { gap: 6 },
-  label: { fontSize: 15, fontWeight: '600', color: colors.ink },
-  input: {
-    minHeight: MIN_TOUCH,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    fontSize: 17,
-    color: colors.ink,
-  },
-  inputError: { borderColor: colors.error },
-  error: { fontSize: 14, lineHeight: 20, color: colors.error },
-
-  button: { minHeight: MIN_TOUCH + 4, alignItems: 'center', justifyContent: 'center', borderRadius: 12, paddingHorizontal: 16 },
-  buttonFilled: { backgroundColor: colors.ink },
-  buttonFilledText: { fontSize: 17, fontWeight: '700', color: colors.bg },
-  buttonOutline: { borderWidth: 1, borderColor: colors.ink },
-  buttonOutlineText: { fontSize: 17, fontWeight: '700', color: colors.ink },
-  pressed: { opacity: 0.6 },
-});
+    field: { gap: 6 },
+    label: { fontSize: 14, fontWeight: '500', color: c.textSecondary },
+    input: {
+      minHeight: Math.max(52, MIN_TOUCH),
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.borderStrong,
+      borderRadius: RADIUS.input,
+      paddingHorizontal: 16,
+      fontSize: 16,
+      color: c.textPrimary,
+      ...tabular,
+    },
+    inputError: { borderColor: c.danger },
+    error: { flexShrink: 1, fontSize: 13, lineHeight: 18, color: c.danger },
+  });

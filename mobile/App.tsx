@@ -16,6 +16,8 @@ import type { WorkoutRecord } from './src/record/types';
 import { AfterRunScreen } from './src/screens/AfterRunScreen';
 import { ManualEntryScreen } from './src/screens/ManualEntryScreen';
 import { RecordListScreen } from './src/screens/RecordListScreen';
+import { DEFAULT_THEME, THEMES } from './src/theme/colors';
+import { ThemeProvider } from './src/theme/theme';
 
 /**
  * 어느 건강 앱 샘플을 쓸지. 아이폰은 애플 건강, 그 밖은 헬스 커넥트다.
@@ -56,51 +58,55 @@ export default function App() {
   const [view, setView] = useState<View>(latest);
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        {view.name === 'after-run' && (
-          <AfterRunScreen
-            reader={view.reader}
-            store={store}
-            onAddManual={() => setView({ name: 'manual', back: view })}
-            onOpenList={() => setView({ name: 'list' })}
-            onEditRecord={(record) => setView({ name: 'manual', editing: record, back: view })}
-            onDeleteRecord={async (record) => {
-              // 측정값을 먼저 지운다. 여기서 실패하면 아무것도 지워지지 않은 것이다.
-              // 체감 피로와 메모만 남으면 다시 찾을 길이 없는 값이라 해가 없다(번호는 다시 쓰이지 않는다).
-              await manualStore.remove(record.origin.sourceRecordId);
-              await store.remove(record.origin);
-              setView({ name: 'list' });
-            }}
-          />
-        )}
-        {view.name === 'manual' && (
-          <ManualEntryScreen
-            store={manualStore}
-            editing={view.editing}
-            // 방금 적은 기록의 체감 피로를 바로 묻는다. 더 늦게 끝난 다른 기록이 있어도 이 기록을 보여 준다.
-            onSaved={(record) => setView(only(record))}
-            onCancel={() => setView(view.back)}
-          />
-        )}
-        {view.name === 'list' && (
-          <RecordListScreen
-            lister={lister}
-            store={store}
-            onOpen={(record) => setView(only(record))}
-            onAddManual={() => setView({ name: 'manual', back: view })}
-            onBack={() => setView(latest())}
-          />
-        )}
-        <StatusBar style="dark" />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    // 테마는 기본(볼트) 하나로만 그린다. 고르는 화면이 생기면 여기서 ThemeProvider에 name을 넘긴다.
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          {view.name === 'after-run' && (
+            <AfterRunScreen
+              reader={view.reader}
+              store={store}
+              onAddManual={() => setView({ name: 'manual', back: view })}
+              onOpenList={() => setView({ name: 'list' })}
+              onEditRecord={(record) => setView({ name: 'manual', editing: record, back: view })}
+              onDeleteRecord={async (record) => {
+                // 측정값을 먼저 지운다. 여기서 실패하면 아무것도 지워지지 않은 것이다.
+                // 체감 피로와 메모만 남으면 다시 찾을 길이 없는 값이라 해가 없다(번호는 다시 쓰이지 않는다).
+                await manualStore.remove(record.origin.sourceRecordId);
+                await store.remove(record.origin);
+                setView({ name: 'list' });
+              }}
+            />
+          )}
+          {view.name === 'manual' && (
+            <ManualEntryScreen
+              store={manualStore}
+              editing={view.editing}
+              // 방금 적은 기록의 체감 피로를 바로 묻는다. 더 늦게 끝난 다른 기록이 있어도 이 기록을 보여 준다.
+              onSaved={(record) => setView(only(record))}
+              onCancel={() => setView(view.back)}
+            />
+          )}
+          {view.name === 'list' && (
+            <RecordListScreen
+              lister={lister}
+              store={store}
+              onOpen={(record) => setView(only(record))}
+              onAddManual={() => setView({ name: 'manual', back: view })}
+              onBack={() => setView(latest())}
+            />
+          )}
+          <StatusBar style="light" />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    // 상태 표시줄과 홈 인디케이터 자리도 화면 바탕색으로 칠한다.
+    backgroundColor: THEMES[DEFAULT_THEME].bg,
   },
 });

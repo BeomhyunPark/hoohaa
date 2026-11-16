@@ -114,6 +114,15 @@ import { D } from '@hoohaa/engine/data.js';
 - 피로 버튼은 한 줄에 5개씩 두 줄이다. 10개를 한 줄에 두면 좁은 폰에서 누르는 영역이 44pt보다 작아진다. 버튼마다 화면 낭독기가 읽을 이름("체감 피로 7")이 있다.
 - 상태 표시줄과 노치는 `react-native-safe-area-context`로 피한다. 네이티브 모듈이라 Jest에서는 라이브러리의 가짜로 바꾼다(`test-utils/setup.js`). 기기 저장소(`@react-native-async-storage/async-storage`)도 같다. 그 가짜는 메모리에 두고 테스트 파일마다 새로 생긴다.
 
+### 모양과 색
+
+모양은 피그마 "03 폰 앱 시안"의 확정안이다. 그림은 [`docs/screenshots/v4/design/`](../docs/screenshots/v4/design/)에 있다. 기록 카드(거리를 크게) → 체감 피로 슬라이더 → 메모 순서이고, 저장·수정·취소는 화면 아래에 붙는다.
+
+- 색은 `src/theme/colors.ts`의 역할 이름(`bg`, `surface`, `textPrimary`, `accent`, `rpe` 등)만 쓴다. 테마는 볼트, 밤하늘, 노을 세 개이고 모두 어두운 화면이다. 기본은 볼트다. 테마를 고르는 화면은 아직 없다. 화면은 `ThemeProvider`(`src/theme/theme.tsx`) 한 곳에서 테마를 받는다.
+- `accent`는 저장 버튼에만, 체감 피로 색(`rpe`, 1~10 단계)은 슬라이더·고른 값 알약·저장한 피로 값에만 쓴다. `__tests__/theme.test.ts`가 테마마다 글자와 면의 대비가 4.5:1 이상인지 본다.
+- 체감 피로는 슬라이더(`src/components/ExertionSlider.tsx`)로 고른다. 1~10 정수에만 붙고 처음에는 값이 없다. 트랙을 누르거나 끌면 값이 골라진다. 화면 낭독기에는 조절할 수 있는 요소 하나(role slider)이고, 올리기·내리기로 1씩 바뀐다(값이 없을 때 올리면 1). 새 네이티브 의존성 없이 React Native의 터치 응답으로 만들었다.
+- 글꼴 파일은 넣지 않았다. 시스템 글꼴을 쓰고 숫자만 폭이 같은 숫자(tabular)로 한다.
+
 ## 기록 직접 입력
 
 `src/screens/ManualEntryScreen.tsx`. 운동이 끝난 뒤 첫 화면 맨 아래의 "기록 직접 입력"으로 연다.

@@ -23,15 +23,29 @@ export const afterRunCopy = {
     cadence: '평균 케이던스',
   },
 
+  /** 기록을 가져온 곳. 기록 카드 오른쪽 위에 붙는다. 직접 입력한 기록에는 붙이지 않는다. */
+  sources: {
+    apple_health: '애플 건강',
+    health_connect: '헬스 커넥트',
+  },
+
   exertionTitle: '체감 피로',
   exertionQuestion: '이번 달리기는 얼마나 힘들었어요?',
+  /** 체감 피로를 고르기 전에 제목 오른쪽에 보인다. */
+  exertionPickHint: '밀거나 눌러서 골라요',
+  /** 화면에는 보이지 않고, 슬라이더의 낭독기 힌트로 읽는다. */
   exertionScale: '1은 아주 편했을 때, 10은 온 힘을 다했을 때예요.',
-  /** 화면 낭독기가 읽는 척도 묶음의 이름. */
+  /** 화면 낭독기가 읽는 슬라이더의 이름. */
   exertionGroupLabel: '체감 피로, 1부터 10까지',
+  /** 슬라이더 양 끝에 보이고, 낭독기는 값 1과 10 뒤에 붙여 읽는다. */
   exertionLowest: '아주 편했어요',
   exertionHighest: '온 힘을 다했어요',
+  /** 저장한 체감 피로 값. {숫자}에 1~10이 들어간다. */
+  exertionOutOf: '{숫자} / 10',
 
   memoLabel: '메모 (선택)',
+  /** 화면에는 "메모"를 굵게, 이것을 흐리게 나눠 보여 준다. 화면 낭독기는 memoLabel을 읽는다. */
+  memoOptional: '(선택)',
   memoPlaceholder: '예: 왼쪽 무릎이 조금 아파요',
 
   save: '저장',
@@ -57,7 +71,17 @@ export const afterRunCopy = {
   deleteFailed: '지우지 못했어요. 다시 눌러 주세요.',
 } as const;
 
-/** 화면 낭독기가 읽는 피로 버튼 하나의 이름. 양 끝 값에는 뜻을 붙인다. */
+/** 저장한 체감 피로 값을 "{숫자} / 10" 모양으로 나눈다. 숫자는 크게, 나머지는 작게 보여 준다. */
+export function exertionOutOfParts(value: number): {
+  before: string;
+  number: string;
+  after: string;
+} {
+  const [before, after] = afterRunCopy.exertionOutOf.split('{숫자}');
+  return { before, number: String(value), after };
+}
+
+/** 화면 낭독기가 읽는 체감 피로 값 하나. 양 끝 값에는 뜻을 붙인다. */
 export function exertionButtonLabel(value: number): string {
   const base = `${afterRunCopy.exertionTitle} ${value}`;
   if (value === EXERTION_MIN) return `${base}, ${afterRunCopy.exertionLowest}`;
