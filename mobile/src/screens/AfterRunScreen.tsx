@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { AccessibilityInfo, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ExertionSlider } from '../components/ExertionSlider';
-import { Wordmark } from '../components/Wordmark';
+import { Header } from '../components/Header';
 import { Button, StatusLine } from '../components/ui';
 import { afterRunCopy as copy, exertionOutOfParts } from '../copy/after-run';
 import type { HealthReader } from '../record/health-reader';
@@ -41,6 +41,8 @@ type Loaded =
   | { status: 'ready'; record: WorkoutRecord; step: 'ask' | 'saved' | 'edit' };
 
 interface Props {
+  /** 화면 색(테마)을 고르는 화면을 연다. 없으면 버튼을 그리지 않는다. */
+  onOpenTheme?: () => void;
   reader: HealthReader;
   store: RecordStore;
   /** 기록을 직접 입력하는 화면을 연다. 없으면 버튼을 그리지 않는다. */
@@ -53,7 +55,7 @@ interface Props {
   onDeleteRecord?: (record: WorkoutRecord) => Promise<void>;
 }
 
-export function AfterRunScreen({ reader, store, onAddManual, onOpenList, onEditRecord, onDeleteRecord }: Props) {
+export function AfterRunScreen({ onOpenTheme, reader, store, onAddManual, onOpenList, onEditRecord, onDeleteRecord }: Props) {
   const [loaded, setLoaded] = useState<Loaded>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const [exertion, setExertion] = useState<number | null>(null);
@@ -146,7 +148,7 @@ export function AfterRunScreen({ reader, store, onAddManual, onOpenList, onEditR
   return (
     <KeyboardAvoidingView style={s.fill} behavior="padding">
       <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        <Wordmark />
+        <Header onOpenTheme={onOpenTheme} />
 
         {loaded.status === 'loading' && <Text style={s.note}>{copy.loading}</Text>}
         {loaded.status === 'none' && <Text style={s.note}>{copy.noRecord}</Text>}

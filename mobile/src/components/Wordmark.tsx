@@ -2,8 +2,8 @@
 // 새 네이티브 의존성(SVG)을 쓰지 않으려고 PNG(@2x, @3x)로 넣었다. 원본과 만드는 법은 tools/build_logo.mjs다.
 import { Image, StyleSheet } from 'react-native';
 
-import { THEMES, type ThemeName } from '../theme/colors';
-import { useColors } from '../theme/theme';
+import type { ThemeName } from '../theme/colors';
+import { useThemeName } from '../theme/theme';
 
 /** 워드마크의 가로세로 비(원본 viewBox). tools/build_logo.mjs가 만든 PNG와 같다. */
 export const WORDMARK_ASPECT = 348.8 / 81;
@@ -16,8 +16,7 @@ const FILES: Record<ThemeName, number> = {
 };
 
 export function Wordmark({ height = WORDMARK_HEIGHT }: { height?: number }) {
-  const colors = useColors();
-  const name = (Object.keys(THEMES) as ThemeName[]).find((n) => THEMES[n] === colors) ?? 'volt';
+  const name = useThemeName();
   return (
     <Image
       source={FILES[name]}

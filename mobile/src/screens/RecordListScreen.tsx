@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Wordmark } from '../components/Wordmark';
+import { Header } from '../components/Header';
 import { Button } from '../components/ui';
 
 import { recordListCopy as copy } from '../copy/record-list';
@@ -26,6 +26,8 @@ interface Row {
 type Loaded = { status: 'loading' } | { status: 'failed' } | { status: 'ready'; rows: Row[] };
 
 interface Props {
+  /** 화면 색(테마)을 고르는 화면을 연다. 없으면 버튼을 그리지 않는다. */
+  onOpenTheme?: () => void;
   lister: RecordLister;
   store: RecordStore;
   onOpen: (record: WorkoutRecord) => void;
@@ -33,7 +35,7 @@ interface Props {
   onBack: () => void;
 }
 
-export function RecordListScreen({ lister, store, onOpen, onAddManual, onBack }: Props) {
+export function RecordListScreen({ onOpenTheme, lister, store, onOpen, onAddManual, onBack }: Props) {
   const [loaded, setLoaded] = useState<Loaded>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const styles = useThemedStyles(makeStyles);
@@ -56,7 +58,7 @@ export function RecordListScreen({ lister, store, onOpen, onAddManual, onBack }:
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Wordmark />
+      <Header onOpenTheme={onOpenTheme} />
 
       <View style={styles.section}>
         <Text style={styles.heading} accessibilityRole="header">
