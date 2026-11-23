@@ -57,44 +57,43 @@ function resToast(msg) { let t = $('resToast'); if (!t) { t = document.createEle
 let h2iP = null;
 function loadH2I() { return h2iP || (h2iP = new Promise((ok, no) => { if (window.htmlToImage) return ok(window.htmlToImage); const s = document.createElement('script'); s.src = '/src/vendor/html-to-image.js'; s.onload = () => ok(window.htmlToImage); s.onerror = () => { h2iP = null; no(new Error('h2i load')); }; document.head.appendChild(s); })); }
 let resImg = null, resImgP = null; // cached {blob,file} for the current result
-// 3:4(1080×1440) 한 장: 티어 카드, 상위·VDOT·다음 티어, 예상 기록 4칸 한 줄, 훈련 페이스 5칸. 인스타 피드·카톡에서 잘리지 않게.
+// 3:4(1080×1440) 한 장(카드와 아래 블록은 폭을 맞추고, 블록 사이 간격은 space-between으로 똑같이): 티어 카드, 상위·VDOT·다음 티어, 예상 기록 4칸 한 줄, 훈련 페이스 5칸. 인스타 피드·카톡에서 잘리지 않게.
 // 페르소나 문구·진행 바·티어표는 넣지 않는다(사용자 결정). 화면 #resBody에서 필요한 부분만 복제해 다시 배치한다.
 const CAP_W = 540, CAP_H = 720;
-const CAP_CSS = `.res-cap{position:fixed;left:-10000px;top:0;width:${CAP_W}px;height:${CAP_H}px;padding:24px 24px 16px;background:var(--bg);color:var(--t1);box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
-.res-cap>*{flex:none}.res-cap .tier-card{width:392px;margin:0 auto}
-.res-cap .res-metrics{margin-top:14px}
-.res-cap .mt{padding:12px 14px}.res-cap .mt-v{font-size:26px}.res-cap .mt-v.sm{font-size:16px;line-height:26px}
-.res-cap .cap-h{margin:16px 0 8px;font-size:14px;font-weight:600;color:var(--t2)}
+const CAP_CSS = `.res-cap{position:fixed;left:-10000px;top:0;width:${CAP_W}px;height:${CAP_H}px;padding:26px 28px 20px;background:var(--bg);color:var(--t1);box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.res-cap>*{flex:none;margin:0!important}.res-cap .tier-card{width:100%}
+.res-cap .mt{padding:10px 14px;gap:2px}.res-cap .mt-v{font-size:26px}.res-cap .mt-v.sm{font-size:16px;line-height:26px}
+.res-cap .cap-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 8px;font-size:14px;line-height:1.2;font-weight:600;color:var(--t2)}.res-cap .cap-h small{font-size:12px;font-weight:400;color:var(--t3)}
 .res-cap .res-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.res-cap .res-grid .cell{padding:10px 12px;border-radius:14px}.res-cap .res-grid .cell .time{font-size:21px}.res-cap .res-grid .cell .ev em{font-size:11px}
+.res-cap .res-grid .cell{padding:9px 12px;border-radius:14px}.res-cap .res-grid .cell .time{font-size:21px}.res-cap .res-grid .cell .ev em{font-size:11px}
 .res-cap .cap-pace{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--border);border-radius:16px;background:var(--surface);overflow:hidden}
-.res-cap .cap-pace>div{--pc:#4FC3F7;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px 8px;border-top:3px solid var(--pc);min-width:0}
+.res-cap .cap-pace>div{--pc:#4FC3F7;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 2px;border-top:3px solid var(--pc);min-width:0}
 .res-cap .cap-pace>div+div{border-left:1px solid var(--border)}
 .res-cap .cap-pace>div:nth-child(2){--pc:#4ADE80}.res-cap .cap-pace>div:nth-child(3){--pc:#FACC15}.res-cap .cap-pace>div:nth-child(4){--pc:#FB923C}.res-cap .cap-pace>div:nth-child(5){--pc:#F87171}
 .res-cap .cap-pace b{font-size:15px;font-weight:800;color:var(--pc)}.res-cap .cap-pace span{font-size:12px;color:var(--t2)}
 .res-cap .cap-pace strong{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
-.res-cap .cap-pace small{font-size:11px;color:var(--t3)}
-.res-cap .cap-ft{margin-top:auto;padding-top:8px;text-align:center;color:var(--t3);font-size:13px;letter-spacing:.04em}`;
+.res-cap .cap-ft{text-align:center;color:var(--t3);font-size:13px;letter-spacing:.04em}`;
 function resCaptureNode() {
   const src = $('resBody');
   const box = document.createElement('div'); box.className = 'res-cap'; box.setAttribute('aria-hidden', 'true'); box.inert = true;
   const st = document.createElement('style'); st.textContent = CAP_CSS; box.appendChild(st);
   const take = (sel) => { const el = src.querySelector(sel); if (!el) return null; const c = el.cloneNode(true); c.removeAttribute('id'); for (const x of c.querySelectorAll('[id]')) x.removeAttribute('id'); for (const x of c.querySelectorAll('.info')) x.remove(); return c; };
-  const head = (t) => { const h = document.createElement('div'); h.className = 'cap-h'; h.textContent = t; return h; };
+  const head = (t, unit) => { const h = document.createElement('div'); h.className = 'cap-h'; h.textContent = t; if (unit) { const u = document.createElement('small'); u.textContent = unit; h.appendChild(u); } return h; };
   const card = take('.tier-card'), mets = take('.res-metrics'), grid = take('.res-grid');
   if (card) box.appendChild(card);
   if (mets) box.appendChild(mets);
-  if (grid) box.append(head('예상 기록'), grid);
+  const sec = (t, el, unit) => { const d = document.createElement('section'); d.append(head(t, unit), el); box.appendChild(d); };
+  if (grid) sec('예상 기록', grid);
   const rows = [...src.querySelectorAll('.pace-list .prow')];
   if (rows.length) {
     const pace = document.createElement('div'); pace.className = 'cap-pace';
     for (const r of rows) {
-      const d = document.createElement('div'), b = document.createElement('b'), n = document.createElement('span'), v = document.createElement('strong'), u = document.createElement('small');
+      const d = document.createElement('div'), b = document.createElement('b'), n = document.createElement('span'), v = document.createElement('strong');
       b.textContent = r.querySelector('.ltr').textContent; n.textContent = r.querySelector('.nm').textContent;
-      v.textContent = r.querySelector('.pv').firstChild.textContent; u.textContent = '/km';
-      d.append(b, n, v, u); pace.appendChild(d);
+      v.textContent = r.querySelector('.pv').firstChild.textContent;
+      d.append(b, n, v); pace.appendChild(d);
     }
-    box.append(head('훈련 페이스'), pace);
+    sec('훈련 페이스', pace, '단위 /km');
   }
   const ft = document.createElement('div'); ft.className = 'cap-ft'; ft.textContent = 'hoohaa.run'; box.appendChild(ft);
   document.body.appendChild(box); return box;
