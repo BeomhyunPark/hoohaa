@@ -53,7 +53,7 @@ export function mountResult(env, { leaveLog, refreshTpl }) {
 let weeklyKm = '';
 
 function resToast(msg) { let t = $('resToast'); if (!t) { t = document.createElement('div'); t.id = 'resToast'; t.className = 'res-toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite'); document.body.appendChild(t); } t.textContent = msg; t.style.top = (window.scrollY + window.innerHeight - 120) + 'px'; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1800); }
-// 결과 공유: #resBody(티어 카드~훈련 페이스)를 PNG로 렌더해 기기 공유 시트로 보냄. 공유하기 버튼·편집기는 제외.
+// 결과 공유: #resBody(티어 카드·예상 기록·훈련 페이스, 티어표 제외)를 PNG로 렌더해 기기 공유 시트로 보냄. 공유하기 버튼·편집기는 제외.
 let h2iP = null;
 function loadH2I() { return h2iP || (h2iP = new Promise((ok, no) => { if (window.htmlToImage) return ok(window.htmlToImage); const s = document.createElement('script'); s.src = '/src/vendor/html-to-image.js'; s.onload = () => ok(window.htmlToImage); s.onerror = () => { h2iP = null; no(new Error('h2i load')); }; document.head.appendChild(s); })); }
 let resImg = null, resImgP = null; // cached {blob,file} for the current result
@@ -63,10 +63,10 @@ function resCaptureNode() {
   box.style.cssText = `position:fixed;left:-10000px;top:0;width:${w}px;padding:20px 16px 18px;background:var(--bg);color:var(--t1);box-sizing:border-box`;
   const c = src.cloneNode(true); c.removeAttribute('id');
   for (const el of c.querySelectorAll('[id]')) el.removeAttribute('id');
+  // 티어표 패널은 공유 이미지에서 뺀다: 티어는 위 카드가 보여 주고, 이미지에는 예상 기록·훈련 페이스만 남긴다.
   for (const el of c.querySelectorAll('.res-share, .info, .more, .wk, .chev, .exp, .pace-foot, .res-top, .res-sticky, .res-tabs, .lad-more')) el.remove();
+  const lad = c.querySelector('.lad'); if (lad) lad.closest('.res-panel').remove();
   for (const el of c.querySelectorAll('[role=tabpanel]')) { el.hidden = false; el.removeAttribute('role'); const h = el.querySelector('h2.sr'); if (h) h.className = 'cap-h'; }
-  const lad = c.querySelector('.lad'); if (lad) { lad.style.maxHeight = 'none'; lad.style.overflow = 'visible';
-    const li = [...lad.children], i = li.findIndex(x => x.classList.contains('me')); li.forEach((x, j) => { if (i >= 0 && Math.abs(j - i) > 2) x.remove(); }); }
   const ft = document.createElement('div'); ft.textContent = 'hoohaa.run'; ft.style.cssText = 'text-align:center;color:var(--t3);font-size:13px;margin-top:14px;letter-spacing:.04em';
   box.append(c, ft); document.body.appendChild(box); return box;
 }
